@@ -11,7 +11,7 @@ Program Header:
     LOAD off    0x000000000001b130 vaddr 0x000000000000b130 paddr 0x000000000000b130 align 2**16
          filesz 0x0000000000002090 memsz 0x0000000000002090 flags r--
     LOAD off    0x000000000001e000 vaddr 0x000000000000e000 paddr 0x000000000000e000 align 2**16
-         filesz 0x0000000000000444 memsz 0x000000000000b060 flags rw-
+         filesz 0x000000000000033c memsz 0x000000000000af58 flags rw-
  DYNAMIC off    0x000000000001ce58 vaddr 0x000000000000ce58 paddr 0x000000000000ce58 align 2**3
          filesz 0x0000000000000100 memsz 0x0000000000000100 flags rw-
 
@@ -51,29 +51,29 @@ Idx Name          Size      VMA               LMA               File off  Algn
                   CONTENTS, ALLOC, LOAD, READONLY, DATA
   9 .hash         00000050  000000000000d170  000000000000d170  0001d170  2**3
                   CONTENTS, ALLOC, LOAD, READONLY, DATA
- 10 .data         00000444  000000000000e000  000000000000e000  0001e000  2**3
+ 10 .data         0000033c  000000000000e000  000000000000e000  0001e000  2**3
                   CONTENTS, ALLOC, LOAD, DATA
- 11 .bss          0000ac18  000000000000e448  000000000000e448  0001e444  2**3
+ 11 .bss          0000ac18  000000000000e340  000000000000e340  0001e33c  2**3
                   ALLOC
- 12 .debug_info   00015279  0000000000000000  0000000000000000  0001e444  2**0
+ 12 .debug_info   00015286  0000000000000000  0000000000000000  0001e33c  2**0
                   CONTENTS, READONLY, DEBUGGING
- 13 .debug_abbrev 00004744  0000000000000000  0000000000000000  000336bd  2**0
+ 13 .debug_abbrev 00004753  0000000000000000  0000000000000000  000335c2  2**0
                   CONTENTS, READONLY, DEBUGGING
- 14 .debug_loc    0001d2b6  0000000000000000  0000000000000000  00037e01  2**0
+ 14 .debug_loc    0001d304  0000000000000000  0000000000000000  00037d15  2**0
                   CONTENTS, READONLY, DEBUGGING
- 15 .debug_aranges 00000c40  0000000000000000  0000000000000000  000550c0  2**4
+ 15 .debug_aranges 00000c40  0000000000000000  0000000000000000  00055020  2**4
                   CONTENTS, READONLY, DEBUGGING
- 16 .debug_macro  000053b1  0000000000000000  0000000000000000  00055d00  2**0
+ 16 .debug_macro  000053b1  0000000000000000  0000000000000000  00055c60  2**0
                   CONTENTS, READONLY, DEBUGGING
- 17 .debug_line   00007041  0000000000000000  0000000000000000  0005b0b1  2**0
+ 17 .debug_line   00007039  0000000000000000  0000000000000000  0005b011  2**0
                   CONTENTS, READONLY, DEBUGGING
- 18 .debug_str    00010de9  0000000000000000  0000000000000000  000620f2  2**0
+ 18 .debug_str    00010de7  0000000000000000  0000000000000000  0006204a  2**0
                   CONTENTS, READONLY, DEBUGGING
- 19 .comment      0000002d  0000000000000000  0000000000000000  00072edb  2**0
+ 19 .comment      0000002d  0000000000000000  0000000000000000  00072e31  2**0
                   CONTENTS, READONLY
- 20 .debug_frame  00003210  0000000000000000  0000000000000000  00072f08  2**3
+ 20 .debug_frame  00003210  0000000000000000  0000000000000000  00072e60  2**3
                   CONTENTS, READONLY, DEBUGGING
- 21 .debug_ranges 00001250  0000000000000000  0000000000000000  00076120  2**4
+ 21 .debug_ranges 00001250  0000000000000000  0000000000000000  00076070  2**4
                   CONTENTS, READONLY, DEBUGGING
 SYMBOL TABLE:
 0000000000000000 l    d  .ta_head	0000000000000000 .ta_head
@@ -87,7 +87,7 @@ SYMBOL TABLE:
 000000000000d0c0 l    d  .dynstr	0000000000000000 .dynstr
 000000000000d170 l    d  .hash	0000000000000000 .hash
 000000000000e000 l    d  .data	0000000000000000 .data
-000000000000e448 l    d  .bss	0000000000000000 .bss
+000000000000e340 l    d  .bss	0000000000000000 .bss
 0000000000000000 l    d  .debug_info	0000000000000000 .debug_info
 0000000000000000 l    d  .debug_abbrev	0000000000000000 .debug_abbrev
 0000000000000000 l    d  .debug_loc	0000000000000000 .debug_loc
@@ -107,17 +107,17 @@ SYMBOL TABLE:
 000000000000b206 l     O .rodata	0000000000000001 __compound_literal.0
 0000000000000000 l    df *ABS*	0000000000000000 dbstore_ta.c
 0000000000000020 l     F .text	00000000000001b4 inv
-00000000000006a0 l     F .text	00000000000001dc init
-000000000000b130 l     O .rodata	0000000000000004 __func__.3894
+000000000000069c l     F .text	00000000000001e0 init
+000000000000b130 l     O .rodata	0000000000000004 __func__.3896
 000000000000b138 l     O .rodata	000000000000001a __func__.3822
-000000000000b158 l     O .rodata	0000000000000019 __func__.3837
-000000000000b178 l     O .rodata	0000000000000005 __func__.3873
-000000000000b180 l     O .rodata	0000000000000014 __func__.3841
-000000000000b198 l     O .rodata	0000000000000015 __func__.3845
-000000000000b1b0 l     O .rodata	0000000000000019 __func__.3852
-000000000000b1d0 l     O .rodata	000000000000001a __func__.3856
+000000000000b158 l     O .rodata	0000000000000019 __func__.3839
+000000000000b178 l     O .rodata	0000000000000005 __func__.3875
+000000000000b180 l     O .rodata	0000000000000014 __func__.3843
+000000000000b198 l     O .rodata	0000000000000015 __func__.3847
+000000000000b1b0 l     O .rodata	0000000000000019 __func__.3854
+000000000000b1d0 l     O .rodata	000000000000001a __func__.3858
 0000000000000000 l    df *ABS*	0000000000000000 tee_api.c
-0000000000016448 l     O .bss	0000000000000008 tee_api_instance_data
+0000000000016340 l     O .bss	0000000000000008 tee_api_instance_data
 0000000000000000 l    df *ABS*	0000000000000000 tee_api_objects.c
 0000000000000000 l    df *ABS*	0000000000000000 tee_api_operations.c
 0000000000003ccc l     F .text	000000000000021c tee_buffer_update
@@ -125,8 +125,8 @@ SYMBOL TABLE:
 0000000000000000 l    df *ABS*	0000000000000000 user_ta_entry.c
 0000000000003ef0 l     F .text	0000000000000028 ta_header_get_session
 0000000000003f18 l     F .text	0000000000000088 ta_header_remove_session
-000000000001905a l     O .bss	0000000000000001 init_done
-000000000000e400 l     O .data	0000000000000010 ta_sessions
+0000000000018f52 l     O .bss	0000000000000001 init_done
+000000000000e2f8 l     O .data	0000000000000010 ta_sessions
 0000000000000000 l    df *ABS*	0000000000000000 utee_syscalls_a64.o
 0000000000000000 l    df *ABS*	0000000000000000 gprof_a64.o
 0000000000000000 l    df *ABS*	0000000000000000 tee_user_mem.c
@@ -139,12 +139,12 @@ SYMBOL TABLE:
 000000000000b268 l     O .rodata	0000000000000018 __func__.3926
 000000000000b280 l     O .rodata	0000000000000010 __func__.3886
 000000000000b290 l     O .rodata	0000000000000014 __func__.3931
-0000000000016498 l     O .bss	0000000000000008 heap_level
-00000000000164a0 l     O .bss	0000000000000010 global_stats
+0000000000016390 l     O .bss	0000000000000008 heap_level
+0000000000016398 l     O .bss	0000000000000010 global_stats
 0000000000000000 l    df *ABS*	0000000000000000 assert.c
 0000000000000000 l    df *ABS*	0000000000000000 tee_api_arith.c
 00000000000051c0 l     F .text	0000000000000028 TEE_BigInt_Panic
-00000000000164b0 l     O .bss	0000000000001b40 mempool_u32
+00000000000163a8 l     O .bss	0000000000001b40 mempool_u32
 0000000000000000 l    df *ABS*	0000000000000000 utee_misc.c
 0000000000000000 l    df *ABS*	0000000000000000 trace_ext.c
 0000000000000000 l    df *ABS*	0000000000000000 bget_malloc.c
@@ -163,13 +163,13 @@ SYMBOL TABLE:
 000000000000b320 l     O .rodata	0000000000000010 __func__.3514
 000000000000b330 l     O .rodata	000000000000000e __func__.3468
 000000000000b340 l     O .rodata	0000000000000013 __func__.3382
-0000000000017ff0 l     O .bss	0000000000000008 totalloc
-0000000000017ff8 l     O .bss	0000000000000038 mstats
-0000000000018030 l     O .bss	0000000000000008 numget
-0000000000018038 l     O .bss	0000000000000008 numrel
-0000000000018040 l     O .bss	0000000000000008 malloc_pool_len
-0000000000018048 l     O .bss	0000000000000008 malloc_pool
-000000000000e420 l     O .data	0000000000000020 freelist
+0000000000017ee8 l     O .bss	0000000000000008 totalloc
+0000000000017ef0 l     O .bss	0000000000000038 mstats
+0000000000017f28 l     O .bss	0000000000000008 numget
+0000000000017f30 l     O .bss	0000000000000008 numrel
+0000000000017f38 l     O .bss	0000000000000008 malloc_pool_len
+0000000000017f40 l     O .bss	0000000000000008 malloc_pool
+000000000000e318 l     O .data	0000000000000020 freelist
 0000000000000000 l    df *ABS*	0000000000000000 snprintf.c
 0000000000000000 l    df *ABS*	0000000000000000 memcmp.c
 0000000000000000 l    df *ABS*	0000000000000000 memcpy.c
@@ -199,7 +199,7 @@ SYMBOL TABLE:
 0000000000000000 l    df *ABS*	0000000000000000 mpa_mem_static.c
 0000000000000000 l    df *ABS*	0000000000000000 mpa_mul.c
 0000000000000000 l    df *ABS*	0000000000000000 mpa_random.c
-0000000000018050 l     O .bss	0000000000000008 get_rng_array
+0000000000017f48 l     O .bss	0000000000000008 get_rng_array
 0000000000000000 l    df *ABS*	0000000000000000 mpa_shift.c
 0000000000000000 l    df *ABS*	0000000000000000 mpa_addsub.c
 0000000000000000 l    df *ABS*	0000000000000000 mpa_cmp.c
@@ -211,7 +211,7 @@ SYMBOL TABLE:
 000000000000a894 l     F .text	000000000000003c __mpa_isspace
 000000000000c0f8 l     O .rodata	000000000000000c __func__.3623
 000000000000c108 l     O .rodata	000000000000000c __func__.3637
-0000000000018058 l     O .bss	0000000000001002 buf.3609
+0000000000017f50 l     O .bss	0000000000001002 buf.3609
 0000000000000000 l    df *ABS*	0000000000000000 mpa_modulus.c
 0000000000000000 l    df *ABS*	0000000000000000 
 000000000000ce58 l     O *ABS*	0000000000000000 _DYNAMIC
@@ -239,7 +239,6 @@ SYMBOL TABLE:
 0000000000005234 g     F .text	00000000000000cc printf
 00000000000047b4 g     F .text	0000000000000144 tee_user_mem_free
 00000000000041c0 g     F .text	000000000000000c utee_log
-000000000000e218 g     O .data	0000000000000101 modulus_app
 000000000000c0f0 g     O .rodata	0000000000000004 NR_STORED_PRIMES
 0000000000001300 g     F .text	0000000000000054 TEE_InitRefAttribute
 0000000000000b34 g     F .text	00000000000000b4 TEE_InvokeTACommand
@@ -295,14 +294,14 @@ SYMBOL TABLE:
 0000000000009334 g     F .text	00000000000000e4 mpa_mul
 0000000000000dd4 g     F .text	0000000000000028 TEE_GetREETime
 0000000000001764 g     F .text	000000000000005c TEE_AllocatePersistentObjectEnumerator
-000000000000e320 g     O .data	00000000000000d8 ta_props
+000000000000e218 g     O .data	00000000000000d8 ta_props
 0000000000003670 g     F .text	0000000000000144 TEE_AsymmetricEncrypt
 0000000000005c58 g     F .text	0000000000000038 malloc
 0000000000004304 g     F .text	000000000000000c utee_cryp_obj_close
 0000000000004484 g     F .text	000000000000000c utee_se_reader_open_session
 000000000000640c g     F .text	0000000000000054 vsnprintf
 00000000000014a4 g     F .text	0000000000000084 TEE_GenerateKey
-000000000000e440 g     O .data	0000000000000004 trace_level
+000000000000e338 g     O .data	0000000000000004 trace_level
 00000000000051e8 g     F .text	0000000000000008 utee_get_ta_exec_id
 0000000000004c58 g     F .text	0000000000000004 TEE_BigIntCmp
 00000000000051f4 g     F .text	0000000000000004 utee_realloc
@@ -336,7 +335,7 @@ SYMBOL TABLE:
 000000000000800c g     F .text	0000000000000688 __mpa_div_q_r
 0000000000004b2c g     F .text	000000000000002c _TEE_MathAPI_Init
 0000000000004400 g     F .text	000000000000000c utee_storage_next_enum
-000000000000e448 g     O .bss	0000000000008000 ta_heap
+000000000000e340 g     O .bss	0000000000008000 ta_heap
 0000000000004fec g     F .text	000000000000006c TEE_BigIntInvMod
 0000000000000944 g     F .text	0000000000000024 TA_CloseSessionEntryPoint
 00000000000037b4 g     F .text	0000000000000148 TEE_AsymmetricDecrypt
@@ -357,7 +356,7 @@ SYMBOL TABLE:
 0000000000004238 g     F .text	000000000000000c utee_mask_cancellation
 0000000000004310 g     F .text	000000000000000c utee_cryp_obj_reset
 0000000000000c6c g     F .text	0000000000000014 TEE_CheckMemoryAccessRights
-0000000000019060 g       .bss	0000000000000000 __gprof_buf_end
+0000000000018f58 g       .bss	0000000000000000 __gprof_buf_end
 000000000000a08c g     F .text	000000000000002c mpa_neg
 000000000000b3c0 g     O .rodata	0000000000000c38 PRIME_TABLE
 00000000000018e4 g     F .text	0000000000000068 TEE_ReadObjectData
@@ -369,7 +368,7 @@ SYMBOL TABLE:
 0000000000001adc g     F .text	0000000000000044 TEE_FreeOperation
 000000000000a8d8 g     F .text	0000000000000298 mpa_set_str
 00000000000043c4 g     F .text	000000000000000c utee_storage_obj_rename
-0000000000016450 g     O .bss	0000000000000004 ta_param_types
+0000000000016348 g     O .bss	0000000000000004 ta_param_types
 0000000000000e28 g     F .text	000000000000004c __utee_from_attr
 00000000000050dc g     F .text	0000000000000024 TEE_BigIntIsProbablePrime
 0000000000009114 g     F .text	0000000000000010 mpa_alloc_static_temp_var
@@ -380,7 +379,7 @@ SYMBOL TABLE:
 0000000000004b58 g     F .text	0000000000000004 TEE_BigIntInit
 0000000000000c98 g     F .text	0000000000000008 TEE_MemMove
 0000000000004bcc g     F .text	0000000000000028 TEE_BigIntConvertFromOctetString
-000000000000e3f8 g     O .data	0000000000000008 _ref__utee_mcount
+000000000000e2f0 g     O .data	0000000000000008 _ref__utee_mcount
 0000000000002dc8 g     F .text	00000000000000a4 TEE_MACInit
 00000000000038fc g     F .text	000000000000013c TEE_AsymmetricSignDigest
 000000000000744c g     F .text	000000000000002c memchr
@@ -431,7 +430,7 @@ SYMBOL TABLE:
 0000000000000be8 g     F .text	000000000000002c TEE_GetCancellationFlag
 0000000000004454 g     F .text	000000000000000c utee_se_service_close
 0000000000004668 g     F .text	000000000000014c tee_user_mem_alloc
-000000000000e410 g     O .data	0000000000000010 user_mem_head
+000000000000e308 g     O .data	0000000000000010 user_mem_head
 0000000000000d94 g     F .text	0000000000000040 TEE_SetTAPersistentTime
 000000000000a0b8 g     F .text	000000000000013c mpa_add_word
 000000000000446c g     F .text	000000000000000c utee_se_reader_get_prop
@@ -443,7 +442,7 @@ SYMBOL TABLE:
 0000000000009a54 g     F .text	0000000000000024 __mpa_full_sub
 000000000000314c g     F .text	0000000000000094 TEE_AEUpdateAAD
 000000000000440c g     F .text	000000000000000c utee_storage_obj_read
-00000000000004a4 g     F .text	00000000000001fc encrypt_using_public_key
+00000000000004a4 g     F .text	00000000000001f8 encrypt_using_public_key
 00000000000019b0 g     F .text	000000000000005c TEE_TruncateObjectData
 00000000000051f8 g     F .text	0000000000000004 utee_calloc
 000000000000431c g     F .text	000000000000000c utee_cryp_obj_populate
@@ -498,7 +497,7 @@ SYMBOL TABLE:
 0000000000004c80 g     F .text	0000000000000018 TEE_BigIntGetBitCount
 0000000000004f18 g     F .text	00000000000000c8 TEE_BigIntMulMod
 0000000000003b64 g     F .text	0000000000000144 TEE_DeriveKey
-0000000000016458 g     O .bss	0000000000000040 ta_params
+0000000000016350 g     O .bss	0000000000000040 ta_params
 0000000000009240 g     F .text	00000000000000f4 __mpa_abs_mul
 00000000000054d8 g     F .text	00000000000001dc bget
 0000000000001134 g     F .text	0000000000000064 TEE_AllocateTransientObject
@@ -560,7 +559,7 @@ SYMBOL TABLE:
 0000000000003a38 g     F .text	000000000000012c TEE_AsymmetricVerifyDigest
 0000000000009a38 g     F .text	000000000000001c __mpa_full_adder
 0000000000009c58 g     F .text	0000000000000104 __mpa_abs_sub
-0000000000019060 g       .bss	0000000000000000 __gprof_buf_start
+0000000000018f58 g       .bss	0000000000000000 __gprof_buf_start
 0000000000005c90 g     F .text	000000000000000c free
 0000000000005b60 g     F .text	00000000000000a8 bstats
 0000000000002f0c g     F .text	00000000000000bc TEE_MACComputeFinal
@@ -571,36 +570,36 @@ Disassembly of section .text:
 
 0000000000000020 <inv>:
 inv():
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:419
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:400
       20:	a9ac7bfd 	stp	x29, x30, [sp,#-320]!
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:441
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:422
       24:	90000064 	adrp	x4, c000 <const_miller_rabin_proof_limit+0x8>
       28:	52800023 	mov	w3, #0x1                   	// #1
       2c:	91048c84 	add	x4, x4, #0x123
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:419
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:400
       30:	910003fd 	mov	x29, sp
       34:	a90153f3 	stp	x19, x20, [sp,#16]
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:441
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:422
       38:	f0000054 	adrp	x20, b000 <mpa_mul_mod+0x68>
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:419
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:400
       3c:	a9025bf5 	stp	x21, x22, [sp,#32]
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:441
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:422
       40:	9104c295 	add	x21, x20, #0x130
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:419
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:400
       44:	2a0003f6 	mov	w22, w0
       48:	aa0103f3 	mov	x19, x1
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:441
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:422
       4c:	52800062 	mov	w2, #0x3                   	// #3
-      50:	52803721 	mov	w1, #0x1b9                 	// #441
+      50:	528034c1 	mov	w1, #0x1a6                 	// #422
       54:	aa1503e0 	mov	x0, x21
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:433
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:414
       58:	b90033bf 	str	wzr, [x29,#48]
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:441
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:422
       5c:	94001c70 	bl	721c <trace_printf>
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:443
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:424
       60:	711556df 	cmp	w22, #0x555
       64:	54000160 	b.eq	90 <inv+0x70>
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:446
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:427
       68:	f9400265 	ldr	x5, [x19]
       6c:	90000064 	adrp	x4, c000 <const_miller_rabin_proof_limit+0x8>
       70:	f9400a66 	ldr	x6, [x19,#16]
@@ -608,101 +607,101 @@ inv():
       78:	f9401267 	ldr	x7, [x19,#32]
       7c:	52800023 	mov	w3, #0x1                   	// #1
       80:	52800042 	mov	w2, #0x2                   	// #2
-      84:	528037e1 	mov	w1, #0x1bf                 	// #447
+      84:	52803581 	mov	w1, #0x1ac                 	// #428
       88:	aa1503e0 	mov	x0, x21
       8c:	94001c64 	bl	721c <trace_printf>
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:449
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:430
       90:	9104c294 	add	x20, x20, #0x130
       94:	52800023 	mov	w3, #0x1                   	// #1
       98:	aa1403e0 	mov	x0, x20
       9c:	52800042 	mov	w2, #0x2                   	// #2
-      a0:	52803821 	mov	w1, #0x1c1                 	// #449
+      a0:	528035c1 	mov	w1, #0x1ae                 	// #430
       a4:	90000064 	adrp	x4, c000 <const_miller_rabin_proof_limit+0x8>
       a8:	91056884 	add	x4, x4, #0x15a
       ac:	94001c5c 	bl	721c <trace_printf>
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:451
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:432
       b0:	9100e3a4 	add	x4, x29, #0x38
       b4:	9100c3a1 	add	x1, x29, #0x30
       b8:	52800063 	mov	w3, #0x3                   	// #3
       bc:	52800082 	mov	w2, #0x4                   	// #4
       c0:	52800020 	mov	w0, #0x1                   	// #1
       c4:	94000519 	bl	1528 <TEE_OpenPersistentObject>
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:457
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:438
       c8:	f9401fa0 	ldr	x0, [x29,#56]
       cc:	910103b5 	add	x21, x29, #0x40
       d0:	9100d3a3 	add	x3, x29, #0x34
       d4:	aa1503e1 	mov	x1, x21
       d8:	52801fe2 	mov	w2, #0xff                  	// #255
       dc:	94000602 	bl	18e4 <TEE_ReadObjectData>
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:459
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:440
       e0:	aa1503e5 	mov	x5, x21
       e4:	52800023 	mov	w3, #0x1                   	// #1
       e8:	52800042 	mov	w2, #0x2                   	// #2
-      ec:	52803961 	mov	w1, #0x1cb                 	// #459
+      ec:	52803701 	mov	w1, #0x1b8                 	// #440
       f0:	aa1403e0 	mov	x0, x20
       f4:	90000064 	adrp	x4, c000 <const_miller_rabin_proof_limit+0x8>
       f8:	9105f484 	add	x4, x4, #0x17d
       fc:	94001c48 	bl	721c <trace_printf>
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:461
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:442
      100:	f9401fa0 	ldr	x0, [x29,#56]
      104:	94000402 	bl	110c <TEE_CloseObject>
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:465
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:446
      108:	52800001 	mov	w1, #0x0                   	// #0
      10c:	52800120 	mov	w0, #0x9                   	// #9
      110:	9400033b 	bl	dfc <TEE_Malloc>
      114:	aa0003f5 	mov	x21, x0
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:466
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:447
      118:	52800122 	mov	w2, #0x9                   	// #9
      11c:	90000061 	adrp	x1, c000 <const_miller_rabin_proof_limit+0x8>
      120:	91069021 	add	x1, x1, #0x1a4
      124:	940002dd 	bl	c98 <TEE_MemMove>
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:467
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:448
      128:	f9400260 	ldr	x0, [x19]
      12c:	52800122 	mov	w2, #0x9                   	// #9
      130:	aa1503e1 	mov	x1, x21
      134:	940002d9 	bl	c98 <TEE_MemMove>
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:471
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:452
      138:	52800001 	mov	w1, #0x0                   	// #0
      13c:	528000e0 	mov	w0, #0x7                   	// #7
      140:	9400032f 	bl	dfc <TEE_Malloc>
      144:	aa0003f5 	mov	x21, x0
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:472
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:453
      148:	528000e2 	mov	w2, #0x7                   	// #7
      14c:	90000061 	adrp	x1, c000 <const_miller_rabin_proof_limit+0x8>
      150:	9106b821 	add	x1, x1, #0x1ae
      154:	940002d1 	bl	c98 <TEE_MemMove>
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:473
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:454
      158:	f9400a60 	ldr	x0, [x19,#16]
      15c:	528000e2 	mov	w2, #0x7                   	// #7
      160:	aa1503e1 	mov	x1, x21
      164:	940002cd 	bl	c98 <TEE_MemMove>
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:477
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:458
      168:	52800001 	mov	w1, #0x0                   	// #0
      16c:	52800100 	mov	w0, #0x8                   	// #8
      170:	94000323 	bl	dfc <TEE_Malloc>
      174:	aa0003f5 	mov	x21, x0
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:478
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:459
      178:	52800102 	mov	w2, #0x8                   	// #8
      17c:	90000061 	adrp	x1, c000 <const_miller_rabin_proof_limit+0x8>
      180:	9106d821 	add	x1, x1, #0x1b6
      184:	940002c5 	bl	c98 <TEE_MemMove>
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:479
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:460
      188:	f9401260 	ldr	x0, [x19,#32]
      18c:	aa1503e1 	mov	x1, x21
      190:	52800102 	mov	w2, #0x8                   	// #8
      194:	940002c1 	bl	c98 <TEE_MemMove>
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:481
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:462
      198:	f9400265 	ldr	x5, [x19]
      19c:	aa1403e0 	mov	x0, x20
      1a0:	f9400a66 	ldr	x6, [x19,#16]
      1a4:	52800023 	mov	w3, #0x1                   	// #1
      1a8:	f9401267 	ldr	x7, [x19,#32]
      1ac:	52800042 	mov	w2, #0x2                   	// #2
-     1b0:	52803c41 	mov	w1, #0x1e2                 	// #482
+     1b0:	528039e1 	mov	w1, #0x1cf                 	// #463
      1b4:	90000064 	adrp	x4, c000 <const_miller_rabin_proof_limit+0x8>
      1b8:	9106fc84 	add	x4, x4, #0x1bf
      1bc:	94001c18 	bl	721c <trace_printf>
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:485
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:466
      1c0:	52800000 	mov	w0, #0x0                   	// #0
      1c4:	a94153f3 	ldp	x19, x20, [sp,#16]
      1c8:	a9425bf5 	ldp	x21, x22, [sp,#32]
@@ -711,186 +710,186 @@ inv():
 
 00000000000001d4 <decrypt_using_private_key>:
 decrypt_using_private_key():
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:105
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:85
      1d4:	a9b37bfd 	stp	x29, x30, [sp,#-208]!
      1d8:	910003fd 	mov	x29, sp
      1dc:	f90023f9 	str	x25, [sp,#64]
      1e0:	aa0003f9 	mov	x25, x0
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:116
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:96
      1e4:	52804000 	mov	w0, #0x200                 	// #512
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:105
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:85
      1e8:	a90153f3 	stp	x19, x20, [sp,#16]
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:116
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:96
      1ec:	b90057a0 	str	w0, [x29,#84]
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:120
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:100
      1f0:	52802600 	mov	w0, #0x130                 	// #304
      1f4:	72ba0000 	movk	w0, #0xd000, lsl #16
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:105
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:85
      1f8:	2a0103f4 	mov	w20, w1
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:125
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:105
      1fc:	52804601 	mov	w1, #0x230                 	// #560
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:120
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:100
      200:	b9008ba0 	str	w0, [x29,#136]
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:125
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:105
      204:	72ba0001 	movk	w1, #0xd000, lsl #16
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:121
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:101
      208:	d0000060 	adrp	x0, e000 <modulus_dbstore>
      20c:	91000000 	add	x0, x0, #0x0
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:125
-     210:	b900a3a1 	str	w1, [x29,#160]
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:126
-     214:	91042001 	add	x1, x0, #0x108
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:121
-     218:	f9004ba0 	str	x0, [x29,#144]
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:126
-     21c:	f90057a1 	str	x1, [x29,#168]
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:131
-     220:	91044000 	add	x0, x0, #0x110
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:130
-     224:	52806601 	mov	w1, #0x330                 	// #816
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:131
-     228:	f90063a0 	str	x0, [x29,#192]
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:130
-     22c:	72b80001 	movk	w1, #0xc000, lsl #16
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:135
-     230:	52800600 	mov	w0, #0x30                  	// #48
 /home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:105
+     210:	b900a3a1 	str	w1, [x29,#160]
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:106
+     214:	91042001 	add	x1, x0, #0x108
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:101
+     218:	f9004ba0 	str	x0, [x29,#144]
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:106
+     21c:	f90057a1 	str	x1, [x29,#168]
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:111
+     220:	91044000 	add	x0, x0, #0x110
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:110
+     224:	52806601 	mov	w1, #0x330                 	// #816
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:111
+     228:	f90063a0 	str	x0, [x29,#192]
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:110
+     22c:	72b80001 	movk	w1, #0xc000, lsl #16
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:115
+     230:	52800600 	mov	w0, #0x30                  	// #48
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:85
      234:	a9025bf5 	stp	x21, x22, [sp,#32]
      238:	f0000053 	adrp	x19, b000 <mpa_mul_mod+0x68>
      23c:	a90363f7 	stp	x23, x24, [sp,#48]
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:122
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:102
      240:	52802015 	mov	w21, #0x100                 	// #256
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:105
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:85
      244:	aa0203f8 	mov	x24, x2
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:127
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:107
      248:	52800076 	mov	w22, #0x3                   	// #3
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:130
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:110
      24c:	b900bba1 	str	w1, [x29,#184]
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:105
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:85
      250:	aa0303f7 	mov	x23, x3
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:135
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:115
      254:	910163a2 	add	x2, x29, #0x58
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:111
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:91
      258:	a905ffbf 	stp	xzr, xzr, [x29,#88]
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:122
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:102
      25c:	b9009bb5 	str	w21, [x29,#152]
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:135
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:115
      260:	52810001 	mov	w1, #0x800                 	// #2048
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:127
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:107
      264:	b900b3b6 	str	w22, [x29,#176]
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:135
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:115
      268:	72b42000 	movk	w0, #0xa100, lsl #16
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:132
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:112
      26c:	b900cbb5 	str	w21, [x29,#200]
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:135
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:115
      270:	940003b1 	bl	1134 <TEE_AllocateTransientObject>
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:136
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:116
      274:	34000160 	cbz	w0, 2a0 <decrypt_using_private_key+0xcc>
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:137
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:117
      278:	90000064 	adrp	x4, c000 <const_miller_rabin_proof_limit+0x8>
      27c:	9104c260 	add	x0, x19, #0x130
      280:	9107a484 	add	x4, x4, #0x1e9
      284:	52800023 	mov	w3, #0x1                   	// #1
      288:	52800042 	mov	w2, #0x2                   	// #2
-     28c:	52801121 	mov	w1, #0x89                  	// #137
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:144
+     28c:	52800ea1 	mov	w1, #0x75                  	// #117
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:124
      290:	91002000 	add	x0, x0, #0x8
      294:	94001be2 	bl	721c <trace_printf>
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:179
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:159
      298:	129fff20 	mov	w0, #0xffff0006            	// #-65530
      29c:	14000036 	b	374 <decrypt_using_private_key+0x1a0>
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:142
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:122
      2a0:	f9402fa0 	ldr	x0, [x29,#88]
      2a4:	2a1603e2 	mov	w2, w22
      2a8:	910223a1 	add	x1, x29, #0x88
      2ac:	940003e5 	bl	1240 <TEE_PopulateTransientObject>
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:143
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:123
      2b0:	34000100 	cbz	w0, 2d0 <decrypt_using_private_key+0xfc>
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:144
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:124
      2b4:	90000064 	adrp	x4, c000 <const_miller_rabin_proof_limit+0x8>
      2b8:	9104c260 	add	x0, x19, #0x130
      2bc:	91082484 	add	x4, x4, #0x209
      2c0:	52800023 	mov	w3, #0x1                   	// #1
      2c4:	52800042 	mov	w2, #0x2                   	// #2
-     2c8:	52801201 	mov	w1, #0x90                  	// #144
+     2c8:	52800f81 	mov	w1, #0x7c                  	// #124
      2cc:	17fffff1 	b	290 <decrypt_using_private_key+0xbc>
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:148
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:128
      2d0:	52800001 	mov	w1, #0x0                   	// #0
      2d4:	2a1503e0 	mov	w0, w21
      2d8:	940002c9 	bl	dfc <TEE_Malloc>
      2dc:	aa0003f5 	mov	x21, x0
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:149
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:129
      2e0:	b94057a0 	ldr	w0, [x29,#84]
      2e4:	52800001 	mov	w1, #0x0                   	// #0
      2e8:	940002c5 	bl	dfc <TEE_Malloc>
      2ec:	aa0003f6 	mov	x22, x0
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:150
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:130
      2f0:	f10002bf 	cmp	x21, #0x0
      2f4:	fa401804 	ccmp	x0, #0x0, #0x4, ne
      2f8:	54000101 	b.ne	318 <decrypt_using_private_key+0x144>
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:151
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:131
      2fc:	90000064 	adrp	x4, c000 <const_miller_rabin_proof_limit+0x8>
      300:	9104c260 	add	x0, x19, #0x130
      304:	9108a484 	add	x4, x4, #0x229
      308:	52800023 	mov	w3, #0x1                   	// #1
      30c:	52800042 	mov	w2, #0x2                   	// #2
-     310:	528012e1 	mov	w1, #0x97                  	// #151
+     310:	52801061 	mov	w1, #0x83                  	// #131
      314:	17ffffdf 	b	290 <decrypt_using_private_key+0xbc>
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:154
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:134
      318:	2a1403e2 	mov	w2, w20
      31c:	aa1903e1 	mov	x1, x25
      320:	aa1503e0 	mov	x0, x21
      324:	9400025d 	bl	c98 <TEE_MemMove>
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:158
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:138
      328:	f9402fa0 	ldr	x0, [x29,#88]
      32c:	9101a3a1 	add	x1, x29, #0x68
      330:	940002d1 	bl	e74 <TEE_GetObjectInfo>
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:161
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:141
      334:	52802601 	mov	w1, #0x130                 	// #304
      338:	52810003 	mov	w3, #0x800                 	// #2048
      33c:	52800022 	mov	w2, #0x1                   	// #1
      340:	72ac0001 	movk	w1, #0x6000, lsl #16
      344:	910183a0 	add	x0, x29, #0x60
      348:	940005f6 	bl	1b20 <TEE_AllocateOperation>
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:162
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:142
      34c:	34000200 	cbz	w0, 38c <decrypt_using_private_key+0x1b8>
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:163
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:143
      350:	9104c260 	add	x0, x19, #0x130
      354:	90000064 	adrp	x4, c000 <const_miller_rabin_proof_limit+0x8>
      358:	52800023 	mov	w3, #0x1                   	// #1
      35c:	91092484 	add	x4, x4, #0x249
      360:	52800042 	mov	w2, #0x2                   	// #2
-     364:	52801461 	mov	w1, #0xa3                  	// #163
+     364:	528011e1 	mov	w1, #0x8f                  	// #143
      368:	91002000 	add	x0, x0, #0x8
      36c:	94001bac 	bl	721c <trace_printf>
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:172
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:152
      370:	12800000 	mov	w0, #0xffffffff            	// #-1
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:200
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:180
      374:	a94153f3 	ldp	x19, x20, [sp,#16]
      378:	a9425bf5 	ldp	x21, x22, [sp,#32]
      37c:	a94363f7 	ldp	x23, x24, [sp,#48]
      380:	f94023f9 	ldr	x25, [sp,#64]
      384:	a8cd7bfd 	ldp	x29, x30, [sp],#208
      388:	d65f03c0 	ret
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:168
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:148
      38c:	a94583a1 	ldp	x1, x0, [x29,#88]
      390:	9400086f 	bl	254c <TEE_SetOperationKey>
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:169
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:149
      394:	34000180 	cbz	w0, 3c4 <decrypt_using_private_key+0x1f0>
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:170
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:150
      398:	9104c260 	add	x0, x19, #0x130
      39c:	52800023 	mov	w3, #0x1                   	// #1
      3a0:	52800042 	mov	w2, #0x2                   	// #2
-     3a4:	52801541 	mov	w1, #0xaa                  	// #170
+     3a4:	528012c1 	mov	w1, #0x96                  	// #150
      3a8:	91002000 	add	x0, x0, #0x8
      3ac:	90000064 	adrp	x4, c000 <const_miller_rabin_proof_limit+0x8>
      3b0:	91098484 	add	x4, x4, #0x261
      3b4:	94001b9a 	bl	721c <trace_printf>
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:171
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:151
      3b8:	f94033a0 	ldr	x0, [x29,#96]
      3bc:	940005c8 	bl	1adc <TEE_FreeOperation>
      3c0:	17ffffec 	b	370 <decrypt_using_private_key+0x19c>
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:175
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:155
      3c4:	f94033a0 	ldr	x0, [x29,#96]
      3c8:	2a1403e4 	mov	w4, w20
      3cc:	910153a6 	add	x6, x29, #0x54
@@ -900,399 +899,395 @@ decrypt_using_private_key():
      3dc:	d2800001 	mov	x1, #0x0                   	// #0
      3e0:	94000cf5 	bl	37b4 <TEE_AsymmetricDecrypt>
      3e4:	2a0003f4 	mov	w20, w0
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:176
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:156
      3e8:	129ffde0 	mov	w0, #0xffff0010            	// #-65520
      3ec:	6b00029f 	cmp	w20, w0
      3f0:	54000181 	b.ne	420 <decrypt_using_private_key+0x24c>
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:177
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:157
      3f4:	90000064 	adrp	x4, c000 <const_miller_rabin_proof_limit+0x8>
      3f8:	9104c260 	add	x0, x19, #0x130
      3fc:	9109e084 	add	x4, x4, #0x278
      400:	52800023 	mov	w3, #0x1                   	// #1
      404:	52800042 	mov	w2, #0x2                   	// #2
-     408:	52801621 	mov	w1, #0xb1                  	// #177
+     408:	528013a1 	mov	w1, #0x9d                  	// #157
      40c:	91002000 	add	x0, x0, #0x8
      410:	94001b83 	bl	721c <trace_printf>
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:178
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:158
      414:	f94033a0 	ldr	x0, [x29,#96]
      418:	940005b1 	bl	1adc <TEE_FreeOperation>
      41c:	17ffff9f 	b	298 <decrypt_using_private_key+0xc4>
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:181
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:161
      420:	129fff20 	mov	w0, #0xffff0006            	// #-65530
      424:	6b00029f 	cmp	w20, w0
      428:	54000101 	b.ne	448 <decrypt_using_private_key+0x274>
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:182
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:162
      42c:	90000064 	adrp	x4, c000 <const_miller_rabin_proof_limit+0x8>
      430:	9104c260 	add	x0, x19, #0x130
      434:	910a8884 	add	x4, x4, #0x2a2
      438:	52800023 	mov	w3, #0x1                   	// #1
      43c:	52800042 	mov	w2, #0x2                   	// #2
-     440:	528016c1 	mov	w1, #0xb6                  	// #182
+     440:	52801441 	mov	w1, #0xa2                  	// #162
      444:	17fffff2 	b	40c <decrypt_using_private_key+0x238>
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:188
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:168
      448:	b94057b4 	ldr	w20, [x29,#84]
      44c:	aa1603e1 	mov	x1, x22
      450:	aa1803e0 	mov	x0, x24
      454:	2a1403e2 	mov	w2, w20
      458:	9400180f 	bl	6494 <memcpy>
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:189
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:169
      45c:	b90002f4 	str	w20, [x23]
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:191
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:171
      460:	9104c260 	add	x0, x19, #0x130
      464:	aa1603e5 	mov	x5, x22
      468:	52800023 	mov	w3, #0x1                   	// #1
      46c:	52800042 	mov	w2, #0x2                   	// #2
-     470:	528017e1 	mov	w1, #0xbf                  	// #191
+     470:	52801561 	mov	w1, #0xab                  	// #171
      474:	91002000 	add	x0, x0, #0x8
      478:	90000064 	adrp	x4, c000 <const_miller_rabin_proof_limit+0x8>
      47c:	910b2084 	add	x4, x4, #0x2c8
      480:	94001b67 	bl	721c <trace_printf>
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:194
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:174
      484:	f94033a0 	ldr	x0, [x29,#96]
      488:	94000595 	bl	1adc <TEE_FreeOperation>
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:195
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:175
      48c:	f9402fa0 	ldr	x0, [x29,#88]
      490:	94000342 	bl	1198 <TEE_FreeTransientObject>
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:196
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:176
      494:	aa1503e0 	mov	x0, x21
      498:	9400025d 	bl	e0c <TEE_Free>
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:199
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:179
      49c:	52800000 	mov	w0, #0x0                   	// #0
      4a0:	17ffffb5 	b	374 <decrypt_using_private_key+0x1a0>
 
 00000000000004a4 <encrypt_using_public_key>:
 encrypt_using_public_key():
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:203
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:183
      4a4:	a9b57bfd 	stp	x29, x30, [sp,#-176]!
      4a8:	910003fd 	mov	x29, sp
      4ac:	a90363f7 	stp	x23, x24, [sp,#48]
-     4b0:	aa0003f8 	mov	x24, x0
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:215
-     4b4:	52802600 	mov	w0, #0x130                 	// #304
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:203
-     4b8:	2a0103f7 	mov	w23, w1
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:215
-     4bc:	72ba0000 	movk	w0, #0xd000, lsl #16
-     4c0:	b90083a0 	str	w0, [x29,#128]
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:216
-     4c4:	d0000060 	adrp	x0, e000 <modulus_dbstore>
-     4c8:	91000000 	add	x0, x0, #0x0
-     4cc:	91086001 	add	x1, x0, #0x218
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:220
-     4d0:	91042000 	add	x0, x0, #0x108
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:216
-     4d4:	f90047a1 	str	x1, [x29,#136]
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:219
-     4d8:	52804601 	mov	w1, #0x230                 	// #560
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:220
-     4dc:	f90053a0 	str	x0, [x29,#160]
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:221
-     4e0:	52800060 	mov	w0, #0x3                   	// #3
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:219
-     4e4:	72ba0001 	movk	w1, #0xd000, lsl #16
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:221
-     4e8:	b900aba0 	str	w0, [x29,#168]
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:224
-     4ec:	52800600 	mov	w0, #0x30                  	// #48
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:203
-     4f0:	a9025bf5 	stp	x21, x22, [sp,#32]
-     4f4:	a90153f3 	stp	x19, x20, [sp,#16]
-     4f8:	aa0203f5 	mov	x21, x2
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:209
-     4fc:	52802013 	mov	w19, #0x100                 	// #256
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:219
-     500:	b9009ba1 	str	w1, [x29,#152]
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:203
-     504:	aa0303f6 	mov	x22, x3
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:224
-     508:	910143a2 	add	x2, x29, #0x50
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:209
-     50c:	b9004fb3 	str	w19, [x29,#76]
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:224
+     4b0:	aa0103f8 	mov	x24, x1
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:196
+     4b4:	52802601 	mov	w1, #0x130                 	// #304
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:183
+     4b8:	a9025bf5 	stp	x21, x22, [sp,#32]
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:197
+     4bc:	f90047a0 	str	x0, [x29,#136]
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:200
+     4c0:	52804600 	mov	w0, #0x230                 	// #560
+     4c4:	72ba0000 	movk	w0, #0xd000, lsl #16
+     4c8:	b9009ba0 	str	w0, [x29,#152]
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:201
+     4cc:	d0000060 	adrp	x0, e000 <modulus_dbstore>
+     4d0:	91000000 	add	x0, x0, #0x0
+     4d4:	91042000 	add	x0, x0, #0x108
+     4d8:	f90053a0 	str	x0, [x29,#160]
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:202
+     4dc:	52800060 	mov	w0, #0x3                   	// #3
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:196
+     4e0:	72ba0001 	movk	w1, #0xd000, lsl #16
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:202
+     4e4:	b900aba0 	str	w0, [x29,#168]
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:205
+     4e8:	52800600 	mov	w0, #0x30                  	// #48
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:183
+     4ec:	a90153f3 	stp	x19, x20, [sp,#16]
+     4f0:	2a0203f7 	mov	w23, w2
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:189
+     4f4:	52802013 	mov	w19, #0x100                 	// #256
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:196
+     4f8:	b90083a1 	str	w1, [x29,#128]
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:183
+     4fc:	aa0303f5 	mov	x21, x3
+     500:	aa0403f6 	mov	x22, x4
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:205
+     504:	910143a2 	add	x2, x29, #0x50
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:189
+     508:	b9004fb3 	str	w19, [x29,#76]
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:192
+     50c:	a9057fbf 	stp	xzr, xzr, [x29,#80]
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:205
      510:	52810001 	mov	w1, #0x800                 	// #2048
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:212
-     514:	a9057fbf 	stp	xzr, xzr, [x29,#80]
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:224
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:198
+     514:	b90093b3 	str	w19, [x29,#144]
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:205
      518:	72b40000 	movk	w0, #0xa000, lsl #16
+     51c:	94000306 	bl	1134 <TEE_AllocateTransientObject>
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:206
+     520:	34000060 	cbz	w0, 52c <encrypt_using_public_key+0x88>
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:245
+     524:	129fff21 	mov	w1, #0xffff0006            	// #-65530
+     528:	14000026 	b	5c0 <encrypt_using_public_key+0x11c>
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:211
+     52c:	f9402ba0 	ldr	x0, [x29,#80]
+     530:	52800042 	mov	w2, #0x2                   	// #2
+     534:	910203a1 	add	x1, x29, #0x80
+     538:	94000342 	bl	1240 <TEE_PopulateTransientObject>
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:212
+     53c:	35ffff40 	cbnz	w0, 524 <encrypt_using_public_key+0x80>
 /home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:217
-     51c:	b90093b3 	str	w19, [x29,#144]
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:224
-     520:	94000305 	bl	1134 <TEE_AllocateTransientObject>
+     540:	52800001 	mov	w1, #0x0                   	// #0
+     544:	2a1303e0 	mov	w0, w19
+     548:	9400022d 	bl	dfc <TEE_Malloc>
+     54c:	aa0003f3 	mov	x19, x0
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:218
+     550:	b9404fa0 	ldr	w0, [x29,#76]
+     554:	52800001 	mov	w1, #0x0                   	// #0
+     558:	94000229 	bl	dfc <TEE_Malloc>
+     55c:	aa0003f4 	mov	x20, x0
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:219
+     560:	f100027f 	cmp	x19, #0x0
+     564:	fa401804 	ccmp	x0, #0x0, #0x4, ne
+     568:	54fffde0 	b.eq	524 <encrypt_using_public_key+0x80>
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:222
+     56c:	2a1703e2 	mov	w2, w23
+     570:	aa1803e1 	mov	x1, x24
+     574:	aa1303e0 	mov	x0, x19
+     578:	940001c8 	bl	c98 <TEE_MemMove>
 /home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:225
-     524:	34000060 	cbz	w0, 530 <encrypt_using_public_key+0x8c>
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:264
-     528:	129fff21 	mov	w1, #0xffff0006            	// #-65530
-     52c:	14000026 	b	5c4 <encrypt_using_public_key+0x120>
+     57c:	f9402ba0 	ldr	x0, [x29,#80]
+     580:	910183a1 	add	x1, x29, #0x60
+     584:	9400023c 	bl	e74 <TEE_GetObjectInfo>
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:228
+     588:	52802601 	mov	w1, #0x130                 	// #304
+     58c:	52810003 	mov	w3, #0x800                 	// #2048
+     590:	72ac0001 	movk	w1, #0x6000, lsl #16
+     594:	52800002 	mov	w2, #0x0                   	// #0
+     598:	910163a0 	add	x0, x29, #0x58
+     59c:	94000561 	bl	1b20 <TEE_AllocateOperation>
 /home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:230
-     530:	f9402ba0 	ldr	x0, [x29,#80]
-     534:	52800042 	mov	w2, #0x2                   	// #2
-     538:	910203a1 	add	x1, x29, #0x80
-     53c:	94000341 	bl	1240 <TEE_PopulateTransientObject>
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:231
-     540:	35ffff40 	cbnz	w0, 528 <encrypt_using_public_key+0x84>
+     5a0:	12800001 	mov	w1, #0xffffffff            	// #-1
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:229
+     5a4:	350000e0 	cbnz	w0, 5c0 <encrypt_using_public_key+0x11c>
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:234
+     5a8:	a94503a1 	ldp	x1, x0, [x29,#80]
+     5ac:	940007e8 	bl	254c <TEE_SetOperationKey>
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:235
+     5b0:	34000140 	cbz	w0, 5d8 <encrypt_using_public_key+0x134>
 /home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:236
-     544:	52800001 	mov	w1, #0x0                   	// #0
-     548:	2a1303e0 	mov	w0, w19
-     54c:	9400022c 	bl	dfc <TEE_Malloc>
-     550:	aa0003f3 	mov	x19, x0
+     5b4:	f9402fa0 	ldr	x0, [x29,#88]
+     5b8:	94000549 	bl	1adc <TEE_FreeOperation>
 /home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:237
-     554:	b9404fa0 	ldr	w0, [x29,#76]
-     558:	52800001 	mov	w1, #0x0                   	// #0
-     55c:	94000228 	bl	dfc <TEE_Malloc>
-     560:	aa0003f4 	mov	x20, x0
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:238
-     564:	f100027f 	cmp	x19, #0x0
-     568:	fa401804 	ccmp	x0, #0x0, #0x4, ne
-     56c:	54fffde0 	b.eq	528 <encrypt_using_public_key+0x84>
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:241
-     570:	2a1703e2 	mov	w2, w23
-     574:	aa1803e1 	mov	x1, x24
-     578:	aa1303e0 	mov	x0, x19
-     57c:	940001c7 	bl	c98 <TEE_MemMove>
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:244
-     580:	f9402ba0 	ldr	x0, [x29,#80]
-     584:	910183a1 	add	x1, x29, #0x60
-     588:	9400023b 	bl	e74 <TEE_GetObjectInfo>
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:247
-     58c:	52802601 	mov	w1, #0x130                 	// #304
-     590:	52810003 	mov	w3, #0x800                 	// #2048
-     594:	72ac0001 	movk	w1, #0x6000, lsl #16
-     598:	52800002 	mov	w2, #0x0                   	// #0
-     59c:	910163a0 	add	x0, x29, #0x58
-     5a0:	94000560 	bl	1b20 <TEE_AllocateOperation>
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:249
-     5a4:	12800001 	mov	w1, #0xffffffff            	// #-1
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:248
-     5a8:	350000e0 	cbnz	w0, 5c4 <encrypt_using_public_key+0x120>
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:253
-     5ac:	a94503a1 	ldp	x1, x0, [x29,#80]
-     5b0:	940007e7 	bl	254c <TEE_SetOperationKey>
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:254
-     5b4:	34000140 	cbz	w0, 5dc <encrypt_using_public_key+0x138>
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:255
-     5b8:	f9402fa0 	ldr	x0, [x29,#88]
-     5bc:	94000548 	bl	1adc <TEE_FreeOperation>
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:256
-     5c0:	12800001 	mov	w1, #0xffffffff            	// #-1
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:285
-     5c4:	a94153f3 	ldp	x19, x20, [sp,#16]
-     5c8:	2a0103e0 	mov	w0, w1
-     5cc:	a9425bf5 	ldp	x21, x22, [sp,#32]
-     5d0:	a94363f7 	ldp	x23, x24, [sp,#48]
-     5d4:	a8cb7bfd 	ldp	x29, x30, [sp],#176
-     5d8:	d65f03c0 	ret
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:260
-     5dc:	f9402fa0 	ldr	x0, [x29,#88]
-     5e0:	aa1303e3 	mov	x3, x19
-     5e4:	910133a6 	add	x6, x29, #0x4c
-     5e8:	aa1403e5 	mov	x5, x20
-     5ec:	2a1703e4 	mov	w4, w23
-     5f0:	52800002 	mov	w2, #0x0                   	// #0
-     5f4:	d2800001 	mov	x1, #0x0                   	// #0
-     5f8:	94000c1e 	bl	3670 <TEE_AsymmetricEncrypt>
-     5fc:	2a0003f3 	mov	w19, w0
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:261
-     600:	129ffde0 	mov	w0, #0xffff0010            	// #-65520
-     604:	6b00027f 	cmp	w19, w0
-     608:	540001a1 	b.ne	63c <encrypt_using_public_key+0x198>
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:262
-     60c:	90000064 	adrp	x4, c000 <const_miller_rabin_proof_limit+0x8>
-     610:	9109e084 	add	x4, x4, #0x278
-     614:	52800023 	mov	w3, #0x1                   	// #1
-     618:	52800042 	mov	w2, #0x2                   	// #2
-     61c:	528020c1 	mov	w1, #0x106                 	// #262
-     620:	f0000040 	adrp	x0, b000 <mpa_mul_mod+0x68>
-     624:	9104c000 	add	x0, x0, #0x130
-     628:	9100a000 	add	x0, x0, #0x28
-     62c:	94001afc 	bl	721c <trace_printf>
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:263
-     630:	f9402fa0 	ldr	x0, [x29,#88]
-     634:	9400052a 	bl	1adc <TEE_FreeOperation>
-     638:	17ffffbc 	b	528 <encrypt_using_public_key+0x84>
+     5bc:	12800001 	mov	w1, #0xffffffff            	// #-1
 /home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:266
-     63c:	129fff20 	mov	w0, #0xffff0006            	// #-65530
-     640:	6b00027f 	cmp	w19, w0
-     644:	540000e1 	b.ne	660 <encrypt_using_public_key+0x1bc>
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:267
-     648:	90000064 	adrp	x4, c000 <const_miller_rabin_proof_limit+0x8>
-     64c:	52800023 	mov	w3, #0x1                   	// #1
-     650:	910a8884 	add	x4, x4, #0x2a2
-     654:	52800042 	mov	w2, #0x2                   	// #2
-     658:	52802161 	mov	w1, #0x10b                 	// #267
-     65c:	17fffff1 	b	620 <encrypt_using_public_key+0x17c>
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:273
-     660:	b9404fb7 	ldr	w23, [x29,#76]
-     664:	aa1403e1 	mov	x1, x20
-     668:	aa1503e0 	mov	x0, x21
-     66c:	2a1703f3 	mov	w19, w23
-     670:	aa1303e2 	mov	x2, x19
-     674:	94001788 	bl	6494 <memcpy>
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:278
-     678:	f9402fa0 	ldr	x0, [x29,#88]
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:274
-     67c:	b90002d7 	str	w23, [x22]
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:275
-     680:	38336abf 	strb	wzr, [x21,x19]
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:278
-     684:	94000516 	bl	1adc <TEE_FreeOperation>
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:279
-     688:	f9402ba0 	ldr	x0, [x29,#80]
-     68c:	940002c3 	bl	1198 <TEE_FreeTransientObject>
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:280
-     690:	aa1403e0 	mov	x0, x20
-     694:	940001de 	bl	e0c <TEE_Free>
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:284
-     698:	52800001 	mov	w1, #0x0                   	// #0
-     69c:	17ffffca 	b	5c4 <encrypt_using_public_key+0x120>
+     5c0:	a94153f3 	ldp	x19, x20, [sp,#16]
+     5c4:	2a0103e0 	mov	w0, w1
+     5c8:	a9425bf5 	ldp	x21, x22, [sp,#32]
+     5cc:	a94363f7 	ldp	x23, x24, [sp,#48]
+     5d0:	a8cb7bfd 	ldp	x29, x30, [sp],#176
+     5d4:	d65f03c0 	ret
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:241
+     5d8:	f9402fa0 	ldr	x0, [x29,#88]
+     5dc:	aa1303e3 	mov	x3, x19
+     5e0:	910133a6 	add	x6, x29, #0x4c
+     5e4:	aa1403e5 	mov	x5, x20
+     5e8:	2a1703e4 	mov	w4, w23
+     5ec:	52800002 	mov	w2, #0x0                   	// #0
+     5f0:	d2800001 	mov	x1, #0x0                   	// #0
+     5f4:	94000c1f 	bl	3670 <TEE_AsymmetricEncrypt>
+     5f8:	2a0003f3 	mov	w19, w0
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:242
+     5fc:	129ffde0 	mov	w0, #0xffff0010            	// #-65520
+     600:	6b00027f 	cmp	w19, w0
+     604:	540001a1 	b.ne	638 <encrypt_using_public_key+0x194>
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:243
+     608:	90000064 	adrp	x4, c000 <const_miller_rabin_proof_limit+0x8>
+     60c:	9109e084 	add	x4, x4, #0x278
+     610:	52800023 	mov	w3, #0x1                   	// #1
+     614:	52800042 	mov	w2, #0x2                   	// #2
+     618:	52801e61 	mov	w1, #0xf3                  	// #243
+     61c:	f0000040 	adrp	x0, b000 <mpa_mul_mod+0x68>
+     620:	9104c000 	add	x0, x0, #0x130
+     624:	9100a000 	add	x0, x0, #0x28
+     628:	94001afd 	bl	721c <trace_printf>
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:244
+     62c:	f9402fa0 	ldr	x0, [x29,#88]
+     630:	9400052b 	bl	1adc <TEE_FreeOperation>
+     634:	17ffffbc 	b	524 <encrypt_using_public_key+0x80>
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:247
+     638:	129fff20 	mov	w0, #0xffff0006            	// #-65530
+     63c:	6b00027f 	cmp	w19, w0
+     640:	540000e1 	b.ne	65c <encrypt_using_public_key+0x1b8>
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:248
+     644:	90000064 	adrp	x4, c000 <const_miller_rabin_proof_limit+0x8>
+     648:	52800023 	mov	w3, #0x1                   	// #1
+     64c:	910a8884 	add	x4, x4, #0x2a2
+     650:	52800042 	mov	w2, #0x2                   	// #2
+     654:	52801f01 	mov	w1, #0xf8                  	// #248
+     658:	17fffff1 	b	61c <encrypt_using_public_key+0x178>
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:254
+     65c:	b9404fb7 	ldr	w23, [x29,#76]
+     660:	aa1403e1 	mov	x1, x20
+     664:	aa1503e0 	mov	x0, x21
+     668:	2a1703f3 	mov	w19, w23
+     66c:	aa1303e2 	mov	x2, x19
+     670:	94001789 	bl	6494 <memcpy>
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:259
+     674:	f9402fa0 	ldr	x0, [x29,#88]
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:255
+     678:	b90002d7 	str	w23, [x22]
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:256
+     67c:	38336abf 	strb	wzr, [x21,x19]
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:259
+     680:	94000517 	bl	1adc <TEE_FreeOperation>
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:260
+     684:	f9402ba0 	ldr	x0, [x29,#80]
+     688:	940002c4 	bl	1198 <TEE_FreeTransientObject>
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:261
+     68c:	aa1403e0 	mov	x0, x20
+     690:	940001df 	bl	e0c <TEE_Free>
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:265
+     694:	52800001 	mov	w1, #0x0                   	// #0
+     698:	17ffffca 	b	5c0 <encrypt_using_public_key+0x11c>
 
-00000000000006a0 <init>:
+000000000000069c <init>:
 init():
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:349
-     6a0:	d10983ff 	sub	sp, sp, #0x260
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:330
+     69c:	d10983ff 	sub	sp, sp, #0x260
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:340
+     6a0:	d2802002 	mov	x2, #0x100                 	// #256
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:330
+     6a4:	a9007bfd 	stp	x29, x30, [sp]
+     6a8:	910003fd 	mov	x29, sp
+     6ac:	a90363f7 	stp	x23, x24, [sp,#48]
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:340
+     6b0:	910183b8 	add	x24, x29, #0x60
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:330
+     6b4:	a90153f3 	stp	x19, x20, [sp,#16]
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:342
+     6b8:	910583b7 	add	x23, x29, #0x160
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:330
+     6bc:	a9025bf5 	stp	x21, x22, [sp,#32]
+     6c0:	aa0103f4 	mov	x20, x1
+     6c4:	2a0003f6 	mov	w22, w0
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:340
+     6c8:	52800001 	mov	w1, #0x0                   	// #0
+     6cc:	aa1803e0 	mov	x0, x24
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:354
+     6d0:	f0000053 	adrp	x19, b000 <mpa_mul_mod+0x68>
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:340
+     6d4:	9400178b 	bl	6500 <memset>
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:354
+     6d8:	9104c275 	add	x21, x19, #0x130
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:342
+     6dc:	d2802002 	mov	x2, #0x100                 	// #256
+     6e0:	52800001 	mov	w1, #0x0                   	// #0
+     6e4:	aa1703e0 	mov	x0, x23
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:354
+     6e8:	910122b5 	add	x21, x21, #0x48
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:342
+     6ec:	94001785 	bl	6500 <memset>
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:350
+     6f0:	b90057bf 	str	wzr, [x29,#84]
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:354
+     6f4:	90000064 	adrp	x4, c000 <const_miller_rabin_proof_limit+0x8>
+     6f8:	52800023 	mov	w3, #0x1                   	// #1
+     6fc:	91048c84 	add	x4, x4, #0x123
+     700:	52800062 	mov	w2, #0x3                   	// #3
+     704:	52802c41 	mov	w1, #0x162                 	// #354
+     708:	aa1503e0 	mov	x0, x21
+     70c:	94001ac4 	bl	721c <trace_printf>
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:356
+     710:	710156df 	cmp	w22, #0x55
+     714:	54000120 	b.eq	738 <init+0x9c>
 /home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:359
-     6a4:	d2802002 	mov	x2, #0x100                 	// #256
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:349
-     6a8:	a9007bfd 	stp	x29, x30, [sp]
-     6ac:	910003fd 	mov	x29, sp
-     6b0:	a90363f7 	stp	x23, x24, [sp,#48]
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:359
-     6b4:	910183b8 	add	x24, x29, #0x60
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:349
-     6b8:	a90153f3 	stp	x19, x20, [sp,#16]
+     718:	f9400285 	ldr	x5, [x20]
+     71c:	90000064 	adrp	x4, c000 <const_miller_rabin_proof_limit+0x8>
+     720:	52800023 	mov	w3, #0x1                   	// #1
+     724:	910b7484 	add	x4, x4, #0x2dd
+     728:	52800042 	mov	w2, #0x2                   	// #2
+     72c:	52802ce1 	mov	w1, #0x167                 	// #359
+     730:	aa1503e0 	mov	x0, x21
+     734:	94001aba 	bl	721c <trace_printf>
 /home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:361
-     6bc:	910583b7 	add	x23, x29, #0x160
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:349
-     6c0:	a9025bf5 	stp	x21, x22, [sp,#32]
-     6c4:	aa0103f4 	mov	x20, x1
-     6c8:	2a0003f6 	mov	w22, w0
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:359
-     6cc:	52800001 	mov	w1, #0x0                   	// #0
-     6d0:	aa1803e0 	mov	x0, x24
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:373
-     6d4:	f0000053 	adrp	x19, b000 <mpa_mul_mod+0x68>
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:359
-     6d8:	9400178a 	bl	6500 <memset>
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:373
-     6dc:	9104c275 	add	x21, x19, #0x130
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:361
-     6e0:	d2802002 	mov	x2, #0x100                 	// #256
-     6e4:	52800001 	mov	w1, #0x0                   	// #0
-     6e8:	aa1703e0 	mov	x0, x23
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:373
-     6ec:	910122b5 	add	x21, x21, #0x48
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:361
-     6f0:	94001784 	bl	6500 <memset>
+     738:	9104c276 	add	x22, x19, #0x130
+     73c:	52800023 	mov	w3, #0x1                   	// #1
+     740:	910122d6 	add	x22, x22, #0x48
+     744:	52800042 	mov	w2, #0x2                   	// #2
+     748:	52802d21 	mov	w1, #0x169                 	// #361
+     74c:	aa1603e0 	mov	x0, x22
+     750:	90000064 	adrp	x4, c000 <const_miller_rabin_proof_limit+0x8>
+     754:	910be484 	add	x4, x4, #0x2f9
+     758:	94001ab1 	bl	721c <trace_printf>
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:363
+     75c:	90000075 	adrp	x21, c000 <const_miller_rabin_proof_limit+0x8>
+     760:	910163a7 	add	x7, x29, #0x58
+     764:	528000c6 	mov	w6, #0x6                   	// #6
+     768:	910c8aa5 	add	x5, x21, #0x322
+     76c:	d2800004 	mov	x4, #0x0                   	// #0
+     770:	52800043 	mov	w3, #0x2                   	// #2
+     774:	52800082 	mov	w2, #0x4                   	// #4
+     778:	910153a1 	add	x1, x29, #0x54
+     77c:	52800020 	mov	w0, #0x1                   	// #1
+     780:	94000390 	bl	15c0 <TEE_CreatePersistentObject>
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:365
+     784:	34000100 	cbz	w0, 7a4 <init+0x108>
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:367
+     788:	90000064 	adrp	x4, c000 <const_miller_rabin_proof_limit+0x8>
+     78c:	52800023 	mov	w3, #0x1                   	// #1
+     790:	910ca084 	add	x4, x4, #0x328
+     794:	52800042 	mov	w2, #0x2                   	// #2
+     798:	52802de1 	mov	w1, #0x16f                 	// #367
+     79c:	aa1603e0 	mov	x0, x22
+     7a0:	94001a9f 	bl	721c <trace_printf>
 /home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:369
-     6f4:	b90057bf 	str	wzr, [x29,#84]
+     7a4:	f9402fa0 	ldr	x0, [x29,#88]
 /home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:373
-     6f8:	90000064 	adrp	x4, c000 <const_miller_rabin_proof_limit+0x8>
-     6fc:	52800023 	mov	w3, #0x1                   	// #1
-     700:	91048c84 	add	x4, x4, #0x123
-     704:	52800062 	mov	w2, #0x3                   	// #3
-     708:	52802ea1 	mov	w1, #0x175                 	// #373
-     70c:	aa1503e0 	mov	x0, x21
-     710:	94001ac3 	bl	721c <trace_printf>
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:375
-     714:	710156df 	cmp	w22, #0x55
-     718:	54000120 	b.eq	73c <init+0x9c>
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:378
-     71c:	f9400285 	ldr	x5, [x20]
-     720:	90000064 	adrp	x4, c000 <const_miller_rabin_proof_limit+0x8>
-     724:	52800023 	mov	w3, #0x1                   	// #1
-     728:	910b7484 	add	x4, x4, #0x2dd
-     72c:	52800042 	mov	w2, #0x2                   	// #2
-     730:	52802f41 	mov	w1, #0x17a                 	// #378
-     734:	aa1503e0 	mov	x0, x21
-     738:	94001ab9 	bl	721c <trace_printf>
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:380
-     73c:	9104c276 	add	x22, x19, #0x130
-     740:	52800023 	mov	w3, #0x1                   	// #1
-     744:	910122d6 	add	x22, x22, #0x48
-     748:	52800042 	mov	w2, #0x2                   	// #2
-     74c:	52802f81 	mov	w1, #0x17c                 	// #380
-     750:	aa1603e0 	mov	x0, x22
-     754:	90000064 	adrp	x4, c000 <const_miller_rabin_proof_limit+0x8>
-     758:	910be484 	add	x4, x4, #0x2f9
-     75c:	94001ab0 	bl	721c <trace_printf>
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:382
-     760:	90000075 	adrp	x21, c000 <const_miller_rabin_proof_limit+0x8>
-     764:	910163a7 	add	x7, x29, #0x58
-     768:	528000c6 	mov	w6, #0x6                   	// #6
-     76c:	910c8aa5 	add	x5, x21, #0x322
-     770:	d2800004 	mov	x4, #0x0                   	// #0
-     774:	52800043 	mov	w3, #0x2                   	// #2
-     778:	52800082 	mov	w2, #0x4                   	// #4
-     77c:	910153a1 	add	x1, x29, #0x54
-     780:	52800020 	mov	w0, #0x1                   	// #1
-     784:	9400038f 	bl	15c0 <TEE_CreatePersistentObject>
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:384
-     788:	34000100 	cbz	w0, 7a8 <init+0x108>
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:386
-     78c:	90000064 	adrp	x4, c000 <const_miller_rabin_proof_limit+0x8>
-     790:	52800023 	mov	w3, #0x1                   	// #1
-     794:	910ca084 	add	x4, x4, #0x328
-     798:	52800042 	mov	w2, #0x2                   	// #2
-     79c:	52803041 	mov	w1, #0x182                 	// #386
-     7a0:	aa1603e0 	mov	x0, x22
-     7a4:	94001a9e 	bl	721c <trace_printf>
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:388
-     7a8:	f9402fa0 	ldr	x0, [x29,#88]
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:392
-     7ac:	9104c273 	add	x19, x19, #0x130
-     7b0:	91012273 	add	x19, x19, #0x48
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:388
-     7b4:	94000256 	bl	110c <TEE_CloseObject>
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:390
-     7b8:	b9402a81 	ldr	w1, [x20,#40]
-     7bc:	910133a3 	add	x3, x29, #0x4c
-     7c0:	f9401280 	ldr	x0, [x20,#32]
-     7c4:	aa1803e2 	mov	x2, x24
-     7c8:	97fffe83 	bl	1d4 <decrypt_using_private_key>
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:392
-     7cc:	aa1803e5 	mov	x5, x24
-     7d0:	aa1303e0 	mov	x0, x19
-     7d4:	52800023 	mov	w3, #0x1                   	// #1
-     7d8:	52800042 	mov	w2, #0x2                   	// #2
-     7dc:	52803101 	mov	w1, #0x188                 	// #392
-     7e0:	90000064 	adrp	x4, c000 <const_miller_rabin_proof_limit+0x8>
-     7e4:	910d0884 	add	x4, x4, #0x342
-     7e8:	94001a8d 	bl	721c <trace_printf>
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:395
-     7ec:	910143a3 	add	x3, x29, #0x50
-     7f0:	aa1703e2 	mov	x2, x23
-     7f4:	528000a1 	mov	w1, #0x5                   	// #5
-     7f8:	910c8aa0 	add	x0, x21, #0x322
+     7a8:	9104c273 	add	x19, x19, #0x130
+     7ac:	91012273 	add	x19, x19, #0x48
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:369
+     7b0:	94000257 	bl	110c <TEE_CloseObject>
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:371
+     7b4:	b9402a81 	ldr	w1, [x20,#40]
+     7b8:	910133a3 	add	x3, x29, #0x4c
+     7bc:	f9401280 	ldr	x0, [x20,#32]
+     7c0:	aa1803e2 	mov	x2, x24
+     7c4:	97fffe84 	bl	1d4 <decrypt_using_private_key>
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:373
+     7c8:	aa1803e5 	mov	x5, x24
+     7cc:	aa1303e0 	mov	x0, x19
+     7d0:	52800023 	mov	w3, #0x1                   	// #1
+     7d4:	52800042 	mov	w2, #0x2                   	// #2
+     7d8:	52802ea1 	mov	w1, #0x175                 	// #373
+     7dc:	90000064 	adrp	x4, c000 <const_miller_rabin_proof_limit+0x8>
+     7e0:	910d0884 	add	x4, x4, #0x342
+     7e4:	94001a8e 	bl	721c <trace_printf>
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:376
+     7e8:	f9400a80 	ldr	x0, [x20,#16]
+     7ec:	910143a4 	add	x4, x29, #0x50
+     7f0:	aa1703e3 	mov	x3, x23
+     7f4:	528000a2 	mov	w2, #0x5                   	// #5
+     7f8:	910c8aa1 	add	x1, x21, #0x322
      7fc:	97ffff2a 	bl	4a4 <encrypt_using_public_key>
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:399
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:380
      800:	52800001 	mov	w1, #0x0                   	// #0
      804:	528000e0 	mov	w0, #0x7                   	// #7
      808:	9400017d 	bl	dfc <TEE_Malloc>
      80c:	aa0003f5 	mov	x21, x0
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:400
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:381
      810:	528000e2 	mov	w2, #0x7                   	// #7
      814:	90000061 	adrp	x1, c000 <const_miller_rabin_proof_limit+0x8>
      818:	9106b821 	add	x1, x1, #0x1ae
      81c:	9400011f 	bl	c98 <TEE_MemMove>
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:401
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:382
      820:	f9400280 	ldr	x0, [x20]
      824:	aa1503e1 	mov	x1, x21
      828:	528000e2 	mov	w2, #0x7                   	// #7
      82c:	9400011b 	bl	c98 <TEE_MemMove>
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:403
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:384
      830:	f9400a80 	ldr	x0, [x20,#16]
      834:	aa1703e1 	mov	x1, x23
      838:	52802002 	mov	w2, #0x100                 	// #256
      83c:	94000117 	bl	c98 <TEE_MemMove>
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:411
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:392
      840:	f9400285 	ldr	x5, [x20]
      844:	aa1303e0 	mov	x0, x19
      848:	52800023 	mov	w3, #0x1                   	// #1
      84c:	52800042 	mov	w2, #0x2                   	// #2
-     850:	52803381 	mov	w1, #0x19c                 	// #412
+     850:	52803121 	mov	w1, #0x189                 	// #393
      854:	90000064 	adrp	x4, c000 <const_miller_rabin_proof_limit+0x8>
      858:	910d7c84 	add	x4, x4, #0x35f
      85c:	94001a70 	bl	721c <trace_printf>
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:415
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:396
      860:	a9407bfd 	ldp	x29, x30, [sp]
      864:	52800000 	mov	w0, #0x0                   	// #0
      868:	a94153f3 	ldp	x19, x20, [sp,#16]
@@ -1303,109 +1298,109 @@ init():
 
 000000000000087c <TA_CreateEntryPoint>:
 TA_CreateEntryPoint():
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:288
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:269
      87c:	a9bf7bfd 	stp	x29, x30, [sp,#-16]!
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:289
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:270
      880:	f0000040 	adrp	x0, b000 <mpa_mul_mod+0x68>
      884:	9104c000 	add	x0, x0, #0x130
      888:	52800023 	mov	w3, #0x1                   	// #1
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:288
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:269
      88c:	910003fd 	mov	x29, sp
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:289
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:270
      890:	52800062 	mov	w2, #0x3                   	// #3
-     894:	52802421 	mov	w1, #0x121                 	// #289
+     894:	528021c1 	mov	w1, #0x10e                 	// #270
      898:	91014000 	add	x0, x0, #0x50
      89c:	90000064 	adrp	x4, c000 <const_miller_rabin_proof_limit+0x8>
      8a0:	91048c84 	add	x4, x4, #0x123
      8a4:	94001a5e 	bl	721c <trace_printf>
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:292
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:273
      8a8:	52800000 	mov	w0, #0x0                   	// #0
      8ac:	a8c17bfd 	ldp	x29, x30, [sp],#16
      8b0:	d65f03c0 	ret
 
 00000000000008b4 <TA_DestroyEntryPoint>:
 TA_DestroyEntryPoint():
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:300
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:281
      8b4:	f0000040 	adrp	x0, b000 <mpa_mul_mod+0x68>
      8b8:	9104c000 	add	x0, x0, #0x130
      8bc:	90000064 	adrp	x4, c000 <const_miller_rabin_proof_limit+0x8>
      8c0:	52800023 	mov	w3, #0x1                   	// #1
      8c4:	91048c84 	add	x4, x4, #0x123
      8c8:	52800062 	mov	w2, #0x3                   	// #3
-     8cc:	52802581 	mov	w1, #0x12c                 	// #300
+     8cc:	52802321 	mov	w1, #0x119                 	// #281
      8d0:	9101a000 	add	x0, x0, #0x68
      8d4:	14001a52 	b	721c <trace_printf>
 
 00000000000008d8 <TA_OpenSessionEntryPoint>:
 TA_OpenSessionEntryPoint():
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:312
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:293
      8d8:	a9be7bfd 	stp	x29, x30, [sp,#-32]!
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:318
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:299
      8dc:	90000064 	adrp	x4, c000 <const_miller_rabin_proof_limit+0x8>
      8e0:	52800023 	mov	w3, #0x1                   	// #1
      8e4:	91048c84 	add	x4, x4, #0x123
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:312
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:293
      8e8:	910003fd 	mov	x29, sp
      8ec:	a90153f3 	stp	x19, x20, [sp,#16]
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:318
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:299
      8f0:	f0000053 	adrp	x19, b000 <mpa_mul_mod+0x68>
      8f4:	9104c273 	add	x19, x19, #0x130
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:312
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:293
      8f8:	2a0003f4 	mov	w20, w0
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:318
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:299
      8fc:	91020273 	add	x19, x19, #0x80
      900:	52800062 	mov	w2, #0x3                   	// #3
      904:	aa1303e0 	mov	x0, x19
-     908:	528027c1 	mov	w1, #0x13e                 	// #318
+     908:	52802561 	mov	w1, #0x12b                 	// #299
      90c:	94001a44 	bl	721c <trace_printf>
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:321
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:302
      910:	129fff20 	mov	w0, #0xffff0006            	// #-65530
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:320
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:301
      914:	35000134 	cbnz	w20, 938 <TA_OpenSessionEntryPoint+0x60>
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:331
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:312
      918:	aa1303e0 	mov	x0, x19
      91c:	90000064 	adrp	x4, c000 <const_miller_rabin_proof_limit+0x8>
      920:	52800023 	mov	w3, #0x1                   	// #1
      924:	910dfc84 	add	x4, x4, #0x37f
      928:	52800042 	mov	w2, #0x2                   	// #2
-     92c:	52802961 	mov	w1, #0x14b                 	// #331
+     92c:	52802701 	mov	w1, #0x138                 	// #312
      930:	94001a3b 	bl	721c <trace_printf>
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:334
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:315
      934:	52800000 	mov	w0, #0x0                   	// #0
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:335
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:316
      938:	a94153f3 	ldp	x19, x20, [sp,#16]
      93c:	a8c27bfd 	ldp	x29, x30, [sp],#32
      940:	d65f03c0 	ret
 
 0000000000000944 <TA_CloseSessionEntryPoint>:
 TA_CloseSessionEntryPoint():
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:344
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:325
      944:	f0000040 	adrp	x0, b000 <mpa_mul_mod+0x68>
      948:	9104c000 	add	x0, x0, #0x130
      94c:	90000064 	adrp	x4, c000 <const_miller_rabin_proof_limit+0x8>
      950:	52800023 	mov	w3, #0x1                   	// #1
      954:	910e8884 	add	x4, x4, #0x3a2
      958:	52800042 	mov	w2, #0x2                   	// #2
-     95c:	52802b01 	mov	w1, #0x158                 	// #344
+     95c:	528028a1 	mov	w1, #0x145                 	// #325
      960:	91028000 	add	x0, x0, #0xa0
      964:	14001a2e 	b	721c <trace_printf>
 
 0000000000000968 <TA_InvokeCommandEntryPoint>:
 TA_InvokeCommandEntryPoint():
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:496
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:477
      968:	2a0103e4 	mov	w4, w1
      96c:	2a0203e0 	mov	w0, w2
      970:	aa0303e1 	mov	x1, x3
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:499
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:480
      974:	340000a4 	cbz	w4, 988 <TA_InvokeCommandEntryPoint+0x20>
      978:	7100049f 	cmp	w4, #0x1
      97c:	54000080 	b.eq	98c <TA_InvokeCommandEntryPoint+0x24>
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:507
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:488
      980:	129fff20 	mov	w0, #0xffff0006            	// #-65530
      984:	d65f03c0 	ret
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:501
-     988:	17ffff46 	b	6a0 <init>
-/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:503
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:482
+     988:	17ffff45 	b	69c <init>
+/home/pedro/devel/optee/optee_examples/HCEMobile/ta/dbstore_ta.c:484
      98c:	17fffda5 	b	20 <inv>
 
 0000000000000990 <tahead_get_trace_level>:
@@ -1717,15 +1712,15 @@ TEE_CheckMemoryAccessRights():
 0000000000000c80 <TEE_SetInstanceData>:
 TEE_SetInstanceData():
 /home/pedro/devel/optee/optee_os/lib/libutee/tee_api.c:227
-     c80:	d00000a1 	adrp	x1, 16000 <ta_heap+0x7bb8>
-     c84:	f9022420 	str	x0, [x1,#1096]
+     c80:	d00000a1 	adrp	x1, 16000 <ta_heap+0x7cc0>
+     c84:	f901a020 	str	x0, [x1,#832]
      c88:	d65f03c0 	ret
 
 0000000000000c8c <TEE_GetInstanceData>:
 TEE_GetInstanceData():
 /home/pedro/devel/optee/optee_os/lib/libutee/tee_api.c:233
-     c8c:	d00000a0 	adrp	x0, 16000 <ta_heap+0x7bb8>
-     c90:	f9422400 	ldr	x0, [x0,#1096]
+     c8c:	d00000a0 	adrp	x0, 16000 <ta_heap+0x7cc0>
+     c90:	f941a000 	ldr	x0, [x0,#832]
      c94:	d65f03c0 	ret
 
 0000000000000c98 <TEE_MemMove>:
@@ -6545,7 +6540,7 @@ ta_header_get_session():
     3ef0:	2a0003e1 	mov	w1, w0
 /home/pedro/devel/optee/optee_os/lib/libutee/arch/arm/user_ta_entry.c:104
     3ef4:	f0000040 	adrp	x0, e000 <modulus_dbstore>
-    3ef8:	f9420000 	ldr	x0, [x0,#1024]
+    3ef8:	f9417c00 	ldr	x0, [x0,#760]
 /home/pedro/devel/optee/optee_os/lib/libutee/arch/arm/user_ta_entry.c:104 (discriminator 1)
     3efc:	b5000040 	cbnz	x0, 3f04 <ta_header_get_session+0x14>
 /home/pedro/devel/optee/optee_os/lib/libutee/arch/arm/user_ta_entry.c:109
@@ -6567,7 +6562,7 @@ ta_header_remove_session():
     3f24:	f9000bf3 	str	x19, [sp,#16]
 /home/pedro/devel/optee/optee_os/lib/libutee/arch/arm/user_ta_entry.c:141
     3f28:	f0000053 	adrp	x19, e000 <modulus_dbstore>
-    3f2c:	f9420260 	ldr	x0, [x19,#1024]
+    3f2c:	f9417e60 	ldr	x0, [x19,#760]
 /home/pedro/devel/optee/optee_os/lib/libutee/arch/arm/user_ta_entry.c:141 (discriminator 1)
     3f30:	b5000080 	cbnz	x0, 3f40 <ta_header_remove_session+0x28>
 /home/pedro/devel/optee/optee_os/lib/libutee/arch/arm/user_ta_entry.c:153
@@ -6590,7 +6585,7 @@ ta_header_remove_session():
 /home/pedro/devel/optee/optee_os/lib/libutee/arch/arm/user_ta_entry.c:144 (discriminator 4)
     3f64:	97fff3aa 	bl	e0c <TEE_Free>
 /home/pedro/devel/optee/optee_os/lib/libutee/arch/arm/user_ta_entry.c:146 (discriminator 4)
-    3f68:	f9420260 	ldr	x0, [x19,#1024]
+    3f68:	f9417e60 	ldr	x0, [x19,#760]
     3f6c:	b5fffe40 	cbnz	x0, 3f34 <ta_header_remove_session+0x1c>
 /home/pedro/devel/optee/optee_os/lib/libutee/arch/arm/user_ta_entry.c:147
     3f70:	b0000040 	adrp	x0, c000 <const_miller_rabin_proof_limit+0x8>
@@ -6606,7 +6601,7 @@ uninit_instance():
     3f88:	17fff24b 	b	8b4 <TA_DestroyEntryPoint>
 ta_header_remove_session():
 /home/pedro/devel/optee/optee_os/lib/libutee/arch/arm/user_ta_entry.c:143 (discriminator 2)
-    3f8c:	91100263 	add	x3, x19, #0x400
+    3f8c:	910be263 	add	x3, x19, #0x2f8
     3f90:	f9000462 	str	x2, [x3,#8]
     3f94:	17fffff2 	b	3f5c <ta_header_remove_session+0x44>
 /home/pedro/devel/optee/optee_os/lib/libutee/arch/arm/user_ta_entry.c:141 (discriminator 2)
@@ -6646,8 +6641,8 @@ ta_header_add_session():
 /home/pedro/devel/optee/optee_os/lib/libutee/arch/arm/user_ta_entry.c:116
     3fe8:	b5000520 	cbnz	x0, 408c <__utee_entry+0xec>
 /home/pedro/devel/optee/optee_os/lib/libutee/arch/arm/user_ta_entry.c:119
-    3fec:	d00000a0 	adrp	x0, 19000 <buf.3609+0xfa8>
-    3ff0:	39416801 	ldrb	w1, [x0,#90]
+    3fec:	b00000a0 	adrp	x0, 18000 <buf.3609+0xb0>
+    3ff0:	397d4801 	ldrb	w1, [x0,#3922]
     3ff4:	340001e1 	cbz	w1, 4030 <__utee_entry+0x90>
 /home/pedro/devel/optee/optee_os/lib/libutee/arch/arm/user_ta_entry.c:126
     3ff8:	52b00001 	mov	w1, #0x80000000            	// #-2147483648
@@ -6679,7 +6674,7 @@ __utee_entry():
 ta_header_add_session():
 /home/pedro/devel/optee/optee_os/lib/libutee/arch/arm/user_ta_entry.c:120
     4030:	52800021 	mov	w1, #0x1                   	// #1
-    4034:	39016801 	strb	w1, [x0,#90]
+    4034:	393d4801 	strb	w1, [x0,#3922]
 init_instance():
 /home/pedro/devel/optee/optee_os/lib/libutee/arch/arm/user_ta_entry.c:76
     4038:	97fff256 	bl	990 <tahead_get_trace_level>
@@ -6701,7 +6696,7 @@ ta_header_add_session():
     4064:	17ffffea 	b	400c <__utee_entry+0x6c>
 /home/pedro/devel/optee/optee_os/lib/libutee/arch/arm/user_ta_entry.c:132
     4068:	d0000041 	adrp	x1, e000 <modulus_dbstore>
-    406c:	91100021 	add	x1, x1, #0x400
+    406c:	910be021 	add	x1, x1, #0x2f8
     4070:	f9400422 	ldr	x2, [x1,#8]
     4074:	f9000c02 	str	x2, [x0,#24]
 /home/pedro/devel/optee/optee_os/lib/libutee/arch/arm/user_ta_entry.c:130
@@ -7532,8 +7527,8 @@ tee_user_mem_alloc():
     46f0:	b4fffc60 	cbz	x0, 467c <tee_user_mem_alloc+0x14>
 heap_inc():
 /home/pedro/devel/optee/optee_os/lib/libutee/tee_user_mem.c:198
-    46f4:	d0000082 	adrp	x2, 16000 <ta_heap+0x7bb8>
-    46f8:	91126040 	add	x0, x2, #0x498
+    46f4:	d0000082 	adrp	x2, 16000 <ta_heap+0x7cc0>
+    46f8:	910e4040 	add	x0, x2, #0x390
 /home/pedro/devel/optee/optee_os/lib/libutee/tee_user_mem.c:200
     46fc:	91002001 	add	x1, x0, #0x8
 tee_user_mem_alloc():
@@ -7541,7 +7536,7 @@ tee_user_mem_alloc():
     4700:	f9000a75 	str	x21, [x19,#16]
 heap_inc():
 /home/pedro/devel/optee/optee_os/lib/libutee/tee_user_mem.c:198
-    4704:	f9424c43 	ldr	x3, [x2,#1176]
+    4704:	f941c843 	ldr	x3, [x2,#912]
 tee_user_mem_alloc():
 /home/pedro/devel/optee/optee_os/lib/libutee/tee_user_mem.c:344
     4708:	aa1303e4 	mov	x4, x19
@@ -7550,7 +7545,7 @@ tee_user_mem_alloc():
 heap_inc():
 /home/pedro/devel/optee/optee_os/lib/libutee/tee_user_mem.c:198
     4710:	8b150063 	add	x3, x3, x21
-    4714:	f9024c43 	str	x3, [x2,#1176]
+    4714:	f901c843 	str	x3, [x2,#912]
 /home/pedro/devel/optee/optee_os/lib/libutee/tee_user_mem.c:200
     4718:	b9400802 	ldr	w2, [x0,#8]
 tee_user_mem_alloc():
@@ -7572,7 +7567,7 @@ heap_inc():
 tee_user_mem_alloc():
 /home/pedro/devel/optee/optee_os/lib/libutee/tee_user_mem.c:336
     4738:	d0000040 	adrp	x0, e000 <modulus_dbstore>
-    473c:	91104000 	add	x0, x0, #0x410
+    473c:	910c2000 	add	x0, x0, #0x308
 heap_inc():
 /home/pedro/devel/optee/optee_os/lib/libutee/tee_user_mem.c:201
     4740:	f9000435 	str	x21, [x1,#8]
@@ -7636,7 +7631,7 @@ tee_user_mem_free():
     47cc:	a90153f3 	stp	x19, x20, [sp,#16]
 is_buffer_valid():
 /home/pedro/devel/optee/optee_os/lib/libutee/tee_user_mem.c:152
-    47d0:	f9420834 	ldr	x20, [x1,#1040]
+    47d0:	f9418434 	ldr	x20, [x1,#776]
 tee_user_mem_free():
 /home/pedro/devel/optee/optee_os/lib/libutee/tee_user_mem.c:424
     47d4:	a9025bf5 	stp	x21, x22, [sp,#32]
@@ -7676,7 +7671,7 @@ is_buffer_valid():
     4824:	17ffffee 	b	47dc <tee_user_mem_free+0x28>
 tee_user_mem_free():
 /home/pedro/devel/optee/optee_os/lib/libutee/tee_user_mem.c:452
-    4828:	911042d6 	add	x22, x22, #0x410
+    4828:	910c22d6 	add	x22, x22, #0x308
     482c:	f90006c1 	str	x1, [x22,#8]
     4830:	1400001b 	b	489c <tee_user_mem_free+0xe8>
 /home/pedro/devel/optee/optee_os/lib/libutee/tee_user_mem.c:443
@@ -7716,11 +7711,11 @@ tee_user_mem_free():
     48a0:	f9000020 	str	x0, [x1]
 heap_dec():
 /home/pedro/devel/optee/optee_os/lib/libutee/tee_user_mem.c:208
-    48a4:	d0000081 	adrp	x1, 16000 <ta_heap+0x7bb8>
-    48a8:	91126020 	add	x0, x1, #0x498
-    48ac:	f9424c23 	ldr	x3, [x1,#1176]
+    48a4:	d0000081 	adrp	x1, 16000 <ta_heap+0x7cc0>
+    48a8:	910e4020 	add	x0, x1, #0x390
+    48ac:	f941c823 	ldr	x3, [x1,#912]
     48b0:	cb020063 	sub	x3, x3, x2
-    48b4:	f9024c23 	str	x3, [x1,#1176]
+    48b4:	f901c823 	str	x3, [x1,#912]
 /home/pedro/devel/optee/optee_os/lib/libutee/tee_user_mem.c:210
     48b8:	b9400801 	ldr	w1, [x0,#8]
     48bc:	91002003 	add	x3, x0, #0x8
@@ -7766,7 +7761,7 @@ tee_user_mem_realloc():
 is_buffer_valid():
 /home/pedro/devel/optee/optee_os/lib/libutee/tee_user_mem.c:152
     491c:	d0000041 	adrp	x1, e000 <modulus_dbstore>
-    4920:	f9420821 	ldr	x1, [x1,#1040]
+    4920:	f9418421 	ldr	x1, [x1,#776]
     4924:	b50000e1 	cbnz	x1, 4940 <tee_user_mem_realloc+0x48>
 tee_user_mem_realloc():
 /home/pedro/devel/optee/optee_os/lib/libutee/tee_user_mem.c:386
@@ -7829,8 +7824,8 @@ tee_user_mem_realloc():
 00000000000049b4 <tee_user_mem_mark_heap>:
 tee_user_mem_mark_heap():
 /home/pedro/devel/optee/optee_os/lib/libutee/tee_user_mem.c:479
-    49b4:	d0000080 	adrp	x0, 16000 <ta_heap+0x7bb8>
-    49b8:	f9024c1f 	str	xzr, [x0,#1176]
+    49b4:	d0000080 	adrp	x0, 16000 <ta_heap+0x7cc0>
+    49b8:	f901c81f 	str	xzr, [x0,#912]
     49bc:	d65f03c0 	ret
 
 00000000000049c0 <tee_user_mem_check_heap>:
@@ -7840,8 +7835,8 @@ tee_user_mem_check_heap():
     49c4:	910003fd 	mov	x29, sp
     49c8:	a90153f3 	stp	x19, x20, [sp,#16]
 /home/pedro/devel/optee/optee_os/lib/libutee/tee_user_mem.c:493
-    49cc:	d0000094 	adrp	x20, 16000 <ta_heap+0x7bb8>
-    49d0:	f9424e93 	ldr	x19, [x20,#1176]
+    49cc:	d0000094 	adrp	x20, 16000 <ta_heap+0x7cc0>
+    49d0:	f941ca93 	ldr	x19, [x20,#912]
     49d4:	b4000213 	cbz	x19, 4a14 <tee_user_mem_check_heap+0x54>
 /home/pedro/devel/optee/optee_os/lib/libutee/tee_user_mem.c:494
     49d8:	f0000020 	adrp	x0, b000 <mpa_mul_mod+0x68>
@@ -7855,7 +7850,7 @@ tee_user_mem_check_heap():
     49f8:	91014000 	add	x0, x0, #0x50
     49fc:	94000a08 	bl	721c <trace_printf>
 /home/pedro/devel/optee/optee_os/lib/libutee/tee_user_mem.c:496
-    4a00:	f9424e93 	ldr	x19, [x20,#1176]
+    4a00:	f941ca93 	ldr	x19, [x20,#912]
 /home/pedro/devel/optee/optee_os/lib/libutee/tee_user_mem.c:503
     4a04:	aa1303e0 	mov	x0, x19
     4a08:	a94153f3 	ldp	x19, x20, [sp,#16]
@@ -7864,7 +7859,7 @@ tee_user_mem_check_heap():
 is_mem_coherent():
 /home/pedro/devel/optee/optee_os/lib/libutee/tee_user_mem.c:269
     4a14:	d0000040 	adrp	x0, e000 <modulus_dbstore>
-    4a18:	f9420814 	ldr	x20, [x0,#1040]
+    4a18:	f9418414 	ldr	x20, [x0,#776]
     4a1c:	b4ffff54 	cbz	x20, 4a04 <tee_user_mem_check_heap+0x44>
 /home/pedro/devel/optee/optee_os/lib/libutee/tee_user_mem.c:270
     4a20:	aa1403e0 	mov	x0, x20
@@ -7906,7 +7901,7 @@ tee_user_mem_status():
 /home/pedro/devel/optee/optee_os/lib/libutee/tee_user_mem.c:520
     4a74:	91086273 	add	x19, x19, #0x218
 /home/pedro/devel/optee/optee_os/lib/libutee/tee_user_mem.c:519
-    4a78:	f9420815 	ldr	x21, [x0,#1040]
+    4a78:	f9418415 	ldr	x21, [x0,#776]
 /home/pedro/devel/optee/optee_os/lib/libutee/tee_user_mem.c:520
     4a7c:	90000056 	adrp	x22, c000 <const_miller_rabin_proof_limit+0x8>
     4a80:	aa0003f4 	mov	x20, x0
@@ -7916,7 +7911,7 @@ tee_user_mem_status():
     4a8c:	b50000f5 	cbnz	x21, 4aa8 <tee_user_mem_garbage+0x4c>
 tee_user_mem_garbage():
 /home/pedro/devel/optee/optee_os/lib/libutee/tee_user_mem.c:543
-    4a90:	f9420a80 	ldr	x0, [x20,#1040]
+    4a90:	f9418680 	ldr	x0, [x20,#776]
     4a94:	b50001a0 	cbnz	x0, 4ac8 <tee_user_mem_garbage+0x6c>
 /home/pedro/devel/optee/optee_os/lib/libutee/tee_user_mem.c:545
     4a98:	a94153f3 	ldp	x19, x20, [sp,#16]
@@ -7984,11 +7979,11 @@ _TEE_MathAPI_Init():
 /home/pedro/devel/optee/optee_os/lib/libutee/tee_api_arith.c:80
     4b30:	52810002 	mov	w2, #0x800                 	// #2048
     4b34:	d2836801 	mov	x1, #0x1b40                	// #6976
-    4b38:	d0000080 	adrp	x0, 16000 <ta_heap+0x7bb8>
+    4b38:	d0000080 	adrp	x0, 16000 <ta_heap+0x7cc0>
 /home/pedro/devel/optee/optee_os/lib/libutee/tee_api_arith.c:79
     4b3c:	910003fd 	mov	x29, sp
 /home/pedro/devel/optee/optee_os/lib/libutee/tee_api_arith.c:80
-    4b40:	9112c000 	add	x0, x0, #0x4b0
+    4b40:	910ea000 	add	x0, x0, #0x3a8
     4b44:	94001134 	bl	9014 <mpa_init_scratch_mem>
 /home/pedro/devel/optee/optee_os/lib/libutee/tee_api_arith.c:82
     4b48:	90000040 	adrp	x0, c000 <const_miller_rabin_proof_limit+0x8>
@@ -8027,11 +8022,11 @@ TEE_BigIntInitFMMContext():
     4b88:	91004263 	add	x3, x19, #0x10
     4b8c:	aa1403e0 	mov	x0, x20
     4b90:	a9400a61 	ldp	x1, x2, [x19]
-    4b94:	d0000084 	adrp	x4, 16000 <ta_heap+0x7bb8>
+    4b94:	d0000084 	adrp	x4, 16000 <ta_heap+0x7cc0>
 /home/pedro/devel/optee/optee_os/lib/libutee/tee_api_arith.c:117
     4b98:	a94153f3 	ldp	x19, x20, [sp,#16]
 /home/pedro/devel/optee/optee_os/lib/libutee/tee_api_arith.c:114
-    4b9c:	9112c084 	add	x4, x4, #0x4b0
+    4b9c:	910ea084 	add	x4, x4, #0x3a8
 /home/pedro/devel/optee/optee_os/lib/libutee/tee_api_arith.c:117
     4ba0:	a8c27bfd 	ldp	x29, x30, [sp],#32
 /home/pedro/devel/optee/optee_os/lib/libutee/tee_api_arith.c:114
@@ -8163,15 +8158,15 @@ TEE_BigIntGetBitCount():
 0000000000004c98 <TEE_BigIntAdd>:
 TEE_BigIntAdd():
 /home/pedro/devel/optee/optee_os/lib/libutee/tee_api_arith.c:297
-    4c98:	d0000083 	adrp	x3, 16000 <ta_heap+0x7bb8>
-    4c9c:	9112c063 	add	x3, x3, #0x4b0
+    4c98:	d0000083 	adrp	x3, 16000 <ta_heap+0x7cc0>
+    4c9c:	910ea063 	add	x3, x3, #0x3a8
     4ca0:	1400142f 	b	9d5c <mpa_add>
 
 0000000000004ca4 <TEE_BigIntSub>:
 TEE_BigIntSub():
 /home/pedro/devel/optee/optee_os/lib/libutee/tee_api_arith.c:310
-    4ca4:	d0000083 	adrp	x3, 16000 <ta_heap+0x7bb8>
-    4ca8:	9112c063 	add	x3, x3, #0x4b0
+    4ca4:	d0000083 	adrp	x3, 16000 <ta_heap+0x7cc0>
+    4ca8:	910ea063 	add	x3, x3, #0x3a8
     4cac:	14001491 	b	9ef0 <mpa_sub>
 
 0000000000004cb0 <TEE_BigIntNeg>:
@@ -8182,16 +8177,16 @@ TEE_BigIntNeg():
 0000000000004cb4 <TEE_BigIntMul>:
 TEE_BigIntMul():
 /home/pedro/devel/optee/optee_os/lib/libutee/tee_api_arith.c:334
-    4cb4:	d0000083 	adrp	x3, 16000 <ta_heap+0x7bb8>
-    4cb8:	9112c063 	add	x3, x3, #0x4b0
+    4cb4:	d0000083 	adrp	x3, 16000 <ta_heap+0x7cc0>
+    4cb8:	910ea063 	add	x3, x3, #0x3a8
     4cbc:	1400119e 	b	9334 <mpa_mul>
 
 0000000000004cc0 <TEE_BigIntSquare>:
 TEE_BigIntSquare():
 /home/pedro/devel/optee/optee_os/lib/libutee/tee_api_arith.c:345
-    4cc0:	d0000083 	adrp	x3, 16000 <ta_heap+0x7bb8>
+    4cc0:	d0000083 	adrp	x3, 16000 <ta_heap+0x7cc0>
     4cc4:	aa0103e2 	mov	x2, x1
-    4cc8:	9112c063 	add	x3, x3, #0x4b0
+    4cc8:	910ea063 	add	x3, x3, #0x3a8
     4ccc:	1400119a 	b	9334 <mpa_mul>
 
 0000000000004cd0 <TEE_BigIntDiv>:
@@ -8225,11 +8220,11 @@ TEE_BigIntDiv():
 /home/pedro/devel/optee/optee_os/lib/libutee/tee_api_arith.c:363
     4d1c:	a9425bf5 	ldp	x21, x22, [sp,#32]
 /home/pedro/devel/optee/optee_os/lib/libutee/tee_api_arith.c:362
-    4d20:	d0000084 	adrp	x4, 16000 <ta_heap+0x7bb8>
+    4d20:	d0000084 	adrp	x4, 16000 <ta_heap+0x7cc0>
 /home/pedro/devel/optee/optee_os/lib/libutee/tee_api_arith.c:363
     4d24:	a94153f3 	ldp	x19, x20, [sp,#16]
 /home/pedro/devel/optee/optee_os/lib/libutee/tee_api_arith.c:362
-    4d28:	9112c084 	add	x4, x4, #0x4b0
+    4d28:	910ea084 	add	x4, x4, #0x3a8
 /home/pedro/devel/optee/optee_os/lib/libutee/tee_api_arith.c:363
     4d2c:	a8c37bfd 	ldp	x29, x30, [sp],#48
 /home/pedro/devel/optee/optee_os/lib/libutee/tee_api_arith.c:362
@@ -8258,8 +8253,8 @@ TEE_BigIntMod():
     4d64:	91170400 	add	x0, x0, #0x5c1
     4d68:	94000116 	bl	51c0 <TEE_BigInt_Panic>
 /home/pedro/devel/optee/optee_os/lib/libutee/tee_api_arith.c:382
-    4d6c:	d0000093 	adrp	x19, 16000 <ta_heap+0x7bb8>
-    4d70:	9112c273 	add	x19, x19, #0x4b0
+    4d6c:	d0000093 	adrp	x19, 16000 <ta_heap+0x7cc0>
+    4d70:	910ea273 	add	x19, x19, #0x3a8
     4d74:	aa1303e3 	mov	x3, x19
     4d78:	aa1503e2 	mov	x2, x21
     4d7c:	aa1603e1 	mov	x1, x22
@@ -8316,8 +8311,8 @@ TEE_BigIntAddMod():
     4e00:	91170400 	add	x0, x0, #0x5c1
     4e04:	940000ef 	bl	51c0 <TEE_BigInt_Panic>
 /home/pedro/devel/optee/optee_os/lib/libutee/tee_api_arith.c:402
-    4e08:	d0000093 	adrp	x19, 16000 <ta_heap+0x7bb8>
-    4e0c:	9112c273 	add	x19, x19, #0x4b0
+    4e08:	d0000093 	adrp	x19, 16000 <ta_heap+0x7cc0>
+    4e0c:	910ea273 	add	x19, x19, #0x3a8
     4e10:	aa1303e4 	mov	x4, x19
     4e14:	aa1503e3 	mov	x3, x21
     4e18:	aa1703e2 	mov	x2, x23
@@ -8377,8 +8372,8 @@ TEE_BigIntSubMod():
     4ea8:	91170400 	add	x0, x0, #0x5c1
     4eac:	940000c5 	bl	51c0 <TEE_BigInt_Panic>
 /home/pedro/devel/optee/optee_os/lib/libutee/tee_api_arith.c:421
-    4eb0:	d0000093 	adrp	x19, 16000 <ta_heap+0x7bb8>
-    4eb4:	9112c273 	add	x19, x19, #0x4b0
+    4eb0:	d0000093 	adrp	x19, 16000 <ta_heap+0x7cc0>
+    4eb4:	910ea273 	add	x19, x19, #0x3a8
     4eb8:	aa1303e4 	mov	x4, x19
     4ebc:	aa1503e3 	mov	x3, x21
     4ec0:	aa1703e2 	mov	x2, x23
@@ -8439,9 +8434,9 @@ TEE_BigIntMulMod():
     4f54:	91170400 	add	x0, x0, #0x5c1
     4f58:	9400009a 	bl	51c0 <TEE_BigInt_Panic>
 /home/pedro/devel/optee/optee_os/lib/libutee/tee_api_arith.c:449
-    4f5c:	d0000093 	adrp	x19, 16000 <ta_heap+0x7bb8>
+    4f5c:	d0000093 	adrp	x19, 16000 <ta_heap+0x7cc0>
     4f60:	910163b6 	add	x22, x29, #0x58
-    4f64:	9112c275 	add	x21, x19, #0x4b0
+    4f64:	910ea275 	add	x21, x19, #0x3a8
     4f68:	aa1603e0 	mov	x0, x22
     4f6c:	aa1503e1 	mov	x1, x21
     4f70:	94001069 	bl	9114 <mpa_alloc_static_temp_var>
@@ -8468,7 +8463,7 @@ TEE_BigIntMulMod():
     4fb4:	aa1703e0 	mov	x0, x23
     4fb8:	94000945 	bl	74cc <mpa_copy>
 /home/pedro/devel/optee/optee_os/lib/libutee/tee_api_arith.c:454
-    4fbc:	9112c261 	add	x1, x19, #0x4b0
+    4fbc:	910ea261 	add	x1, x19, #0x3a8
     4fc0:	aa1603e0 	mov	x0, x22
     4fc4:	94001058 	bl	9124 <mpa_free_static_temp_var>
 /home/pedro/devel/optee/optee_os/lib/libutee/tee_api_arith.c:455
@@ -8524,11 +8519,11 @@ TEE_BigIntInvMod():
     5040:	f94013f5 	ldr	x21, [sp,#32]
     5044:	a94153f3 	ldp	x19, x20, [sp,#16]
 /home/pedro/devel/optee/optee_os/lib/libutee/tee_api_arith.c:479
-    5048:	b0000083 	adrp	x3, 16000 <ta_heap+0x7bb8>
+    5048:	b0000083 	adrp	x3, 16000 <ta_heap+0x7cc0>
 /home/pedro/devel/optee/optee_os/lib/libutee/tee_api_arith.c:480
     504c:	a8c37bfd 	ldp	x29, x30, [sp],#48
 /home/pedro/devel/optee/optee_os/lib/libutee/tee_api_arith.c:479
-    5050:	9112c063 	add	x3, x3, #0x4b0
+    5050:	910ea063 	add	x3, x3, #0x3a8
     5054:	140017f2 	b	b01c <mpa_inv_mod>
 
 0000000000005058 <TEE_BigIntRelativePrime>:
@@ -8539,8 +8534,8 @@ TEE_BigIntRelativePrime():
     5060:	a90153f3 	stp	x19, x20, [sp,#16]
 /home/pedro/devel/optee/optee_os/lib/libutee/tee_api_arith.c:496
     5064:	9100e3b4 	add	x20, x29, #0x38
-    5068:	b0000093 	adrp	x19, 16000 <ta_heap+0x7bb8>
-    506c:	9112c273 	add	x19, x19, #0x4b0
+    5068:	b0000093 	adrp	x19, 16000 <ta_heap+0x7cc0>
+    506c:	910ea273 	add	x19, x19, #0x3a8
 /home/pedro/devel/optee/optee_os/lib/libutee/tee_api_arith.c:490
     5070:	a9025bf5 	stp	x21, x22, [sp,#32]
     5074:	aa0003f5 	mov	x21, x0
@@ -8576,8 +8571,8 @@ TEE_BigIntRelativePrime():
 00000000000050d0 <TEE_BigIntComputeExtendedGcd>:
 TEE_BigIntComputeExtendedGcd():
 /home/pedro/devel/optee/optee_os/lib/libutee/tee_api_arith.c:519
-    50d0:	b0000085 	adrp	x5, 16000 <ta_heap+0x7bb8>
-    50d4:	9112c0a5 	add	x5, x5, #0x4b0
+    50d0:	b0000085 	adrp	x5, 16000 <ta_heap+0x7cc0>
+    50d4:	910ea0a5 	add	x5, x5, #0x3a8
     50d8:	14000f4e 	b	8e10 <mpa_extended_gcd>
 
 00000000000050dc <TEE_BigIntIsProbablePrime>:
@@ -8589,9 +8584,9 @@ TEE_BigIntIsProbablePrime():
 /home/pedro/devel/optee/optee_os/lib/libutee/tee_api_arith.c:536
     50e8:	52800a03 	mov	w3, #0x50                  	// #80
     50ec:	7101403f 	cmp	w1, #0x50
-    50f0:	b0000082 	adrp	x2, 16000 <ta_heap+0x7bb8>
+    50f0:	b0000082 	adrp	x2, 16000 <ta_heap+0x7cc0>
     50f4:	1a832021 	csel	w1, w1, w3, cs
-    50f8:	9112c042 	add	x2, x2, #0x4b0
+    50f8:	910ea042 	add	x2, x2, #0x3a8
     50fc:	14000a40 	b	79fc <mpa_is_prob_prime>
 
 0000000000005100 <TEE_BigIntConvertToFMM>:
@@ -8600,8 +8595,8 @@ TEE_BigIntConvertToFMM():
     5100:	aa0303e6 	mov	x6, x3
 /home/pedro/devel/optee/optee_os/lib/libutee/tee_api_arith.c:557
     5104:	aa0203e3 	mov	x3, x2
-    5108:	b0000085 	adrp	x5, 16000 <ta_heap+0x7bb8>
-    510c:	9112c0a5 	add	x5, x5, #0x4b0
+    5108:	b0000085 	adrp	x5, 16000 <ta_heap+0x7cc0>
+    510c:	910ea0a5 	add	x5, x5, #0x3a8
     5110:	b94010c4 	ldr	w4, [x6,#16]
     5114:	f94004c2 	ldr	x2, [x6,#8]
     5118:	14000a17 	b	7974 <mpa_montgomery_mul>
@@ -8613,8 +8608,8 @@ TEE_BigIntConvertFromFMM():
     5120:	910003fd 	mov	x29, sp
     5124:	a90153f3 	stp	x19, x20, [sp,#16]
 /home/pedro/devel/optee/optee_os/lib/libutee/tee_api_arith.c:580
-    5128:	b0000093 	adrp	x19, 16000 <ta_heap+0x7bb8>
-    512c:	9112c273 	add	x19, x19, #0x4b0
+    5128:	b0000093 	adrp	x19, 16000 <ta_heap+0x7cc0>
+    512c:	910ea273 	add	x19, x19, #0x3a8
 /home/pedro/devel/optee/optee_os/lib/libutee/tee_api_arith.c:568
     5130:	a90363f7 	stp	x23, x24, [sp,#48]
     5134:	aa0103f7 	mov	x23, x1
@@ -8660,8 +8655,8 @@ TEE_BigIntConvertFromFMM():
 TEE_BigIntComputeFMM():
 /home/pedro/devel/optee/optee_os/lib/libutee/tee_api_arith.c:605
     51b0:	b9401084 	ldr	w4, [x4,#16]
-    51b4:	b0000085 	adrp	x5, 16000 <ta_heap+0x7bb8>
-    51b8:	9112c0a5 	add	x5, x5, #0x4b0
+    51b4:	b0000085 	adrp	x5, 16000 <ta_heap+0x7cc0>
+    51b8:	910ea0a5 	add	x5, x5, #0x3a8
     51bc:	140009ee 	b	7974 <mpa_montgomery_mul>
 
 00000000000051c0 <TEE_BigInt_Panic>:
@@ -8848,10 +8843,10 @@ putchar():
 000000000000537c <raw_malloc_return_hook>:
 raw_malloc_return_hook():
 /home/pedro/devel/optee/optee_os/lib/libutils/isoc/bget_malloc.c:185
-    537c:	d0000082 	adrp	x2, 17000 <mempool_u32+0xb50>
-    5380:	913fc043 	add	x3, x2, #0xff0
+    537c:	d0000082 	adrp	x2, 17000 <mempool_u32+0xc58>
+    5380:	913ba043 	add	x3, x2, #0xee8
     5384:	91002063 	add	x3, x3, #0x8
-    5388:	f947f844 	ldr	x4, [x2,#4080]
+    5388:	f9477444 	ldr	x4, [x2,#3816]
     538c:	b9402465 	ldr	w5, [x3,#36]
     5390:	eb0400bf 	cmp	x5, x4
     5394:	5400004a 	b.ge	539c <raw_malloc_return_hook+0x20>
@@ -8860,7 +8855,7 @@ raw_malloc_return_hook():
 /home/pedro/devel/optee/optee_os/lib/libutils/isoc/bget_malloc.c:188
     539c:	b5000140 	cbnz	x0, 53c4 <raw_malloc_return_hook+0x48>
 /home/pedro/devel/optee/optee_os/lib/libutils/isoc/bget_malloc.c:189
-    53a0:	913fc040 	add	x0, x2, #0xff0
+    53a0:	913ba040 	add	x0, x2, #0xee8
     53a4:	91002000 	add	x0, x0, #0x8
     53a8:	b9402c02 	ldr	w2, [x0,#44]
     53ac:	11000442 	add	w2, w2, #0x1
@@ -8925,7 +8920,7 @@ create_free_block():
     5454:	f8216801 	str	x1, [x0,x1]
 /home/pedro/devel/optee/optee_os/lib/libutils/isoc/bget_malloc.c:403
     5458:	b0000041 	adrp	x1, e000 <modulus_dbstore>
-    545c:	91108021 	add	x1, x1, #0x420
+    545c:	910c6021 	add	x1, x1, #0x318
     5460:	f9400c23 	ldr	x3, [x1,#24]
     5464:	f9400862 	ldr	x2, [x3,#16]
     5468:	eb01005f 	cmp	x2, x1
@@ -8990,7 +8985,7 @@ bget():
     5510:	f100401f 	cmp	x0, #0x10
 /home/pedro/devel/optee/optee_os/lib/libutils/isoc/bget.c:607
     5514:	b0000042 	adrp	x2, e000 <modulus_dbstore>
-    5518:	91108042 	add	x2, x2, #0x420
+    5518:	910c6042 	add	x2, x2, #0x318
 /home/pedro/devel/optee/optee_os/lib/libutils/isoc/bget.c:593
     551c:	d2800201 	mov	x1, #0x10                  	// #16
     5520:	9a81a001 	csel	x1, x0, x1, ge
@@ -9015,7 +9010,7 @@ bget():
     5550:	54000aec 	b.gt	56ac <bget+0x1d4>
 /home/pedro/devel/optee/optee_os/lib/libutils/isoc/bget.c:640
     5554:	cb010044 	sub	x4, x2, x1
-    5558:	d0000083 	adrp	x3, 17000 <mempool_u32+0xb50>
+    5558:	d0000083 	adrp	x3, 17000 <mempool_u32+0xc58>
     555c:	f100809f 	cmp	x4, #0x20
     5560:	540003ad 	b.le	55d4 <bget+0xfc>
 /home/pedro/devel/optee/optee_os/lib/libutils/isoc/bget.c:643
@@ -9037,14 +9032,14 @@ bget():
 /home/pedro/devel/optee/optee_os/lib/libutils/isoc/bget.c:647
     5598:	f9000404 	str	x4, [x0,#8]
 /home/pedro/devel/optee/optee_os/lib/libutils/isoc/bget.c:656
-    559c:	913fc062 	add	x2, x3, #0xff0
+    559c:	913ba062 	add	x2, x3, #0xee8
 /home/pedro/devel/optee/optee_os/lib/libutils/isoc/bget.c:649
     55a0:	f8246804 	str	x4, [x0,x4]
 /home/pedro/devel/optee/optee_os/lib/libutils/isoc/bget.c:651
     55a4:	cb0103e0 	neg	x0, x1
     55a8:	f90004a0 	str	x0, [x5,#8]
 /home/pedro/devel/optee/optee_os/lib/libutils/isoc/bget.c:656
-    55ac:	f947f860 	ldr	x0, [x3,#4080]
+    55ac:	f9477460 	ldr	x0, [x3,#3816]
 /home/pedro/devel/optee/optee_os/lib/libutils/isoc/bget.c:653
     55b0:	f82168bf 	str	xzr, [x5,x1]
 /home/pedro/devel/optee/optee_os/lib/libutils/isoc/bget.c:656
@@ -9052,7 +9047,7 @@ bget():
 /home/pedro/devel/optee/optee_os/lib/libutils/isoc/bget.c:657
     55b8:	f9402040 	ldr	x0, [x2,#64]
 /home/pedro/devel/optee/optee_os/lib/libutils/isoc/bget.c:656
-    55bc:	f907f861 	str	x1, [x3,#4080]
+    55bc:	f9077461 	str	x1, [x3,#3816]
 /home/pedro/devel/optee/optee_os/lib/libutils/isoc/bget.c:657
     55c0:	91000400 	add	x0, x0, #0x1
     55c4:	f9002040 	str	x0, [x2,#64]
@@ -9116,10 +9111,10 @@ bget():
     5678:	f9400004 	ldr	x4, [x0]
     567c:	f9000c81 	str	x1, [x4,#24]
 /home/pedro/devel/optee/optee_os/lib/libutils/isoc/bget.c:677
-    5680:	913fc064 	add	x4, x3, #0xff0
-    5684:	f947f861 	ldr	x1, [x3,#4080]
+    5680:	913ba064 	add	x4, x3, #0xee8
+    5684:	f9477461 	ldr	x1, [x3,#3816]
     5688:	8b020021 	add	x1, x1, x2
-    568c:	f907f861 	str	x1, [x3,#4080]
+    568c:	f9077461 	str	x1, [x3,#3816]
 /home/pedro/devel/optee/optee_os/lib/libutils/isoc/bget.c:678
     5690:	f9402081 	ldr	x1, [x4,#64]
 /home/pedro/devel/optee/optee_os/lib/libutils/isoc/bget.c:681
@@ -9189,8 +9184,8 @@ bgetz():
 000000000000573c <brel>:
 brel():
 /home/pedro/devel/optee/optee_os/lib/libutils/isoc/bget.c:835
-    573c:	d0000084 	adrp	x4, 17000 <mempool_u32+0xb50>
-    5740:	913fc083 	add	x3, x4, #0xff0
+    573c:	d0000084 	adrp	x4, 17000 <mempool_u32+0xc58>
+    5740:	913ba083 	add	x3, x4, #0xee8
 /home/pedro/devel/optee/optee_os/lib/libutils/isoc/bget.c:829
     5744:	a9bf7bfd 	stp	x29, x30, [sp,#-16]!
     5748:	910003fd 	mov	x29, sp
@@ -9242,9 +9237,9 @@ brel():
     57dc:	911d8000 	add	x0, x0, #0x760
     57e0:	17ffffe7 	b	577c <brel+0x40>
 /home/pedro/devel/optee/optee_os/lib/libutils/isoc/bget.c:877
-    57e4:	f947f883 	ldr	x3, [x4,#4080]
+    57e4:	f9477483 	ldr	x3, [x4,#3816]
     57e8:	8b030043 	add	x3, x2, x3
-    57ec:	f907f883 	str	x3, [x4,#4080]
+    57ec:	f9077483 	str	x3, [x4,#3816]
 /home/pedro/devel/optee/optee_os/lib/libutils/isoc/bget.c:878
     57f0:	b6f80143 	tbz	x3, #63, 5818 <brel+0xdc>
 /home/pedro/devel/optee/optee_os/lib/libutils/isoc/bget.c:878 (discriminator 1)
@@ -9301,7 +9296,7 @@ brel():
     589c:	17ffffb8 	b	577c <brel+0x40>
 /home/pedro/devel/optee/optee_os/lib/libutils/isoc/bget.c:902
     58a0:	b0000043 	adrp	x3, e000 <modulus_dbstore>
-    58a4:	91108063 	add	x3, x3, #0x420
+    58a4:	910c6063 	add	x3, x3, #0x318
     58a8:	f9400c65 	ldr	x5, [x3,#24]
     58ac:	f94008a4 	ldr	x4, [x5,#16]
     58b0:	eb03009f 	cmp	x4, x3
@@ -9478,7 +9473,7 @@ bpool():
     5abc:	97fffc17 	bl	4b18 <_assert_break>
 /home/pedro/devel/optee/optee_os/lib/libutils/isoc/bget.c:1033
     5ac0:	b0000042 	adrp	x2, e000 <modulus_dbstore>
-    5ac4:	91108042 	add	x2, x2, #0x420
+    5ac4:	910c6042 	add	x2, x2, #0x318
     5ac8:	f9400c44 	ldr	x4, [x2,#24]
     5acc:	f9400883 	ldr	x3, [x4,#16]
 /home/pedro/devel/optee/optee_os/lib/libutils/isoc/bget.c:1029
@@ -9534,11 +9529,11 @@ bpool():
 0000000000005b60 <bstats>:
 bstats():
 /home/pedro/devel/optee/optee_os/lib/libutils/isoc/bget.c:1071
-    5b60:	d0000087 	adrp	x7, 17000 <mempool_u32+0xb50>
-    5b64:	913fc0e8 	add	x8, x7, #0xff0
+    5b60:	d0000087 	adrp	x7, 17000 <mempool_u32+0xc58>
+    5b64:	913ba0e8 	add	x8, x7, #0xee8
 /home/pedro/devel/optee/optee_os/lib/libutils/isoc/bget.c:1069
     5b68:	b0000045 	adrp	x5, e000 <modulus_dbstore>
-    5b6c:	911080a5 	add	x5, x5, #0x420
+    5b6c:	910c60a5 	add	x5, x5, #0x318
 /home/pedro/devel/optee/optee_os/lib/libutils/isoc/bget.c:1071
     5b70:	f9402109 	ldr	x9, [x8,#64]
 /home/pedro/devel/optee/optee_os/lib/libutils/isoc/bget.c:1069
@@ -9549,7 +9544,7 @@ bstats():
     5b7c:	f9402503 	ldr	x3, [x8,#72]
     5b80:	f9000083 	str	x3, [x4]
 /home/pedro/devel/optee/optee_os/lib/libutils/isoc/bget.c:1073
-    5b84:	f947f8e3 	ldr	x3, [x7,#4080]
+    5b84:	f94774e3 	ldr	x3, [x7,#3816]
     5b88:	f9000003 	str	x3, [x0]
 /home/pedro/devel/optee/optee_os/lib/libutils/isoc/bget.c:1075
     5b8c:	92800000 	mov	x0, #0xffffffffffffffff    	// #-1
@@ -9600,8 +9595,8 @@ bstats():
 0000000000005c08 <malloc_reset_stats>:
 malloc_reset_stats():
 /home/pedro/devel/optee/optee_os/lib/libutils/isoc/bget_malloc.c:201
-    5c08:	d0000080 	adrp	x0, 17000 <mempool_u32+0xb50>
-    5c0c:	913fc000 	add	x0, x0, #0xff0
+    5c08:	d0000080 	adrp	x0, 17000 <mempool_u32+0xc58>
+    5c0c:	913ba000 	add	x0, x0, #0xee8
     5c10:	b9002c1f 	str	wzr, [x0,#44]
 /home/pedro/devel/optee/optee_os/lib/libutils/isoc/bget_malloc.c:203
     5c14:	2906fc1f 	stp	wzr, wzr, [x0,#52]
@@ -9620,13 +9615,13 @@ malloc_get_stats():
     5c28:	910003fd 	mov	x29, sp
     5c2c:	f9000bf3 	str	x19, [sp,#16]
 /home/pedro/devel/optee/optee_os/lib/libutils/isoc/bget_malloc.c:212
-    5c30:	d0000093 	adrp	x19, 17000 <mempool_u32+0xb50>
-    5c34:	913fc261 	add	x1, x19, #0xff0
+    5c30:	d0000093 	adrp	x19, 17000 <mempool_u32+0xc58>
+    5c34:	913ba261 	add	x1, x19, #0xee8
     5c38:	91002021 	add	x1, x1, #0x8
     5c3c:	94000216 	bl	6494 <memcpy>
     5c40:	aa0003e3 	mov	x3, x0
 /home/pedro/devel/optee/optee_os/lib/libutils/isoc/bget_malloc.c:213
-    5c44:	f947fa60 	ldr	x0, [x19,#4080]
+    5c44:	f9477660 	ldr	x0, [x19,#3816]
 /home/pedro/devel/optee/optee_os/lib/libutils/isoc/bget_malloc.c:215
     5c48:	f9400bf3 	ldr	x19, [sp,#16]
 /home/pedro/devel/optee/optee_os/lib/libutils/isoc/bget_malloc.c:213
@@ -9870,10 +9865,10 @@ brel_before():
 /home/pedro/devel/optee/optee_os/lib/libutils/isoc/bget_malloc.c:442
     5ea8:	a93f0a61 	stp	x1, x2, [x19,#-16]
 /home/pedro/devel/optee/optee_os/lib/libutils/isoc/bget_malloc.c:456
-    5eac:	d0000081 	adrp	x1, 17000 <mempool_u32+0xb50>
-    5eb0:	f947f820 	ldr	x0, [x1,#4080]
+    5eac:	d0000081 	adrp	x1, 17000 <mempool_u32+0xc58>
+    5eb0:	f9477420 	ldr	x0, [x1,#3816]
     5eb4:	cb140014 	sub	x20, x0, x20
-    5eb8:	f907f834 	str	x20, [x1,#4080]
+    5eb8:	f9077434 	str	x20, [x1,#3816]
 /home/pedro/devel/optee/optee_os/lib/libutils/isoc/bget_malloc.c:457
     5ebc:	b6f80214 	tbz	x20, #63, 5efc <memalign+0x1dc>
     5ec0:	d0000023 	adrp	x3, b000 <mpa_mul_mod+0x68>
@@ -10012,10 +10007,10 @@ brel_after():
     605c:	f9400801 	ldr	x1, [x0,#16]
     6060:	f9000c20 	str	x0, [x1,#24]
 /home/pedro/devel/optee/optee_os/lib/libutils/isoc/bget_malloc.c:528
-    6064:	b0000081 	adrp	x1, 17000 <mempool_u32+0xb50>
-    6068:	f947f820 	ldr	x0, [x1,#4080]
+    6064:	b0000081 	adrp	x1, 17000 <mempool_u32+0xc58>
+    6068:	f9477420 	ldr	x0, [x1,#3816]
     606c:	cb140014 	sub	x20, x0, x20
-    6070:	f907f834 	str	x20, [x1,#4080]
+    6070:	f9077434 	str	x20, [x1,#3816]
 /home/pedro/devel/optee/optee_os/lib/libutils/isoc/bget_malloc.c:529
     6074:	b6f80154 	tbz	x20, #63, 609c <memalign+0x37c>
     6078:	b0000023 	adrp	x3, b000 <mpa_mul_mod+0x68>
@@ -10078,8 +10073,8 @@ malloc_add_pool():
     6108:	f100be7f 	cmp	x19, #0x2f
     610c:	54000449 	b.ls	6194 <malloc_add_pool+0xe4>
 /home/pedro/devel/optee/optee_os/lib/libutils/isoc/bget_malloc.c:907
-    6110:	b0000095 	adrp	x21, 17000 <mempool_u32+0xb50>
-    6114:	913fc2b5 	add	x21, x21, #0xff0
+    6110:	b0000095 	adrp	x21, 17000 <mempool_u32+0xc58>
+    6114:	913ba2b5 	add	x21, x21, #0xee8
 /home/pedro/devel/optee/optee_os/lib/libutils/isoc/bget_malloc.c:906
     6118:	aa1303e1 	mov	x1, x19
     611c:	aa1403e0 	mov	x0, x20
@@ -10146,8 +10141,8 @@ malloc_buffer_is_within_alloced():
     61b4:	aa0003e5 	mov	x5, x0
 bpool_foreach_iterator_init():
 /home/pedro/devel/optee/optee_os/lib/libutils/isoc/bget_malloc.c:247
-    61b8:	b0000080 	adrp	x0, 17000 <mempool_u32+0xb50>
-    61bc:	913fc000 	add	x0, x0, #0xff0
+    61b8:	b0000080 	adrp	x0, 17000 <mempool_u32+0xc58>
+    61bc:	913ba000 	add	x0, x0, #0xee8
 /home/pedro/devel/optee/optee_os/lib/libutils/isoc/bget_malloc.c:246
     61c0:	d2800006 	mov	x6, #0x0                   	// #0
 bpool_foreach_pool():
@@ -10293,8 +10288,8 @@ malloc_buffer_is_within_alloced():
 0000000000006328 <malloc_buffer_overlaps_heap>:
 malloc_buffer_overlaps_heap():
 /home/pedro/devel/optee/optee_os/lib/libutils/isoc/bget_malloc.c:965
-    6328:	b0000082 	adrp	x2, 17000 <mempool_u32+0xb50>
-    632c:	913fc042 	add	x2, x2, #0xff0
+    6328:	b0000082 	adrp	x2, 17000 <mempool_u32+0xc58>
+    632c:	913ba042 	add	x2, x2, #0xee8
 /home/pedro/devel/optee/optee_os/lib/libutils/isoc/bget_malloc.c:958
     6330:	8b010001 	add	x1, x0, x1
 /home/pedro/devel/optee/optee_os/lib/libutils/isoc/bget_malloc.c:965
@@ -14775,8 +14770,8 @@ mpa_mul_word():
 00000000000094dc <mpa_set_random_generator>:
 mpa_set_random_generator():
 /home/pedro/devel/optee/optee_os/lib/libmpa/mpa_random.c:35
-    94dc:	f0000061 	adrp	x1, 18000 <mstats+0x8>
-    94e0:	f9002820 	str	x0, [x1,#80]
+    94dc:	d0000061 	adrp	x1, 17000 <mempool_u32+0xc58>
+    94e0:	f907a420 	str	x0, [x1,#3912]
     94e4:	d65f03c0 	ret
 
 00000000000094e8 <mpa_get_random>:
@@ -14809,7 +14804,7 @@ mpa_get_random():
     952c:	b9000680 	str	w0, [x20,#4]
 get_random_byte():
 /home/pedro/devel/optee/optee_os/lib/libmpa/mpa_random.c:41
-    9530:	f000007a 	adrp	x26, 18000 <mstats+0x8>
+    9530:	d000007a 	adrp	x26, 17000 <mempool_u32+0xc58>
 mpa_get_random():
 /home/pedro/devel/optee/optee_os/lib/libmpa/mpa_random.c:61
     9534:	35000593 	cbnz	w19, 95e4 <mpa_get_random+0xfc>
@@ -14821,7 +14816,7 @@ mpa_get_random():
     9548:	53185c16 	lsl	w22, w0, #8
 get_random_byte():
 /home/pedro/devel/optee/optee_os/lib/libmpa/mpa_random.c:41
-    954c:	f9402b42 	ldr	x2, [x26,#80]
+    954c:	f947a742 	ldr	x2, [x26,#3912]
     9550:	d2800021 	mov	x1, #0x1                   	// #1
     9554:	aa1703e0 	mov	x0, x23
     9558:	d63f0040 	blr	x2
@@ -14905,13 +14900,13 @@ mpa_get_random_digits():
     9628:	a8c27bfd 	ldp	x29, x30, [sp],#32
     962c:	d65f03c0 	ret
 /home/pedro/devel/optee/optee_os/lib/libmpa/mpa_random.c:93
-    9630:	f0000060 	adrp	x0, 18000 <mstats+0x8>
+    9630:	d0000060 	adrp	x0, 17000 <mempool_u32+0xc58>
     9634:	7100027f 	cmp	w19, #0x0
 /home/pedro/devel/optee/optee_os/lib/libmpa/mpa_random.c:91
     9638:	b9000693 	str	w19, [x20,#4]
 /home/pedro/devel/optee/optee_os/lib/libmpa/mpa_random.c:93
     963c:	5a93a673 	cneg	w19, w19, lt
-    9640:	f9402802 	ldr	x2, [x0,#80]
+    9640:	f947a402 	ldr	x2, [x0,#3912]
     9644:	531e7661 	lsl	w1, w19, #2
     9648:	91002280 	add	x0, x20, #0x8
     964c:	93407c21 	sxtw	x1, w1
@@ -16753,8 +16748,8 @@ mpa_set_str():
     a9b4:	6b0600bf 	cmp	w5, w6
     a9b8:	5400042c 	b.gt	aa3c <mpa_set_str+0x164>
 /home/pedro/devel/optee/optee_os/lib/libmpa/mpa_io.c:334
-    a9bc:	d0000065 	adrp	x5, 18000 <mstats+0x8>
-    a9c0:	910160b8 	add	x24, x5, #0x58
+    a9bc:	b0000065 	adrp	x5, 17000 <mempool_u32+0xc58>
+    a9c0:	913d40b8 	add	x24, x5, #0xf50
 /home/pedro/devel/optee/optee_os/lib/libmpa/mpa_io.c:324
     a9c4:	52800013 	mov	w19, #0x0                   	// #0
 __mpa_is_char_in_base():
@@ -16857,14 +16852,14 @@ mpa_set_str():
     aab4:	52800020 	mov	w0, #0x1                   	// #1
 /home/pedro/devel/optee/optee_os/lib/libmpa/mpa_io.c:358
     aab8:	51000666 	sub	w6, w19, #0x1
-    aabc:	d0000064 	adrp	x4, 18000 <mstats+0x8>
+    aabc:	b0000064 	adrp	x4, 17000 <mempool_u32+0xc58>
 /home/pedro/devel/optee/optee_os/lib/libmpa/mpa_io.c:355
     aac0:	2900fe80 	stp	w0, wzr, [x20,#4]
     aac4:	93407cc3 	sxtw	x3, w6
 /home/pedro/devel/optee/optee_os/lib/libmpa/mpa_io.c:356
     aac8:	52800080 	mov	w0, #0x4                   	// #4
 /home/pedro/devel/optee/optee_os/lib/libmpa/mpa_io.c:360
-    aacc:	91016087 	add	x7, x4, #0x58
+    aacc:	913d4087 	add	x7, x4, #0xf50
 /home/pedro/devel/optee/optee_os/lib/libmpa/mpa_io.c:361
     aad0:	2a0003e8 	mov	w8, w0
 /home/pedro/devel/optee/optee_os/lib/libmpa/mpa_io.c:359
@@ -16872,12 +16867,12 @@ mpa_set_str():
     aad8:	b94002c2 	ldr	w2, [x22]
     aadc:	5400024c 	b.gt	ab24 <mpa_set_str+0x24c>
 /home/pedro/devel/optee/optee_os/lib/libmpa/mpa_io.c:375
-    aae0:	39416081 	ldrb	w1, [x4,#88]
+    aae0:	397d4081 	ldrb	w1, [x4,#3920]
 /home/pedro/devel/optee/optee_os/lib/libmpa/mpa_io.c:371
     aae4:	360000a6 	tbz	w6, #0, aaf8 <mpa_set_str+0x220>
 /home/pedro/devel/optee/optee_os/lib/libmpa/mpa_io.c:372
-    aae8:	91016083 	add	x3, x4, #0x58
-    aaec:	39416081 	ldrb	w1, [x4,#88]
+    aae8:	913d4083 	add	x3, x4, #0xf50
+    aaec:	397d4081 	ldrb	w1, [x4,#3920]
     aaf0:	39400463 	ldrb	w3, [x3,#1]
     aaf4:	4a011061 	eor	w1, w3, w1, lsl #4
 /home/pedro/devel/optee/optee_os/lib/libmpa/mpa_io.c:373

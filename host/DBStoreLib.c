@@ -188,6 +188,8 @@ void call_ta_init(int call_type, const char *appid)
     modulusSM.size  = 256;
 	modulusSM.buffer = calloc(256, sizeof(char));
 
+	printf("sizeof modulus - 1 %d\n", sizeof(modulus_app) - 1);
+
 	/* Initialize a context connecting us to the TEE */
 	res = TEEC_InitializeContext(NULL, &ctx);
 	if (res != TEEC_SUCCESS)
@@ -215,8 +217,6 @@ void call_ta_init(int call_type, const char *appid)
 	if(encrypt_using_public_key(public_key_dbstore, message, strlen(message), crypto_req, &crypto_req_len) != 1)
 		printf("Encryption gone wrong...\n");
 
-	printf("crypto len: %d\n", crypto_req_len);
-
 	//printf("crypto: %s\n", crypto_req);
 
 	op.params[0].memref.parent = &signatureSM;
@@ -225,7 +225,7 @@ void call_ta_init(int call_type, const char *appid)
 
     op.params[1].memref.parent = &modulusSM;
     op.params[1].memref.size = 256;
-    memcpy(modulusSM.buffer, modulus_app, (sizeof(modulus_app) / sizeof(uint8_t)));
+    memcpy(modulusSM.buffer, modulus_app, 256);
 
     op.params[2].memref.parent = &cryptoSM;
     op.params[2].memref.size = crypto_req_len;
