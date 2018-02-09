@@ -25,6 +25,26 @@ char public_key_app[] =
 "fQIDAQAB\n"
 "-----END PUBLIC KEY-----\n";
 
+uint8_t modulus_app[] =
+"\xd0\xd8\x55\x91\x33\x3e\x70\x80\xa8\x3e\x24\x05\x9d\x9d"
+"\xe3\x31\xe7\x7f\xbd\x1c\xc9\x8c\x29\x58\xcd\xdd\x14\x94\xea"
+"\xa9\xd6\xa5\xb1\x25\xc3\x9e\xed\xb1\xbd\xad\x93\x85\x36\x49"
+"\x13\xa5\x6a\xb1\x39\xf2\x99\x43\x31\xca\xa8\x69\x99\x65\xab"
+"\x97\xc4\xfa\xb9\x21\xf1\xbb\xda\x28\x3d\x7f\xd8\x4b\xca\xfd"
+"\xcd\xa5\xbe\x97\xe5\xb1\x5f\x74\x21\x85\x04\x0e\xed\xf1\x8e"
+"\x83\x40\xc0\x79\x2b\x64\x33\xe7\xed\x47\x42\x56\x87\xe5\x1e"
+"\x31\x27\xf8\x70\x52\x5a\x14\x07\x34\xb0\x9a\x58\xe7\x32\xf6"
+"\x9c\x04\x4a\xd3\xe0\x2a\x9c\x2a\x76\x1a\xf9\x00\x6c\x17\x20"
+"\x72\xf9\xa7\x46\x12\x54\x68\xa3\xfb\xc5\x92\xc6\x77\xf4\x19"
+"\x66\x86\x33\x11\x23\xa8\xd8\xc0\x28\xca\x46\x16\x3f\x37\xea"
+"\xeb\x90\x63\x80\x8a\x6d\x61\x55\x29\x7f\x82\x90\x2d\x41\x53"
+"\x53\x3d\x72\x95\x7f\x00\xc5\x69\xd4\x13\x92\x00\x8e\xcb\x3d"
+"\x96\x8f\x57\x52\xbd\x9f\xd4\x81\xaa\xea\xdc\x1c\xa3\x5d\x87"
+"\x06\xdf\x83\x99\x15\x83\x98\x82\x2c\x4d\xa8\x15\x6f\x1d\xd8"
+"\xcb\x91\x79\xa3\x4d\x0c\xf7\x6d\xcd\x97\x76\xc2\x98\x1a\x53"
+"\x65\xd9\x40\xa2\x23\xca\x0e\x63\x19\xb5\xef\xe9\x06\xde\x75"
+"\x52\x7d";
+
 uint8_t public_key_app_int[] = 
 "\x01\x00\x01";
 
@@ -130,7 +150,7 @@ int decrypt_using_private_key (char * private_key, char * in, int in_len, char *
    }
 }
 
-void call_ta_init(int call_type, const char *req)
+void call_ta_init(int call_type, const char *appid)
 {
 	TEEC_Result res;
 	TEEC_Context ctx;
@@ -141,32 +161,32 @@ void call_ta_init(int call_type, const char *req)
 	uint32_t err_origin;
 
 	/* Shared buffers */
-	TEEC_SharedMemory reqSM = {0};
-	TEEC_SharedMemory certificateSM = {0};
 	TEEC_SharedMemory cryptoSM = {0};
+	TEEC_SharedMemory signatureSM = {0};
+	TEEC_SharedMemory modulusSM = {0};
 
 	char nonce[NONCE_LEN] = {0};
-	char *message = (char *) malloc((strlen(req) + NONCE_LEN + 1) * sizeof(char));
+	char *message = (char *) malloc((strlen(appid) + NONCE_LEN + 1) * sizeof(char));
 
 	char crypto_req[CRYPTO_LEN] = {0};
 	int crypto_req_len;
 
 	//const char *input = "teste\n";
-    int req_len = strlen(req);
+    //int req_len = strlen(req);
 
-    int certificate_len = 255;
+    //int certificate_len = 255;
 
-    reqSM.flags = TEEC_MEM_INPUT | TEEC_MEM_OUTPUT;
-    reqSM.size  = req_len;
-	reqSM.buffer = calloc(req_len, sizeof(char));
-
-	certificateSM.flags = TEEC_MEM_INPUT | TEEC_MEM_OUTPUT;
-    certificateSM.size  = certificate_len;
-	certificateSM.buffer = calloc(certificate_len, sizeof(char));
-
-	cryptoSM.flags = TEEC_MEM_INPUT | TEEC_MEM_OUTPUT;
+    cryptoSM.flags = TEEC_MEM_INPUT | TEEC_MEM_OUTPUT;
     cryptoSM.size  = CRYPTO_LEN;
 	cryptoSM.buffer = calloc(CRYPTO_LEN, sizeof(char));
+
+    signatureSM.flags = TEEC_MEM_INPUT | TEEC_MEM_OUTPUT;
+    signatureSM.size  = 256;
+	signatureSM.buffer = calloc(256, sizeof(char));
+
+	modulusSM.flags = TEEC_MEM_INPUT | TEEC_MEM_OUTPUT;
+    modulusSM.size  = 256;
+	modulusSM.buffer = calloc(256, sizeof(char));
 
 	/* Initialize a context connecting us to the TEE */
 	res = TEEC_InitializeContext(NULL, &ctx);
@@ -188,7 +208,7 @@ void call_ta_init(int call_type, const char *req)
 
 	srand(time(NULL));
 	rand_str(nonce, NONCE_LEN);
-	strcat(message, req);
+	strcat(message, appid);
 	strcat(message, "_");
 	strcat(message, nonce);
 
@@ -199,24 +219,25 @@ void call_ta_init(int call_type, const char *req)
 
 	//printf("crypto: %s\n", crypto_req);
 
-	op.params[0].memref.parent = &reqSM;
-    op.params[0].memref.size = req_len;
-    memcpy(reqSM.buffer, req, req_len);
+	op.params[0].memref.parent = &signatureSM;
+    op.params[0].memref.size = 256;
+    memcpy(signatureSM.buffer, "signature", 9);
 
-    op.params[1].memref.parent = &certificateSM;
-    op.params[1].memref.size = certificate_len;
+    op.params[1].memref.parent = &modulusSM;
+    op.params[1].memref.size = 256;
+    memcpy(modulusSM.buffer, modulus_app, (sizeof(modulus_app) / sizeof(uint8_t)));
 
     op.params[2].memref.parent = &cryptoSM;
     op.params[2].memref.size = crypto_req_len;
     memcpy(cryptoSM.buffer, crypto_req, crypto_req_len);
 
 	/* Use TEE Client API to allocate the underlying memory buffer. */
-	res = TEEC_RegisterSharedMemory(&ctx, &reqSM);
+	res = TEEC_RegisterSharedMemory(&ctx, &signatureSM);
     if (res != TEEC_SUCCESS)
 		errx(1, "TEEC_RegisterSharedMemory failed with code 0x%x origin 0x%x",
 			res, err_origin);
 
-	res = TEEC_RegisterSharedMemory(&ctx, &certificateSM);
+	res = TEEC_RegisterSharedMemory(&ctx, &modulusSM);
     if (res != TEEC_SUCCESS)
 		errx(1, "TEEC_RegisterSharedMemory failed with code 0x%x origin 0x%x",
 			res, err_origin);
@@ -238,14 +259,14 @@ void call_ta_init(int call_type, const char *req)
 	 * TA_HELLO_WORLD_CMD_INC_VALUE is the actual function in the TA to be
 	 * called.
 	 */
-	printf("INIT: Invoking DBStore with request %s\n", (char *) reqSM.buffer);
+	printf("INIT: Invoking DBStore with request %s\n", (char *) signatureSM.buffer);
 	res = TEEC_InvokeCommand(&sess, TA_DBSTORE_INIT, &op,
 		 &err_origin);
 	if (res != TEEC_SUCCESS)
 		errx(1, "TEEC_InvokeCommand failed with code 0x%x origin 0x%x",
 			res, err_origin);
-	printf("INIT: Received from DBStore values %s and %s\n", (char *) reqSM.buffer,
-		(char *) certificateSM.buffer);
+	printf("INIT: Received from DBStore values %s and %s\n", (char *) signatureSM.buffer,
+		(char *) modulusSM.buffer);
 
 	/*
 	 * We're done with the TA, close the session and

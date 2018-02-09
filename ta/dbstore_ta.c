@@ -59,7 +59,7 @@ uint8_t modulus_dbstore[] =
 "\x93\x5d\xcc\x01\x2d\xdc\x01\x4d\x82\x80\x09\x67\x7b\x38\x50"
 "\x76\x75";
 
-uint8_t public_key_dbstore[] =
+uint8_t public_key[] =
 "\x01\x00\x01";
 
 uint8_t private_key_dbstore[] =
@@ -82,6 +82,26 @@ uint8_t private_key_dbstore[] =
 "\xec\xf7\xe0\x60\x45\x79\xaa\x6c\x54\xa0\xb6\xae\x3e\xcc\x94"
 "\x61";
 
+uint8_t modulus_app[] =
+"\xd0\xd8\x55\x91\x33\x3e\x70\x80\xa8\x3e\x24\x05\x9d\x9d"
+"\xe3\x31\xe7\x7f\xbd\x1c\xc9\x8c\x29\x58\xcd\xdd\x14\x94\xea"
+"\xa9\xd6\xa5\xb1\x25\xc3\x9e\xed\xb1\xbd\xad\x93\x85\x36\x49"
+"\x13\xa5\x6a\xb1\x39\xf2\x99\x43\x31\xca\xa8\x69\x99\x65\xab"
+"\x97\xc4\xfa\xb9\x21\xf1\xbb\xda\x28\x3d\x7f\xd8\x4b\xca\xfd"
+"\xcd\xa5\xbe\x97\xe5\xb1\x5f\x74\x21\x85\x04\x0e\xed\xf1\x8e"
+"\x83\x40\xc0\x79\x2b\x64\x33\xe7\xed\x47\x42\x56\x87\xe5\x1e"
+"\x31\x27\xf8\x70\x52\x5a\x14\x07\x34\xb0\x9a\x58\xe7\x32\xf6"
+"\x9c\x04\x4a\xd3\xe0\x2a\x9c\x2a\x76\x1a\xf9\x00\x6c\x17\x20"
+"\x72\xf9\xa7\x46\x12\x54\x68\xa3\xfb\xc5\x92\xc6\x77\xf4\x19"
+"\x66\x86\x33\x11\x23\xa8\xd8\xc0\x28\xca\x46\x16\x3f\x37\xea"
+"\xeb\x90\x63\x80\x8a\x6d\x61\x55\x29\x7f\x82\x90\x2d\x41\x53"
+"\x53\x3d\x72\x95\x7f\x00\xc5\x69\xd4\x13\x92\x00\x8e\xcb\x3d"
+"\x96\x8f\x57\x52\xbd\x9f\xd4\x81\xaa\xea\xdc\x1c\xa3\x5d\x87"
+"\x06\xdf\x83\x99\x15\x83\x98\x82\x2c\x4d\xa8\x15\x6f\x1d\xd8"
+"\xcb\x91\x79\xa3\x4d\x0c\xf7\x6d\xcd\x97\x76\xc2\x98\x1a\x53"
+"\x65\xd9\x40\xa2\x23\xca\x0e\x63\x19\xb5\xef\xe9\x06\xde\x75"
+"\x52\x7d";
+
 int decrypt_using_private_key (char * in, int in_len, char * out, int * out_len) {
 
    TEE_Result ret = TEE_SUCCESS; // return code
@@ -103,8 +123,8 @@ int decrypt_using_private_key (char * in, int in_len, char * out, int * out_len)
 
    // Public key
    rsa_attrs[1].attributeID = TEE_ATTR_RSA_PUBLIC_EXPONENT;
-   rsa_attrs[1].content.ref.buffer = public_key_dbstore;
-   rsa_attrs[1].content.ref.length = SIZE_OF_VEC(public_key_dbstore);
+   rsa_attrs[1].content.ref.buffer = public_key;
+   rsa_attrs[1].content.ref.length = SIZE_OF_VEC(public_key);
 
    // Private key
    rsa_attrs[2].attributeID = TEE_ATTR_RSA_PRIVATE_EXPONENT;
@@ -180,11 +200,11 @@ int decrypt_using_private_key (char * in, int in_len, char * out, int * out_len)
 }
 
 // encrypt
-/*int encrypt_using_public_key (char * in, int in_len, char * out, int * out_len) {
+int encrypt_using_public_key (uint8_t *modulus, const char * in, int in_len, char * out, int * out_len) {
 
    TEE_Result ret = TEE_SUCCESS; // return code
    TEE_ObjectHandle key = (TEE_ObjectHandle) NULL;
-   TEE_Attribute rsa_attrs[3];
+   TEE_Attribute rsa_attrs[2];
    void * to_encrypt = NULL;
    uint32_t cipher_len = 256;
    void * cipher = NULL;
@@ -194,31 +214,27 @@ int decrypt_using_private_key (char * in, int in_len, char * out, int * out_len)
    // modulus
    rsa_attrs[0].attributeID = TEE_ATTR_RSA_MODULUS;
    rsa_attrs[0].content.ref.buffer = modulus;
-   rsa_attrs[0].content.ref.length = SIZE_OF_VEC (modulus_dbstore);
+   rsa_attrs[0].content.ref.length = SIZE_OF_VEC (modulus);
    // Public key
    rsa_attrs[1].attributeID = TEE_ATTR_RSA_PUBLIC_EXPONENT;
    rsa_attrs[1].content.ref.buffer = public_key;
-   rsa_attrs[1].content.ref.length = SIZE_OF_VEC (public_key_dbstore);
-   // Private key
-   rsa_attrs[2].attributeID = TEE_ATTR_RSA_PRIVATE_EXPONENT;
-   rsa_attrs[2].content.ref.buffer = private_key;
-   rsa_attrs[2].content.ref.length = SIZE_OF_VEC (private_key_dbstore);
+   rsa_attrs[1].content.ref.length = SIZE_OF_VEC (public_key);
 
    // create a transient object
-   ret = TEE_AllocateTransientObject(TEE_TYPE_RSA_KEYPAIR, 512, &key);
+   ret = TEE_AllocateTransientObject(TEE_TYPE_RSA_PUBLIC_KEY, 2048, &key);
    if (ret != TEE_SUCCESS) {
       return TEE_ERROR_BAD_PARAMETERS;
    }
 
    // populate the object with your keys
-   ret = TEE_PopulateTransientObject(key, (TEE_Attribute *)&rsa_attrs, 3);
+   ret = TEE_PopulateTransientObject(key, (TEE_Attribute *)&rsa_attrs, 2);
    if (ret != TEE_SUCCESS) {
       return TEE_ERROR_BAD_PARAMETERS;
    }
 
    // create your structures to de / encrypt
-   to_encrypt = TEE_Malloc (in_len, 0);
-   cipher = TEE_Malloc (cipher_len, 0);
+   to_encrypt = TEE_Malloc(256, 0);
+   cipher = TEE_Malloc(cipher_len, 0);
    if (!to_encrypt || !cipher) {
       return TEE_ERROR_BAD_PARAMETERS;
    }
@@ -228,7 +244,7 @@ int decrypt_using_private_key (char * in, int in_len, char * out, int * out_len)
    TEE_GetObjectInfo (key, &info);
 
    // Allocate the operation
-   ret = TEE_AllocateOperation (&handle, TEE_ALG_RSAES_PKCS1_V1_5, TEE_MODE_ENCRYPT, info.maxObjectSize);
+   ret = TEE_AllocateOperation(&handle, TEE_ALG_RSAES_PKCS1_V1_5, TEE_MODE_ENCRYPT, 2048);
    if (ret != TEE_SUCCESS) {
       return -1;
    }
@@ -242,9 +258,15 @@ int decrypt_using_private_key (char * in, int in_len, char * out, int * out_len)
 
    // encrypt
    ret = TEE_AsymmetricEncrypt (handle, (TEE_Attribute *)NULL, 0, to_encrypt, in_len, cipher, &cipher_len);
-   if (ret != TEE_SUCCESS) {
+   if (ret == TEE_ERROR_SHORT_BUFFER) {
+      IMSG("ERROR: Crypto decrypt short input buffer\n");
       TEE_FreeOperation(handle);
-      return -1;
+      return TEE_ERROR_BAD_PARAMETERS;
+   }
+   else if (ret == TEE_ERROR_BAD_PARAMETERS) {
+      IMSG("ERROR: Crypto decrypt bad parameters\n");
+      TEE_FreeOperation(handle);
+      return TEE_ERROR_BAD_PARAMETERS;
    }
 
    // finish off
@@ -260,7 +282,7 @@ int decrypt_using_private_key (char * in, int in_len, char * out, int * out_len)
 
    // finished
    return 0;
-}*/
+}
 
 TEE_Result TA_CreateEntryPoint(void)
 {
@@ -334,16 +356,19 @@ static TEE_Result init(uint32_t param_types,
 	TEE_ObjectHandle file_handle;
 	//TEE_ObjectHandle key_handle;
 
-  char decrypted[1024] = {0};
+  char decrypted[256] = {0};
   int decrypted_len;
+  char encrypted[256] = {0};
+  int encrypted_len;
 
   const char *req;
-  const char *certificate;
+  //const char to_encrypt[256];
+  //const char *certificate;
   const char *content = "teste";
-  int req_len, certificate_len;
+  int req_len;//, certificate_len;
   int object_id = 0;
   void *dst_req;
-  void *dst_certificate;
+  //void *dst_certificate;
 
 	DMSG("has been called");
 
@@ -365,6 +390,9 @@ static TEE_Result init(uint32_t param_types,
   decrypt_using_private_key(params[2].memref.buffer, params[2].memref.size, decrypted, &decrypted_len);
   //IMSG("crypto: %s\n", (char *) params[2].memref.buffer);
   IMSG("INIT: Decrypted value is %s\n", decrypted);
+
+  //TEE_MemMove(to_encrypt, (char *) "teste", 5);
+  encrypt_using_public_key((uint8_t *) params[1].memref.buffer, "teste", 5, encrypted, &encrypted_len);
 	
 	req = "new_req";
 	req_len = strlen(req);
@@ -372,14 +400,16 @@ static TEE_Result init(uint32_t param_types,
   TEE_MemMove(dst_req, req, req_len);
   TEE_MemMove(params[0].memref.buffer, dst_req, req_len);
 
-  certificate = "new_certificate";
+  TEE_MemMove(params[1].memref.buffer, encrypted, 256);
+
+  /*certificate = "new_certificate";
   certificate_len = strlen(certificate);
   dst_certificate = TEE_Malloc(certificate_len, TEE_MALLOC_FILL_ZERO);
   TEE_MemMove(dst_certificate, certificate, certificate_len);
-  TEE_MemMove(params[1].memref.buffer, dst_certificate, certificate_len);
+  TEE_MemMove(params[1].memref.buffer, dst_certificate, certificate_len);*/
 
-	IMSG("INIT: Answering with values %s and %s\n", (char *) params[0].memref.buffer,
-		(char *) params[1].memref.buffer);
+	IMSG("INIT: Answering with values %s\n", (char *) params[0].memref.buffer/*,
+		(char *) params[1].memref.buffer*/);
 
 	return TEE_SUCCESS;
 }
