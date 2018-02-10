@@ -50,31 +50,31 @@ uint8_t public_key_app_int[] =
 
 char private_key_app[] =
 "-----BEGIN RSA PRIVATE KEY-----\n"
-"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\n"
+"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\n"
 "-----END RSA PRIVATE KEY-----\n";
 
 char public_key_dbstore[] =
@@ -136,11 +136,11 @@ int encrypt_using_public_key (char * public_key, char * in, int in_len, char * o
 }
 
 // decrypt in string using the public key
-int decrypt_using_private_key (char * private_key, char * in, int in_len, char * out, int * out_len) {
+int decrypt_using_private_key (char * in, int in_len, char * out, int * out_len) {
 
    RSA * rsa;
 
-   rsa = createRSA ((unsigned char *) private_key, 0);
+   rsa = createRSA ((unsigned char *) private_key_app, 0);
    *out_len = RSA_private_decrypt (in_len, (unsigned char *)in, (unsigned char *) out, rsa, RSA_PKCS1_PADDING);
 
    if (*out_len == -1)
@@ -170,6 +170,8 @@ void call_ta_init(int call_type, const char *appid)
 
 	char crypto_req[CRYPTO_LEN] = {0};
 	int crypto_req_len;
+	char decrypt_req[CRYPTO_LEN] = {0};
+	int decrypt_req_len;
 
 	//const char *input = "teste\n";
     //int req_len = strlen(req);
@@ -187,8 +189,6 @@ void call_ta_init(int call_type, const char *appid)
 	modulusSM.flags = TEEC_MEM_INPUT | TEEC_MEM_OUTPUT;
     modulusSM.size  = 256;
 	modulusSM.buffer = calloc(256, sizeof(char));
-
-	printf("sizeof modulus - 1 %d\n", sizeof(modulus_app) - 1);
 
 	/* Initialize a context connecting us to the TEE */
 	res = TEEC_InitializeContext(NULL, &ctx);
@@ -265,8 +265,13 @@ void call_ta_init(int call_type, const char *appid)
 	if (res != TEEC_SUCCESS)
 		errx(1, "TEEC_InvokeCommand failed with code 0x%x origin 0x%x",
 			res, err_origin);
-	printf("INIT: Received from DBStore values %s and %s\n", (char *) signatureSM.buffer,
-		(char *) modulusSM.buffer);
+	//printf("INIT: Received from DBStore values %s and %s\n", (char *) signatureSM.buffer,
+		//(char *) modulusSM.buffer);
+
+	if(decrypt_using_private_key(modulusSM.buffer, 256, decrypt_req, &decrypt_req_len) != 1)
+		printf("Bad decrypto...");
+
+	printf("INIT: Decrypted response is %s\n", decrypt_req);
 
 	/*
 	 * We're done with the TA, close the session and
