@@ -82,6 +82,131 @@ uint8_t private_key_dbstore[] =
 "\xec\xf7\xe0\x60\x45\x79\xaa\x6c\x54\xa0\xb6\xae\x3e\xcc\x94"
 "\x61";
 
+void transform_challenge(char * challenge) {
+  int i = 0;
+
+  while(i < (int) strlen(challenge)) {
+    challenge[i] += 2;
+    i += 2;
+  }
+}
+
+int create_digest(char * in, int in_len, unsigned char * out, int * out_len) {
+   TEE_Result ret = TEE_SUCCESS; // return code
+   TEE_OperationHandle handle = (TEE_OperationHandle) NULL;
+
+   uint32_t message_len = in_len; // return encrypted hash length
+   void *message = NULL; // return encrypted hash
+
+   uint32_t digest_len = 20; // return decoded hash length
+   void *digest = NULL; // return decoded hash
+
+   message = TEE_Malloc(message_len, 0);
+   digest = TEE_Malloc(digest_len, 0);
+
+   TEE_MemMove(message, in, in_len);
+   message_len = in_len;
+
+   // Allocate the operation
+   ret = TEE_AllocateOperation(&handle, TEE_ALG_SHA1, TEE_MODE_DIGEST, 0);
+   if (ret != TEE_SUCCESS) {
+      IMSG("ERROR: Digest allocate\n");
+      return -1;
+   }
+
+   // digest
+   //TEE_DigestUpdate(handle, in, in_len);
+
+   ret = TEE_DigestDoFinal(handle, message, in_len, digest, &digest_len);
+   if (ret == TEE_ERROR_SHORT_BUFFER) {
+      IMSG("ERROR: Digest final short buffer\n");
+      return -1;
+   }
+
+   // clean up after yourself
+   TEE_FreeOperation(handle);
+   memcpy(out, digest, digest_len);
+
+   *out_len = digest_len;
+
+   // fin
+   return 0;
+}
+
+int create_signature(char * in, int in_len, char * out, int * out_len) {
+
+  TEE_Result ret = TEE_SUCCESS; // return code
+  TEE_ObjectHandle key = (TEE_ObjectHandle) NULL;
+  TEE_Attribute rsa_attrs[3];
+  TEE_OperationHandle handle = (TEE_OperationHandle) NULL;
+  //unsigned long int sizeofmod = 256; //hack because casting void * to uint8_t * leads to a sizeof of -1
+  unsigned char digest[20];
+  int digest_len;
+  void *signature = NULL;
+  uint32_t sign_len = 256;
+  //char clean_sig[256];
+  //int clean_sig_len;
+
+  create_digest(in, in_len, digest, &digest_len);
+
+  IMSG("digest %s\n", digest);
+  
+  // modulus
+  // modulus
+   rsa_attrs[0].attributeID = TEE_ATTR_RSA_MODULUS;
+   rsa_attrs[0].content.ref.buffer = modulus_dbstore;
+   rsa_attrs[0].content.ref.length = SIZE_OF_VEC(modulus_dbstore);
+
+   // Public key
+   rsa_attrs[1].attributeID = TEE_ATTR_RSA_PUBLIC_EXPONENT;
+   rsa_attrs[1].content.ref.buffer = public_key;
+   rsa_attrs[1].content.ref.length = SIZE_OF_VEC(public_key);
+
+   // Private key
+   rsa_attrs[2].attributeID = TEE_ATTR_RSA_PRIVATE_EXPONENT;
+   rsa_attrs[2].content.ref.buffer = private_key_dbstore;
+   rsa_attrs[2].content.ref.length = SIZE_OF_VEC(private_key_dbstore);
+
+  // create a transient object
+  ret = TEE_AllocateTransientObject(TEE_TYPE_RSA_KEYPAIR, 2048, &key);
+  if (ret != TEE_SUCCESS) {
+    return TEE_ERROR_BAD_PARAMETERS;
+  }
+
+  // populate the object with your keys
+  ret = TEE_PopulateTransientObject(key, (TEE_Attribute *)&rsa_attrs, 3);
+  if (ret != TEE_SUCCESS) {
+    return TEE_ERROR_BAD_PARAMETERS;
+  }
+
+  // Allocate the operation
+  ret = TEE_AllocateOperation(&handle, TEE_ALG_RSASSA_PKCS1_V1_5_SHA1, TEE_MODE_SIGN, 2048);
+  if (ret != TEE_SUCCESS) {
+    return -1;
+  }
+
+  // set the key
+  ret = TEE_SetOperationKey(handle, key);
+  if (ret != TEE_SUCCESS) {
+    TEE_FreeOperation(handle);
+    return -1;
+  }
+
+  signature = TEE_Malloc(sign_len, 0);
+
+  // verify signature
+  ret = TEE_AsymmetricSignDigest(handle, (TEE_Attribute *)NULL, 0, digest, digest_len, signature, &sign_len);
+  if(ret == TEE_SUCCESS)
+    IMSG("INIT: Success creating signature!\n");
+  else if(ret == TEE_ERROR_SHORT_BUFFER)
+    IMSG("INIT: Error creating signature!\n");
+
+  memcpy(out, signature, sign_len);
+  *out_len = sign_len;
+
+  return 0;
+}
+
 int decrypt_using_private_key (char * in, int in_len, char * out, int * out_len) {
 
    TEE_Result ret = TEE_SUCCESS; // return code
@@ -168,8 +293,6 @@ int decrypt_using_private_key (char * in, int in_len, char * out, int * out_len)
    memcpy (out, decoded, decoded_len);
    *out_len = decoded_len;
 
-   IMSG("INIT: Decoded is %s\n", (char *) decoded);
-
    // clean up after yourself
    TEE_FreeOperation(handle);
    TEE_FreeTransientObject (key);
@@ -186,7 +309,7 @@ int encrypt_using_public_key (uint8_t * modulus, const char * in, int in_len, ch
    TEE_ObjectHandle key = (TEE_ObjectHandle) NULL;
    TEE_Attribute rsa_attrs[2];
    void * to_encrypt = NULL;
-   uint32_t cipher_len = 256;
+   uint32_t cipher_len = 512;
    void * cipher = NULL;
    TEE_ObjectInfo info;
    TEE_OperationHandle handle = (TEE_OperationHandle) NULL;
@@ -214,7 +337,7 @@ int encrypt_using_public_key (uint8_t * modulus, const char * in, int in_len, ch
    }
 
    // create your structures to de / encrypt
-   to_encrypt = TEE_Malloc(256, 0);
+   to_encrypt = TEE_Malloc(512, 0);
    cipher = TEE_Malloc(cipher_len, 0);
    if (!to_encrypt || !cipher) {
       return TEE_ERROR_BAD_PARAMETERS;
@@ -240,12 +363,12 @@ int encrypt_using_public_key (uint8_t * modulus, const char * in, int in_len, ch
    // encrypt
    ret = TEE_AsymmetricEncrypt (handle, (TEE_Attribute *)NULL, 0, to_encrypt, in_len, cipher, &cipher_len);
    if (ret == TEE_ERROR_SHORT_BUFFER) {
-      IMSG("ERROR: Crypto decrypt short input buffer\n");
+      IMSG("ERROR: Crypto encrypt short input buffer\n");
       TEE_FreeOperation(handle);
       return TEE_ERROR_BAD_PARAMETERS;
    }
    else if (ret == TEE_ERROR_BAD_PARAMETERS) {
-      IMSG("ERROR: Crypto decrypt bad parameters\n");
+      IMSG("ERROR: Crypto encrypt bad parameters\n");
       TEE_FreeOperation(handle);
       return TEE_ERROR_BAD_PARAMETERS;
    }
@@ -253,7 +376,7 @@ int encrypt_using_public_key (uint8_t * modulus, const char * in, int in_len, ch
    // finish off
    memcpy (out, cipher, cipher_len);
    *out_len = cipher_len;
-   out[cipher_len] = '\0';
+   //out[cipher_len] = '\0';
 
    // clean up after yourself
    TEE_FreeOperation(handle);
@@ -325,6 +448,12 @@ void TA_CloseSessionEntryPoint(void __maybe_unused *sess_ctx)
 	IMSG("Closing DBStore\n");
 }
 
+/*
+ *
+ * DBStore initialization protocol
+ *
+ */
+
 static TEE_Result init(uint32_t param_types,
 	TEE_Param params[4])
 {
@@ -341,17 +470,22 @@ static TEE_Result init(uint32_t param_types,
   int decrypted_len;
   char encrypted[256] = {0};
   int encrypted_len;
+  //char signature[256] = {0};
+  //int sign_len;
+  uint8_t * modulus; //params[1]
+  char * encrypted_message; //params[2]
 
-  const char *req;
   //const char to_encrypt[256];
   //const char *certificate;
   const char *content = "teste";
-  int req_len;//, certificate_len;
+  char *to_sign = (char *) "session_key";
   int object_id = 0;
-  void *dst_req;
   //void *dst_certificate;
 
 	DMSG("has been called");
+
+  modulus = (uint8_t *) params[1].memref.buffer;
+  encrypted_message = (char *) params[2].memref.buffer;
 
 	if (param_types != exp_param_types)
 		//return TEE_ERROR_BAD_PARAMETERS;
@@ -368,19 +502,16 @@ static TEE_Result init(uint32_t param_types,
 
 	TEE_CloseObject(file_handle);
 
-  decrypt_using_private_key(params[2].memref.buffer, params[2].memref.size, decrypted, &decrypted_len);
+  decrypt_using_private_key(encrypted_message, params[2].memref.size, decrypted, &decrypted_len);
   //IMSG("crypto: %s\n", (char *) params[2].memref.buffer);
   IMSG("INIT: Decrypted value is %s\n", decrypted);
 
-  //TEE_MemMove(to_encrypt, (char *) "teste", 5);
-  encrypt_using_public_key((uint8_t *) params[1].memref.buffer, "teste", 5, encrypted, &encrypted_len);
-	
-	req = "new_req";
-	req_len = strlen(req);
-  dst_req = TEE_Malloc(req_len, TEE_MALLOC_FILL_ZERO);
-  TEE_MemMove(dst_req, req, req_len);
-  TEE_MemMove(params[0].memref.buffer, dst_req, req_len);
+  transform_challenge(decrypted); //to guarantee the mutual authentication
 
+  //TEE_MemMove(to_encrypt, (char *) "teste", 5);
+  encrypt_using_public_key(modulus, decrypted, decrypted_len, encrypted, &encrypted_len);
+	
+  TEE_MemMove(params[0].memref.buffer, to_sign, 11);
   TEE_MemMove(params[1].memref.buffer, encrypted, 256);
 
   /*certificate = "new_certificate";
@@ -389,8 +520,7 @@ static TEE_Result init(uint32_t param_types,
   TEE_MemMove(dst_certificate, certificate, certificate_len);
   TEE_MemMove(params[1].memref.buffer, dst_certificate, certificate_len);*/
 
-	IMSG("INIT: Answering with values %s\n", (char *) params[0].memref.buffer/*,
-		(char *) params[1].memref.buffer*/);
+	IMSG("INIT: Answering to CA\n");
 
 	return TEE_SUCCESS;
 }

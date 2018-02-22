@@ -10,6 +10,8 @@
 // #include <hello_world_ta.h>
 #include <dbstore_ta.h>
 #include <openssl/pem.h>
+#include <openssl/rsa.h>
+#include <openssl/sha.h>
 #include <DBStoreLib.h>
 
 #define SIZE_OF_VEC(vec) (sizeof(vec) - 1)
@@ -88,6 +90,22 @@ char public_key_dbstore[] =
 "dQIDAQAB\n"
 "-----END PUBLIC KEY-----\n";
 
+void transform_challenge(char * challenge) {
+	int i = 0;
+
+	while(i < strlen(challenge)) {
+		challenge[i] += 2;
+		i += 2;
+	}
+}
+
+int verify_challenge(char * challenge, char * received) {
+
+	transform_challenge(challenge);
+
+	return strcmp(challenge, received);
+}
+
 void rand_str(char *dest, size_t length) {
     char charset[] = "0123456789"
                      "abcdefghijklmnopqrstuvwxyz"
@@ -117,6 +135,7 @@ RSA *createRSA(unsigned char *key, int public) {
    if (rsa == NULL) {
       printf("==> Error: Failed to create RSA");
    }
+   //BIO_free(keybio); //CAREFUL!!
    return rsa;
 }
 
@@ -127,6 +146,8 @@ int encrypt_using_public_key (char * public_key, char * in, int in_len, char * o
 
    rsa = createRSA ((unsigned char *) public_key, 1);
    *out_len = RSA_public_encrypt (in_len, (unsigned char *)in, (unsigned char *)out, rsa, RSA_PKCS1_PADDING);
+
+   //RSA_free(rsa);
 
    if (*out_len == -1) {
       return -1;
@@ -143,11 +164,37 @@ int decrypt_using_private_key (char * in, int in_len, char * out, int * out_len)
    rsa = createRSA ((unsigned char *) private_key_app, 0);
    *out_len = RSA_private_decrypt (in_len, (unsigned char *)in, (unsigned char *) out, rsa, RSA_PKCS1_PADDING);
 
+   //RSA_free(rsa);
+
    if (*out_len == -1)
       return -1;
    else {
       return 1;
    }
+}
+
+int verify_signature(char * in, int in_len, char * signature, int sign_len) {
+
+	RSA *rsa;
+	unsigned char digest[20];
+	unsigned char clean_sign[256];
+
+	rsa = createRSA ((unsigned char *) public_key_dbstore, 1);
+
+	SHA1((unsigned char *) in, in_len, digest);
+
+	RSA_public_decrypt(256, (unsigned char*) signature, clean_sign, rsa, RSA_PKCS1_PADDING);
+	printf("digest %s\n", (char *) digest);
+	printf("clean_sign %s\n", (char*) clean_sign);
+	if(strncmp((char *) digest, (char *) clean_sign, 20) == 0) {
+		printf("INIT: Success verifying signature!\n");
+		return 1;
+	}
+	else {
+		printf("INIT: Error verifying signature!\n");
+		return 0;
+	}
+
 }
 
 void call_ta_init(int call_type, const char *appid)
@@ -165,13 +212,16 @@ void call_ta_init(int call_type, const char *appid)
 	TEEC_SharedMemory signatureSM = {0};
 	TEEC_SharedMemory modulusSM = {0};
 
+	int message_len = strlen(appid) + NONCE_LEN + 1;
+
 	char nonce[NONCE_LEN] = {0};
-	char *message = (char *) malloc((strlen(appid) + NONCE_LEN + 1) * sizeof(char));
+	char *message = (char *) malloc(message_len * sizeof(char));
 
 	char crypto_req[CRYPTO_LEN] = {0};
 	int crypto_req_len;
 	char decrypt_req[CRYPTO_LEN] = {0};
 	int decrypt_req_len;
+	//char signature[256] = {0};
 
 	//const char *input = "teste\n";
     //int req_len = strlen(req);
@@ -182,7 +232,7 @@ void call_ta_init(int call_type, const char *appid)
     cryptoSM.size  = CRYPTO_LEN;
 	cryptoSM.buffer = calloc(CRYPTO_LEN, sizeof(char));
 
-    signatureSM.flags = TEEC_MEM_INPUT | TEEC_MEM_OUTPUT;
+    signatureSM.flags = TEEC_MEM_OUTPUT;
     signatureSM.size  = 256;
 	signatureSM.buffer = calloc(256, sizeof(char));
 
@@ -219,9 +269,12 @@ void call_ta_init(int call_type, const char *appid)
 
 	//printf("crypto: %s\n", crypto_req);
 
+	//printf("signature %s\n", signature);
+
 	op.params[0].memref.parent = &signatureSM;
     op.params[0].memref.size = 256;
-    memcpy(signatureSM.buffer, "signature", 9);
+    //memcpy(signatureSM.buffer, signature, 256);
+    //memcpy(signatureSM.buffer, "signature", 9);
 
     op.params[1].memref.parent = &modulusSM;
     op.params[1].memref.size = 256;
@@ -259,7 +312,7 @@ void call_ta_init(int call_type, const char *appid)
 	 * TA_HELLO_WORLD_CMD_INC_VALUE is the actual function in the TA to be
 	 * called.
 	 */
-	printf("INIT: Invoking DBStore with request %s\n", (char *) signatureSM.buffer);
+	printf("INIT: Invoking DBStore on the TA\n");
 	res = TEEC_InvokeCommand(&sess, TA_DBSTORE_INIT, &op,
 		 &err_origin);
 	if (res != TEEC_SUCCESS)
@@ -272,7 +325,11 @@ void call_ta_init(int call_type, const char *appid)
 		printf("Bad decrypto...");
 
 	printf("INIT: Decrypted response is %s\n", decrypt_req);
-
+	
+	if(verify_challenge(message, decrypt_req) == 0)
+		printf("INIT: Authenticated DBStore\n");
+	else
+		printf("INIT: Could not authenticate DBStore\n");
 	/*
 	 * We're done with the TA, close the session and
 	 * destroy the context.
