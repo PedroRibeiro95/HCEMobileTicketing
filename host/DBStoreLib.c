@@ -11,6 +11,7 @@
 #include <dbstore_ta.h>
 #include <openssl/pem.h>
 #include <openssl/rsa.h>
+#include <openssl/aes.h>
 #include <openssl/sha.h>
 #include <DBStoreLib.h>
 
@@ -90,6 +91,13 @@ char public_key_dbstore[] =
 "dQIDAQAB\n"
 "-----END PUBLIC KEY-----\n";
 
+struct ctr_state {
+	unsigned char *key;
+	unsigned char *iv;
+	unsigned int encrypt;
+	const EVP_CIPHER *cipher_type;
+};
+
 void transform_challenge(char * challenge) {
 	int i = 0;
 
@@ -103,7 +111,7 @@ int verify_challenge(char * challenge, char * received) {
 
 	transform_challenge(challenge);
 
-	return strcmp(challenge, received);
+	return strncmp(challenge, received, strlen(challenge));
 }
 
 void rand_str(char *dest, size_t length) {
@@ -173,28 +181,40 @@ int decrypt_using_private_key (char * in, int in_len, char * out, int * out_len)
    }
 }
 
-int verify_signature(char * in, int in_len, char * signature, int sign_len) {
+void ctr_encrypt_decrypt(struct ctr_state * params, unsigned char * in, int in_len, unsigned char * out, int * out_len, int message_len) {
 
-	RSA *rsa;
-	unsigned char digest[20];
-	unsigned char clean_sign[256];
+	//int cipher_block_size = EVP_CIPHER_block_size(params->cipher_type);
+	EVP_CIPHER_CTX *ctx;
+	int len;
+	unsigned char result[256];
+	unsigned char *received = (unsigned char *) malloc(sizeof(unsigned char) * in_len + 1);
 
-	rsa = createRSA ((unsigned char *) public_key_dbstore, 1);
+	memcpy(received, in, in_len);
 
-	SHA1((unsigned char *) in, in_len, digest);
+	ctx = EVP_CIPHER_CTX_new();
+	EVP_CipherInit_ex(ctx, params->cipher_type, NULL, params->key, params->iv, params->encrypt);
+	EVP_CipherUpdate(ctx, result, &len, received, in_len);
+	EVP_CipherFinal_ex(ctx, result, &len);
+	EVP_CIPHER_CTX_cleanup(ctx);
 
-	RSA_public_decrypt(256, (unsigned char*) signature, clean_sign, rsa, RSA_PKCS1_PADDING);
-	printf("digest %s\n", (char *) digest);
-	printf("clean_sign %s\n", (char*) clean_sign);
-	if(strncmp((char *) digest, (char *) clean_sign, 20) == 0) {
-		printf("INIT: Success verifying signature!\n");
-		return 1;
-	}
-	else {
-		printf("INIT: Error verifying signature!\n");
-		return 0;
-	}
+	*out_len = len;
 
+	memcpy(out, result, message_len);
+	free(received);
+}
+
+int aes_ctr(char * in, int in_len, char * out, int * out_len, unsigned char * key, unsigned char * iv, int message_len) {
+
+	struct ctr_state *params = (struct ctr_state *) malloc(sizeof(struct ctr_state));
+
+	params->key = key;
+	params->iv = iv;
+	params->encrypt = 0;
+	params->cipher_type = EVP_aes_128_ctr();
+
+	ctr_encrypt_decrypt(params, (unsigned char *) in, in_len, (unsigned char *) out, out_len, message_len);
+
+	return 0;
 }
 
 void call_ta_init(int call_type, const char *appid)
@@ -219,8 +239,11 @@ void call_ta_init(int call_type, const char *appid)
 
 	char crypto_req[CRYPTO_LEN] = {0};
 	int crypto_req_len;
-	char decrypt_req[CRYPTO_LEN] = {0};
-	int decrypt_req_len;
+	char decrypt_rsa[CRYPTO_LEN] = {0}; //will hold the session key
+	int decrypt_rsa_len;
+	char *decrypt_aes = (char *) malloc(message_len * sizeof(char)); //will hold the modified challenge
+	int decrypt_aes_len;
+	char iv[16];
 	//char signature[256] = {0};
 
 	//const char *input = "teste\n";
@@ -321,12 +344,19 @@ void call_ta_init(int call_type, const char *appid)
 	//printf("INIT: Received from DBStore values %s and %s\n", (char *) signatureSM.buffer,
 		//(char *) modulusSM.buffer);
 
-	if(decrypt_using_private_key(modulusSM.buffer, 256, decrypt_req, &decrypt_req_len) != 1)
+	if(decrypt_using_private_key(modulusSM.buffer, 256, decrypt_rsa, &decrypt_rsa_len) != 1)
 		printf("Bad decrypto...");
 
-	printf("INIT: Decrypted response is %s\n", decrypt_req);
+	printf("INIT: Decrypted session key\n");
+	memcpy(iv, cryptoSM.buffer, 16);
+	printf("INIT: Received IV\n");
+
+	aes_ctr(signatureSM.buffer, 256, decrypt_aes, &decrypt_aes_len, (unsigned char *) decrypt_rsa, 
+		(unsigned char *) iv, message_len);
+
+	printf("INIT: Decrypted challenge is %s\n", decrypt_aes);
 	
-	if(verify_challenge(message, decrypt_req) == 0)
+	if(verify_challenge(message, decrypt_aes) == 0)
 		printf("INIT: Authenticated DBStore\n");
 	else
 		printf("INIT: Could not authenticate DBStore\n");
