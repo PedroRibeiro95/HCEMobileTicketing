@@ -203,13 +203,13 @@ void ctr_encrypt_decrypt(struct ctr_state * params, unsigned char * in, int in_l
 	free(received);
 }
 
-int aes_ctr(char * in, int in_len, char * out, int * out_len, unsigned char * key, unsigned char * iv, int message_len) {
+int aes_ctr(char * in, int in_len, char * out, int * out_len, unsigned char * key, unsigned char * iv, int message_len, int op) {
 
 	struct ctr_state *params = (struct ctr_state *) malloc(sizeof(struct ctr_state));
 
 	params->key = key;
 	params->iv = iv;
-	params->encrypt = 0;
+	params->encrypt = op;
 	params->cipher_type = EVP_aes_128_ctr();
 
 	ctr_encrypt_decrypt(params, (unsigned char *) in, in_len, (unsigned char *) out, out_len, message_len);
@@ -217,7 +217,7 @@ int aes_ctr(char * in, int in_len, char * out, int * out_len, unsigned char * ke
 	return 0;
 }
 
-void call_ta_init(int call_type, const char *appid)
+void call_ta_init(int call_type, const char *appid, char *session_key, char *iv)
 {
 	TEEC_Result res;
 	TEEC_Context ctx;
@@ -239,11 +239,11 @@ void call_ta_init(int call_type, const char *appid)
 
 	char crypto_req[CRYPTO_LEN] = {0};
 	int crypto_req_len;
-	char decrypt_rsa[CRYPTO_LEN] = {0}; //will hold the session key
+	static char decrypt_rsa[CRYPTO_LEN] = {0}; //will hold the session key
 	int decrypt_rsa_len;
 	char *decrypt_aes = (char *) malloc(message_len * sizeof(char)); //will hold the modified challenge
 	int decrypt_aes_len;
-	char iv[16];
+	char r_iv[16];
 	//char signature[256] = {0};
 
 	//const char *input = "teste\n";
@@ -348,11 +348,11 @@ void call_ta_init(int call_type, const char *appid)
 		printf("Bad decrypto...");
 
 	printf("INIT: Decrypted session key\n");
-	memcpy(iv, cryptoSM.buffer, 16);
+	memcpy(r_iv, cryptoSM.buffer, 16);
 	printf("INIT: Received IV\n");
 
 	aes_ctr(signatureSM.buffer, 256, decrypt_aes, &decrypt_aes_len, (unsigned char *) decrypt_rsa, 
-		(unsigned char *) iv, message_len);
+		(unsigned char *) r_iv, message_len, 0);
 
 	printf("INIT: Decrypted challenge is %s\n", decrypt_aes);
 	
@@ -373,9 +373,12 @@ void call_ta_init(int call_type, const char *appid)
 	TEEC_CloseSession(&sess);
 
 	TEEC_FinalizeContext(&ctx);
+
+	memcpy(session_key, decrypt_rsa, 16);
+	memcpy(iv, r_iv, 16);
 }
 
-void call_ta_inv(int call_type, const char* nonce, const char *req, const char *hmac)
+void call_ta_inv(int call_type, const char *req, const char *hmac, char * session_key, char *iv)
 {
 	TEEC_Result res;
 	TEEC_Context ctx;
@@ -384,6 +387,20 @@ void call_ta_inv(int call_type, const char* nonce, const char *req, const char *
 	// TEEC_UUID uuid = TA_HELLO_WORLD_UUID;
 	TEEC_UUID uuid = TA_DBSTORE_UUID; //will be DBStore code running on TZ!
 	uint32_t err_origin;
+
+	int out_nonce_len, out_req_len;
+	int crypt_nonce_len = (NONCE_LEN/16 + 1) * 32;
+	char *crypt_nonce = (char*) malloc(sizeof(char) * crypt_nonce_len);
+	int crypt_req_len = (strlen(req)/16 + 1) * 32;
+	char *crypt_req = (char*) malloc(sizeof(char) * crypt_req_len);
+
+	char *nonce = (char*) malloc(sizeof(char) * NONCE_LEN);
+	//char *request = (char*) malloc(sizeof(char) * 10); //stub
+	//char *hmac;
+
+	rand_str(nonce, NONCE_LEN);
+
+	printf("INV: Generated nonce is %s\n", nonce);
 
 	/* Shared buffers */
 	TEEC_SharedMemory nonceSM = {0};
@@ -394,17 +411,15 @@ void call_ta_inv(int call_type, const char* nonce, const char *req, const char *
 	//char crypto_nonce[32];
 
 	//const char *input = "teste\n";
-    int nonce_len = strlen(nonce);
-    int req_len = strlen(req);
     int hmac_len = strlen(hmac);
 
     nonceSM.flags = TEEC_MEM_INPUT | TEEC_MEM_OUTPUT;
-    nonceSM.size  = nonce_len;
-	nonceSM.buffer = calloc(nonce_len, sizeof(char));
+    nonceSM.size  = crypt_nonce_len;
+	nonceSM.buffer = calloc(crypt_nonce_len, sizeof(char));
 
 	reqSM.flags = TEEC_MEM_INPUT | TEEC_MEM_OUTPUT;
-    reqSM.size  = req_len;
-	reqSM.buffer = calloc(req_len, sizeof(char));
+    reqSM.size  = crypt_req_len;
+	reqSM.buffer = calloc(crypt_req_len, sizeof(char));
 
 	hmacSM.flags = TEEC_MEM_INPUT | TEEC_MEM_OUTPUT;
     hmacSM.size  = hmac_len;
@@ -428,13 +443,17 @@ void call_ta_inv(int call_type, const char* nonce, const char *req, const char *
 	op.paramTypes = TEEC_PARAM_TYPES(TEEC_MEMREF_WHOLE, TEEC_MEMREF_WHOLE,
 					 TEEC_MEMREF_WHOLE, TEEC_NONE);
 
+	//Encryption phase
+	aes_ctr(nonce, NONCE_LEN, crypt_nonce, &out_nonce_len, (unsigned char*) session_key, (unsigned char*) iv, crypt_nonce_len, 1);
+	aes_ctr((char *) req, strlen(req), crypt_req, &out_req_len, (unsigned char*) session_key, (unsigned char*) iv, crypt_req_len, 1);
+
 	op.params[0].memref.parent = &nonceSM;
-    op.params[0].memref.size = nonce_len;
-    memcpy(nonceSM.buffer, nonce, nonce_len);
+    op.params[0].memref.size = crypt_nonce_len;
+    memcpy(nonceSM.buffer, crypt_nonce, crypt_nonce_len);
 
     op.params[1].memref.parent = &reqSM;
-    op.params[1].memref.size = req_len;
-    memcpy(reqSM.buffer, req, req_len);
+    op.params[1].memref.size = crypt_req_len;
+    memcpy(reqSM.buffer, crypt_req, crypt_req_len);
 
     op.params[2].memref.parent = &hmacSM;
     op.params[2].memref.size = hmac_len;
@@ -492,13 +511,43 @@ void call_ta_inv(int call_type, const char* nonce, const char *req, const char *
 }
 
 int main(int argc, char *argv[])
-{
-	if(strcmp(argv[1], "init") == 0)
-		call_ta_init(0, argv[2]);
-	else if(strcmp(argv[1], "inv") == 0)
-		call_ta_inv(1, argv[2], argv[3], argv[4]);
-	else
-		printf("ERROR: Unrecognized call to DBStore\n");
+{	
+	char *session_key = NULL;
+	char *iv = NULL;
+	char input[5];
+	while(1) {
 
+		printf("Welcome to DBStore!\n");
+		printf("Write \"init\" to start initialization protocol (sending o)\n");
+		printf("Write \"inv\" to start invocation protocol (sending o o o and session_key\n");
+		printf("Write \"exit\" to quit the program\n");
+
+		fgets(input, 6, stdin);
+
+		if(strncmp(input, "init", 4) == 0) {
+			if(session_key == NULL) {
+				session_key = (char *) malloc(sizeof(char) * 16);
+				iv = (char *) malloc(sizeof(char) * 16);
+				call_ta_init(0, "o", session_key, iv);
+			}
+			else
+				printf("ERROR: DBStore was already initialized\n");
+		}
+		else if(strncmp(input, "inv", 3) == 0) {
+			if(session_key != NULL) {
+				call_ta_inv(1, "ola", "o", session_key, iv);
+			}
+			else
+				printf("ERROR: DBStore not initialized\n");
+		}
+		else if(strncmp(input, "exit", 4) == 0) {
+			printf("Exiting DBStore... bye!\n");
+			break;
+		}
+		else
+			printf("ERROR: Unrecognized call to DBStore\n");
+	}
+	free(session_key);
+	free(iv);
 	return 0;
 }

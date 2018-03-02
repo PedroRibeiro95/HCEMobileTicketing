@@ -350,6 +350,94 @@ int encrypt_aes_ctr(char * in, int in_len, char * out, int * out_len, unsigned c
   return 0;
 }
 
+int decrypt_aes_ctr(char * in, int in_len, char * out, int * out_len, unsigned char * session_key, unsigned char * iv) {
+  TEE_Result ret = TEE_SUCCESS; // return code
+  TEE_ObjectHandle key = (TEE_ObjectHandle) NULL;
+  TEE_Attribute aes_attrs[1];
+  void * to_decrypt = NULL;
+  void * cipher = NULL;
+  TEE_ObjectInfo info;
+  TEE_OperationHandle handle = (TEE_OperationHandle) NULL;
+  uint32_t decrypted_len = (in_len/16 + 1) * 32;
+
+  //AES key
+  aes_attrs[0].attributeID = TEE_ATTR_SECRET_VALUE;
+  aes_attrs[0].content.ref.buffer = session_key;
+  aes_attrs[0].content.ref.length = 16;
+
+  // create a transient object
+  ret = TEE_AllocateTransientObject(TEE_TYPE_AES, 128, &key);
+  if (ret != TEE_SUCCESS) {
+    return TEE_ERROR_BAD_PARAMETERS;
+  }
+
+  // populate the object with your keys
+  ret = TEE_PopulateTransientObject(key, (TEE_Attribute *)&aes_attrs, 1);
+  if (ret != TEE_SUCCESS) {
+    return TEE_ERROR_BAD_PARAMETERS;
+  }
+
+  // create your structures to de / decrypt
+  to_decrypt = TEE_Malloc(in_len, 0);
+  cipher = TEE_Malloc(decrypted_len, 0);
+  if (!to_decrypt || !cipher) {
+    return TEE_ERROR_BAD_PARAMETERS;
+  }
+  TEE_MemMove(to_decrypt, in, in_len);
+
+  // setup the info structure about the key
+  TEE_GetObjectInfo (key, &info);
+
+  // Allocate the operation
+  ret = TEE_AllocateOperation(&handle, TEE_ALG_AES_CTR, TEE_MODE_DECRYPT, 128);
+  if (ret != TEE_SUCCESS) {
+    return -1;
+  }
+
+  // set the key
+  ret = TEE_SetOperationKey(handle, key);
+  if (ret != TEE_SUCCESS) {
+    TEE_FreeOperation(handle);
+    return -1;
+  }
+
+  // decrypt
+  TEE_CipherInit(handle, iv, 16);
+
+  ret = TEE_CipherUpdate(handle, to_decrypt, in_len, cipher, &decrypted_len);
+  if (ret == TEE_ERROR_SHORT_BUFFER) {
+    IMSG("ERROR: Cipher update error\n");
+    TEE_FreeOperation(handle);
+    return TEE_ERROR_BAD_PARAMETERS;
+  }
+
+  memcpy (out, cipher, decrypted_len);
+  *out_len = decrypted_len;
+
+  IMSG("len %d\n", decrypted_len);
+
+  ret = TEE_CipherDoFinal(handle, to_decrypt, in_len, cipher, &decrypted_len);
+  if (ret == TEE_ERROR_SHORT_BUFFER) {
+    IMSG("ERROR: Cipher final error\n");
+    TEE_FreeOperation(handle);
+    return TEE_ERROR_BAD_PARAMETERS;
+  }
+
+  IMSG("len %d\n", decrypted_len);
+
+  // finish off
+  //memcpy (out, cipher, decrypted_len);
+  //*out_len = decrypted_len;
+  //out[cipher_len] = '\0';
+
+  // clean up after yourself
+  TEE_FreeOperation(handle);
+  TEE_FreeTransientObject (key);
+  TEE_Free (cipher);
+
+  return 0;
+}
+
 /*
  * Called when the instance of the TA is created. This is the first call in
  * the TA.
@@ -449,9 +537,9 @@ static TEE_Result init(uint32_t param_types,
   unsigned char * session_key = TEE_Malloc(16, TEE_MALLOC_FILL_ZERO);
   unsigned char * iv = TEE_Malloc(16, TEE_MALLOC_FILL_ZERO);
 
-  const char *content = "teste";
-  //char *to_sign = (char *) "session_key";
-  int object_id = 0;
+  //const char *content = "teste";
+  int session_key_id = 0; //this should be derived from the app id!
+  int iv_id = 1; //this should be derived from the app id + 1!
 
 	DMSG("has been called");
 
@@ -462,16 +550,6 @@ static TEE_Result init(uint32_t param_types,
 		//return TEE_ERROR_BAD_PARAMETERS;
 
 	IMSG("INIT: Got value %s from NW\n", (char *) params[0].memref.buffer);
-
-	IMSG("INIT: Creating new persistent object...\n");
-
-	res = TEE_CreatePersistentObject(TEE_STORAGE_PRIVATE, &object_id, sizeof(int),
-		TEE_DATA_FLAG_ACCESS_WRITE, TEE_HANDLE_NULL, content, strlen(content)+1, &file_handle);
-	if (res != TEE_SUCCESS)
-		//errx(1, "TEEC_InitializeContext failed with code 0x%x", res);
-		IMSG("Error creating object...\n");
-
-	TEE_CloseObject(file_handle);
 
   //Decrypting received request
   IMSG("INIT: Decrypting received request from application...\n");
@@ -488,6 +566,8 @@ static TEE_Result init(uint32_t param_types,
   TEE_GenerateRandom(session_key, 16);
   TEE_GenerateRandom(iv, 16);
   IMSG("INIT: Session key and IV generated\n");
+  IMSG("INIT: Session key: %s\n", session_key);
+  IMSG("INIT: IV: %s\n", iv);
 
   IMSG("INIT: Encrypting transformed challenge with AES-CTR...\n");
   encrypt_aes_ctr(decrypted, decrypted_len, encrypted_aes, &encrypted_aes_len, session_key, iv);
@@ -504,8 +584,30 @@ static TEE_Result init(uint32_t param_types,
 
 	IMSG("INIT: Answering to CA\n");
 
+  //Storing session key and IV using persistent storage. Only way to estabilish a session
+  IMSG("INIT: Creating persistent objects for storing key and IV...\n");
+  res = TEE_CreatePersistentObject(TEE_STORAGE_PRIVATE, &session_key_id, sizeof(int),
+    TEE_DATA_FLAG_ACCESS_WRITE, TEE_HANDLE_NULL, session_key, 17, &file_handle);
+  if (res != TEE_SUCCESS)
+    IMSG("Error creating session key object...\n");
+
+  TEE_CloseObject(file_handle);
+
+  res = TEE_CreatePersistentObject(TEE_STORAGE_PRIVATE, &iv_id, sizeof(int),
+    TEE_DATA_FLAG_ACCESS_WRITE, TEE_HANDLE_NULL, iv, 17, &file_handle);
+  if (res != TEE_SUCCESS)
+    IMSG("Error creating IV object...\n");
+
+  TEE_CloseObject(file_handle);
+
 	return TEE_SUCCESS;
 }
+
+/*
+ *
+ * DBStore invocation protocol
+ *
+ */
 
 static TEE_Result inv(uint32_t param_types,
 	TEE_Param params[4])
@@ -517,18 +619,24 @@ static TEE_Result inv(uint32_t param_types,
 
 	TEE_ObjectHandle file_handle;
     
-    const char *nonce;
-    const char *req;
-    const char *hmac;
-    char read_bytes[255];
-    int nonce_len, req_len, hmac_len;
-    int object_id = 0;
-    size_t read_size = 255;
-    uint32_t flags = TEE_DATA_FLAG_ACCESS_READ | TEE_DATA_FLAG_ACCESS_WRITE;
-    uint32_t read_count;
-    void *dst_nonce;
-    void *dst_req;
-    void *dst_hmac;
+  const char *nonce;
+  const char *req;
+  const char *hmac;
+  int nonce_len, req_len, hmac_len;
+  uint32_t flags = TEE_DATA_FLAG_ACCESS_READ | TEE_DATA_FLAG_ACCESS_WRITE;
+  uint32_t read_count;
+  void *dst_nonce;
+  void *dst_req;
+  void *dst_hmac;
+
+  int session_key_id = 0;
+  int iv_id = 1;
+  char session_key[16];
+  char iv[16];
+
+  int decrypt_nonce_len, decrypt_req_len;
+  char *decrypt_nonce = TEE_Malloc(32, 0);
+  char *decrypt_req = TEE_Malloc(32, 0);
 
 	DMSG("has been called");
 
@@ -537,41 +645,62 @@ static TEE_Result inv(uint32_t param_types,
 
 	IMSG("INV: Got values %s, %s and %s from NW\n", (char *) params[0].memref.buffer,
 		(char *) params[1].memref.buffer, (char *) params[2].memref.buffer);
-
-	IMSG("INV: Opening persistent object...\n");
-
-	TEE_OpenPersistentObject(TEE_STORAGE_PRIVATE, &object_id, sizeof(int),
+  
+  //Will grab both session key and IV from the persistent objects
+	IMSG("INV: Opening persistent objects...\n");
+	TEE_OpenPersistentObject(TEE_STORAGE_PRIVATE, &session_key_id, sizeof(int),
 		flags, &file_handle);
 	//if (res == TEE_HANDLE_NULL)
-		//errx(1, "TEEC_InitializeContext failed with code 0x%x", res);
 	//	IMSG("Bad handle...\n");
-
-	TEE_ReadObjectData(file_handle, read_bytes, read_size, &read_count);
-
-	IMSG("INV: Read \"%s\" from persistent object\n", read_bytes);
-
+	TEE_ReadObjectData(file_handle, session_key, 16, &read_count);
+	IMSG("INV: Read session key \"%s\" from persistent object\n", session_key);
 	TEE_CloseObject(file_handle);
+
+  TEE_OpenPersistentObject(TEE_STORAGE_PRIVATE, &iv_id, sizeof(int),
+    flags, &file_handle);
+  //if (res == TEE_HANDLE_NULL)
+  //  IMSG("Bad handle...\n");
+  TEE_ReadObjectData(file_handle, iv, 16, &read_count);
+  IMSG("INV: Read IV \"%s\" from persistent object\n", iv);
+  TEE_CloseObject(file_handle);
+  /**************************************************************/
 	
+  //Decrypting both nonce and SQL request received from the remote client
+  IMSG("INV: Decrypting the nonce received from the remote client...\n");
+  IMSG("size nonce crypt %d\n", params[0].memref.size);
+  decrypt_aes_ctr(params[0].memref.buffer, params[0].memref.size, decrypt_nonce, &decrypt_nonce_len,
+    (unsigned char*) session_key, (unsigned char*) iv);
+  IMSG("INV: Decrypted nonce is %s\n", decrypt_nonce);
+
+  IMSG("INV: Decrypting the request received from the remote client...\n");
+  decrypt_aes_ctr(params[1].memref.buffer, params[1].memref.size, decrypt_req, &decrypt_req_len, 
+    (unsigned char*) session_key, (unsigned char*) iv);
+  IMSG("INV: Decrypted request is %s\n", decrypt_req);
+  /**********************************************************************/
+
 	nonce = "new_nonce";
 	nonce_len = strlen(nonce);
-    dst_nonce = TEE_Malloc(nonce_len, TEE_MALLOC_FILL_ZERO);
-    TEE_MemMove(dst_nonce, nonce, nonce_len);
-    TEE_MemMove(params[0].memref.buffer, dst_nonce, nonce_len);
+  dst_nonce = TEE_Malloc(nonce_len, TEE_MALLOC_FILL_ZERO);
+  TEE_MemMove(dst_nonce, nonce, nonce_len);
+  TEE_MemMove(params[0].memref.buffer, dst_nonce, nonce_len);
 
-    req = "new_req";
-    req_len = strlen(req);
-    dst_req = TEE_Malloc(req_len, TEE_MALLOC_FILL_ZERO);
-    TEE_MemMove(dst_req, req, req_len);
-    TEE_MemMove(params[1].memref.buffer, dst_req, req_len);
+  req = "new_req";
+  req_len = strlen(req);
+  dst_req = TEE_Malloc(req_len, TEE_MALLOC_FILL_ZERO);
+  TEE_MemMove(dst_req, req, req_len);
+  TEE_MemMove(params[1].memref.buffer, dst_req, req_len);
 
-    hmac = "new_hmac";
-    hmac_len = strlen(hmac);
-    dst_hmac = TEE_Malloc(hmac_len, TEE_MALLOC_FILL_ZERO);
-    TEE_MemMove(dst_hmac, hmac, hmac_len);
-    TEE_MemMove(params[2].memref.buffer, dst_hmac, hmac_len);
+  hmac = "new_hmac";
+  hmac_len = strlen(hmac);
+  dst_hmac = TEE_Malloc(hmac_len, TEE_MALLOC_FILL_ZERO);
+  TEE_MemMove(dst_hmac, hmac, hmac_len);
+  TEE_MemMove(params[2].memref.buffer, dst_hmac, hmac_len);
 
 	IMSG("INV: Answering with values %s, %s and %s\n", (char *) params[0].memref.buffer,
 		(char *) params[1].memref.buffer, (char *) params[2].memref.buffer);
+
+  TEE_Free(decrypt_nonce);
+  TEE_Free(decrypt_req);
 
 	return TEE_SUCCESS;
 }
