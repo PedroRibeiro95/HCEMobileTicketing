@@ -86,6 +86,15 @@ void transform_challenge(char * challenge) {
   }
 }
 
+void print_bytes(char * string, int len) {
+  printf("%s ", string);
+ 
+    for (int i = 0; i != len; i++)
+        printf("%02x", (unsigned int)string[i]);
+ 
+    printf("\n");
+}
+
 int decrypt_using_private_key (char * in, int in_len, char * out, int * out_len) {
 
    TEE_Result ret = TEE_SUCCESS; // return code
@@ -414,16 +423,12 @@ int decrypt_aes_ctr(char * in, int in_len, char * out, int * out_len, unsigned c
   memcpy (out, cipher, decrypted_len);
   *out_len = decrypted_len;
 
-  IMSG("len %d\n", decrypted_len);
-
   ret = TEE_CipherDoFinal(handle, to_decrypt, in_len, cipher, &decrypted_len);
   if (ret == TEE_ERROR_SHORT_BUFFER) {
     IMSG("ERROR: Cipher final error\n");
     TEE_FreeOperation(handle);
     return TEE_ERROR_BAD_PARAMETERS;
   }
-
-  IMSG("len %d\n", decrypted_len);
 
   // finish off
   //memcpy (out, cipher, decrypted_len);
@@ -434,6 +439,86 @@ int decrypt_aes_ctr(char * in, int in_len, char * out, int * out_len, unsigned c
   TEE_FreeOperation(handle);
   TEE_FreeTransientObject (key);
   TEE_Free (cipher);
+
+  return 0;
+}
+
+int verify_hmac (char * in, int in_len, char * hmac, int hmac_len, unsigned char * session_key) {
+  TEE_Result ret = TEE_SUCCESS; // return code
+  TEE_ObjectHandle key = (TEE_ObjectHandle) NULL;
+  TEE_Attribute aes_attrs[1];
+  //void * to_hamc = NULL;
+  //void * re_hmac = NULL;
+  TEE_ObjectInfo info;
+  TEE_OperationHandle handle = (TEE_OperationHandle) NULL;
+
+  //AES key
+  aes_attrs[0].attributeID = TEE_ATTR_SECRET_VALUE;
+  aes_attrs[0].content.ref.buffer = session_key;
+  aes_attrs[0].content.ref.length = 16;
+
+  // create a transient object
+  ret = TEE_AllocateTransientObject(TEE_TYPE_HMAC_SHA1, 128, &key);
+  if (ret != TEE_SUCCESS) {
+    return TEE_ERROR_BAD_PARAMETERS;
+  }
+
+  // populate the object with your keys
+  ret = TEE_PopulateTransientObject(key, (TEE_Attribute *)&aes_attrs, 1);
+  if (ret != TEE_SUCCESS) {
+    return TEE_ERROR_BAD_PARAMETERS;
+  }
+
+  // create your structures to de / decrypt
+  //to_hmac = TEE_Malloc(in_len, 0);
+  //re_hmac = TEE_Malloc(decrypted_len, 0);
+  //if (!to_hmac || !re_hmac) {
+  //  return TEE_ERROR_BAD_PARAMETERS;
+  //}
+  //TEE_MemMove(to_hmac, in, in_len);
+
+  // setup the info structure about the key
+  TEE_GetObjectInfo (key, &info);
+
+  // Allocate the operation
+  ret = TEE_AllocateOperation(&handle, TEE_ALG_HMAC_SHA1, TEE_MODE_MAC, 128);
+  if (ret != TEE_SUCCESS) {
+    return -1;
+  }
+
+  // set the key
+  ret = TEE_SetOperationKey(handle, key);
+  if (ret != TEE_SUCCESS) {
+    TEE_FreeOperation(handle);
+    return -1;
+  }
+
+  // hmac
+  TEE_MACInit(handle, NULL, 0); //HMAC with SHA1 needs no IV
+
+  /*ret = TEE_CipherUpdate(handle, to_decrypt, in_len, cipher, &decrypted_len);
+  if (ret == TEE_ERROR_SHORT_BUFFER) {
+    IMSG("ERROR: Cipher update error\n");
+    TEE_FreeOperation(handle);
+    return TEE_ERROR_BAD_PARAMETERS;
+  }*/
+
+  ret = TEE_MACCompareFinal(handle, in, in_len, hmac, hmac_len);
+  if (ret == TEE_ERROR_MAC_INVALID) {
+    TEE_FreeOperation(handle);
+    return TEE_ERROR_BAD_PARAMETERS;
+  }
+
+  //memcpy (out, cipher, decrypted_len);
+
+  // finish off
+  //memcpy (out, cipher, decrypted_len);
+  //*out_len = decrypted_len;
+  //out[cipher_len] = '\0';
+
+  // clean up after yourself
+  TEE_FreeOperation(handle);
+  TEE_FreeTransientObject (key);
 
   return 0;
 }
@@ -638,6 +723,12 @@ static TEE_Result inv(uint32_t param_types,
   char *decrypt_nonce = TEE_Malloc(32, 0);
   char *decrypt_req = TEE_Malloc(32, 0);
 
+  int sql_len = params[3].value.a;
+  char *sql_stmt = TEE_Malloc(sql_len + 1, 0);
+
+  char *re_hmac = params[2].memref.buffer;
+  //int re_hmac_len;
+
 	DMSG("has been called");
 
 	if (param_types != exp_param_types)
@@ -670,13 +761,22 @@ static TEE_Result inv(uint32_t param_types,
   IMSG("size nonce crypt %d\n", params[0].memref.size);
   decrypt_aes_ctr(params[0].memref.buffer, params[0].memref.size, decrypt_nonce, &decrypt_nonce_len,
     (unsigned char*) session_key, (unsigned char*) iv);
+  decrypt_nonce[7] = '\0';
   IMSG("INV: Decrypted nonce is %s\n", decrypt_nonce);
 
   IMSG("INV: Decrypting the request received from the remote client...\n");
   decrypt_aes_ctr(params[1].memref.buffer, params[1].memref.size, decrypt_req, &decrypt_req_len, 
     (unsigned char*) session_key, (unsigned char*) iv);
-  IMSG("INV: Decrypted request is %s\n", decrypt_req);
+  TEE_MemMove(sql_stmt, decrypt_req, sql_len);
+  IMSG("INV: Decrypted request is %s\n", sql_stmt);
   /**********************************************************************/
+
+  IMSG("INV: Verifying HMAC...\n");
+  if(verify_hmac(sql_stmt, sql_len, re_hmac, 20, (unsigned char*) session_key) == 0)
+    IMSG("INV: Successfully verified HMAC\n");
+  else
+    IMSG("ERROR: Could not verify HMAC\n");
+
 
 	nonce = "new_nonce";
 	nonce_len = strlen(nonce);
@@ -701,6 +801,7 @@ static TEE_Result inv(uint32_t param_types,
 
   TEE_Free(decrypt_nonce);
   TEE_Free(decrypt_req);
+  TEE_Free(sql_stmt);
 
 	return TEE_SUCCESS;
 }

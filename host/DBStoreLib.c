@@ -13,6 +13,7 @@
 #include <openssl/rsa.h>
 #include <openssl/aes.h>
 #include <openssl/sha.h>
+#include <openssl/hmac.h>
 #include <DBStoreLib.h>
 
 #define SIZE_OF_VEC(vec) (sizeof(vec) - 1)
@@ -97,6 +98,15 @@ struct ctr_state {
 	unsigned int encrypt;
 	const EVP_CIPHER *cipher_type;
 };
+
+void print_bytes(char * string, char * bytes, int len) {
+	printf("%s ", string);
+ 
+    for (int i = 0; i != len; i++)
+        printf("%02x", (unsigned int)string[i]);
+ 
+    printf("\n");
+}
 
 void transform_challenge(char * challenge) {
 	int i = 0;
@@ -215,6 +225,27 @@ int aes_ctr(char * in, int in_len, char * out, int * out_len, unsigned char * ke
 	ctr_encrypt_decrypt(params, (unsigned char *) in, in_len, (unsigned char *) out, out_len, message_len);
 
 	return 0;
+}
+
+void gen_hmac(char * in, int in_len, char * out, int * out_len, unsigned char * key) {
+
+	unsigned char * result = (unsigned char *) malloc(sizeof(char) * 20);
+	int len;
+
+	HMAC_CTX ctx;
+    HMAC_CTX_init(&ctx);
+ 
+    // Using sha1 hash engine here.
+    // You may use other hash engines. e.g EVP_md5(), EVP_sha224, EVP_sha512, etc
+    HMAC_Init_ex(&ctx, key, 16, EVP_sha1(), NULL);
+    HMAC_Update(&ctx, (unsigned char*) in, in_len);
+    HMAC_Final(&ctx, result, &len);
+    HMAC_CTX_cleanup(&ctx);
+
+    *out_len = len;
+    memcpy(out, result, 20);
+
+    free(result);
 }
 
 void call_ta_init(int call_type, const char *appid, char *session_key, char *iv)
@@ -378,7 +409,7 @@ void call_ta_init(int call_type, const char *appid, char *session_key, char *iv)
 	memcpy(iv, r_iv, 16);
 }
 
-void call_ta_inv(int call_type, const char *req, const char *hmac, char * session_key, char *iv)
+void call_ta_inv(int call_type, const char *req, char * session_key, char *iv)
 {
 	TEEC_Result res;
 	TEEC_Context ctx;
@@ -394,9 +425,10 @@ void call_ta_inv(int call_type, const char *req, const char *hmac, char * sessio
 	int crypt_req_len = (strlen(req)/16 + 1) * 32;
 	char *crypt_req = (char*) malloc(sizeof(char) * crypt_req_len);
 
+	char *hmac = (char *) malloc(sizeof(char) * 20);
+	int hmac_len;
+
 	char *nonce = (char*) malloc(sizeof(char) * NONCE_LEN);
-	//char *request = (char*) malloc(sizeof(char) * 10); //stub
-	//char *hmac;
 
 	rand_str(nonce, NONCE_LEN);
 
@@ -410,8 +442,8 @@ void call_ta_inv(int call_type, const char *req, const char *hmac, char * sessio
 	//char crypto_appid[32];
 	//char crypto_nonce[32];
 
-	//const char *input = "teste\n";
-    int hmac_len = strlen(hmac);
+	//Generate HMAC for the message
+    gen_hmac((char *) req, strlen(req), hmac, &hmac_len, session_key);
 
     nonceSM.flags = TEEC_MEM_INPUT | TEEC_MEM_OUTPUT;
     nonceSM.size  = crypt_nonce_len;
@@ -441,7 +473,7 @@ void call_ta_inv(int call_type, const char *req, const char *hmac, char * sessio
 			res, err_origin);
 
 	op.paramTypes = TEEC_PARAM_TYPES(TEEC_MEMREF_WHOLE, TEEC_MEMREF_WHOLE,
-					 TEEC_MEMREF_WHOLE, TEEC_NONE);
+					 TEEC_MEMREF_WHOLE, TEEC_VALUE_INOUT);
 
 	//Encryption phase
 	aes_ctr(nonce, NONCE_LEN, crypt_nonce, &out_nonce_len, (unsigned char*) session_key, (unsigned char*) iv, crypt_nonce_len, 1);
@@ -458,6 +490,8 @@ void call_ta_inv(int call_type, const char *req, const char *hmac, char * sessio
     op.params[2].memref.parent = &hmacSM;
     op.params[2].memref.size = hmac_len;
     memcpy(hmacSM.buffer, hmac, hmac_len);
+
+    op.params[3].value.a = strlen(req);
 
 	/* Use TEE Client API to allocate the underlying memory buffer. */
 	res = TEEC_RegisterSharedMemory(&ctx, &nonceSM);
@@ -487,8 +521,8 @@ void call_ta_inv(int call_type, const char *req, const char *hmac, char * sessio
 	 * TA_HELLO_WORLD_CMD_INC_VALUE is the actual function in the TA to be
 	 * called.
 	 */
-	printf("Invoking DBStore operation with values %s, %s and %s\n", (char *) nonceSM.buffer, 
-		(char *) reqSM.buffer, (char *) hmacSM.buffer);
+	printf("Invoking DBStore operation with statement %s\n", (char *) reqSM.buffer);
+	print_bytes("HMAC: ", hmacSM.buffer, 20);
 	res = TEEC_InvokeCommand(&sess, TA_DBSTORE_INV, &op,
 		&err_origin);
 	if (res != TEEC_SUCCESS)
@@ -535,7 +569,7 @@ int main(int argc, char *argv[])
 		}
 		else if(strncmp(input, "inv", 3) == 0) {
 			if(session_key != NULL) {
-				call_ta_inv(1, "ola", "o", session_key, iv);
+				call_ta_inv(1, "ola", session_key, iv);
 			}
 			else
 				printf("ERROR: DBStore not initialized\n");
