@@ -252,12 +252,8 @@ int verify_hmac(char * in, int in_len, char * hmac, int * hmac_len, unsigned cha
 	char * generated_hmac = (char *) malloc(sizeof(char) * 20);
 	int len;
 
-	printf("entrei\n");
-
 	gen_hmac(in, in_len, generated_hmac, &len, key);
 	*hmac_len = len;
-
-	printf("entrei2\n");
 
 	if(memcmp(generated_hmac, hmac, 20) == 0) {
 		free(generated_hmac);
@@ -373,26 +369,12 @@ void call_ta_init(int call_type, const char *appid, char *session_key, char *iv)
 		errx(1, "TEEC_RegisterSharedMemory failed with code 0x%x origin 0x%x",
 			res, err_origin);
 
-	/*if (result != TEEC_SUCCESS)
-	{
-	goto cleanup3;
-	}*/
-
-	/* Clear the TEEC_Operation struct */
-	// memset(&op, 0, sizeof(op));
-
-	/*
-	 * TA_HELLO_WORLD_CMD_INC_VALUE is the actual function in the TA to be
-	 * called.
-	 */
 	printf("INIT: Invoking DBStore on the TA\n");
 	res = TEEC_InvokeCommand(&sess, TA_DBSTORE_INIT, &op,
 		 &err_origin);
 	if (res != TEEC_SUCCESS)
 		errx(1, "TEEC_InvokeCommand failed with code 0x%x origin 0x%x",
 			res, err_origin);
-	//printf("INIT: Received from DBStore values %s and %s\n", (char *) signatureSM.buffer,
-		//(char *) modulusSM.buffer);
 
 	if(decrypt_using_private_key(modulusSM.buffer, 256, decrypt_rsa, &decrypt_rsa_len) != 1)
 		printf("Bad decrypto...");
@@ -410,19 +392,11 @@ void call_ta_init(int call_type, const char *appid, char *session_key, char *iv)
 		printf("INIT: Authenticated DBStore\n");
 	else
 		printf("INIT: Could not authenticate DBStore\n");
-	/*
-	 * We're done with the TA, close the session and
-	 * destroy the context.
-	 *
-	 * The TA will print "Goodbye!" in the log when the
-	 * session is closed.
-	 */
-
-	free(message);
 
 	TEEC_CloseSession(&sess);
-
 	TEEC_FinalizeContext(&ctx);
+
+	free(message);
 
 	memcpy(session_key, decrypt_rsa, 16);
 	memcpy(iv, r_iv, 16);
