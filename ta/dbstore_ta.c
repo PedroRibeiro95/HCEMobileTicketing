@@ -523,6 +523,87 @@ int verify_hmac (char * in, int in_len, char * hmac, int hmac_len, unsigned char
   return 0;
 }
 
+int gen_hmac (char * in, int in_len, char * out, int * out_len, unsigned char * session_key) {
+  TEE_Result ret = TEE_SUCCESS; // return code
+  TEE_ObjectHandle key = (TEE_ObjectHandle) NULL;
+  TEE_Attribute aes_attrs[1];
+  //void * to_hamc = NULL;
+  void * re_hmac = NULL;
+  uint32_t re_hmac_len = 20;
+  TEE_ObjectInfo info;
+  TEE_OperationHandle handle = (TEE_OperationHandle) NULL;
+
+  //AES key
+  aes_attrs[0].attributeID = TEE_ATTR_SECRET_VALUE;
+  aes_attrs[0].content.ref.buffer = session_key;
+  aes_attrs[0].content.ref.length = 16;
+
+  // create a transient object
+  ret = TEE_AllocateTransientObject(TEE_TYPE_HMAC_SHA1, 128, &key);
+  if (ret != TEE_SUCCESS) {
+    return TEE_ERROR_BAD_PARAMETERS;
+  }
+
+  // populate the object with your keys
+  ret = TEE_PopulateTransientObject(key, (TEE_Attribute *)&aes_attrs, 1);
+  if (ret != TEE_SUCCESS) {
+    return TEE_ERROR_BAD_PARAMETERS;
+  }
+
+  // create your structures to de / decrypt
+  //to_hmac = TEE_Malloc(in_len, 0);
+  re_hmac = TEE_Malloc(re_hmac_len, 0);
+  if (!re_hmac) {
+    return TEE_ERROR_BAD_PARAMETERS;
+  }
+  //TEE_MemMove(to_hmac, in, in_len);
+
+  // setup the info structure about the key
+  TEE_GetObjectInfo (key, &info);
+
+  // Allocate the operation
+  ret = TEE_AllocateOperation(&handle, TEE_ALG_HMAC_SHA1, TEE_MODE_MAC, 128);
+  if (ret != TEE_SUCCESS) {
+    return -1;
+  }
+
+  // set the key
+  ret = TEE_SetOperationKey(handle, key);
+  if (ret != TEE_SUCCESS) {
+    TEE_FreeOperation(handle);
+    return -1;
+  }
+
+  // hmac
+  TEE_MACInit(handle, NULL, 0); //HMAC with SHA1 needs no IV
+
+  /*ret = TEE_CipherUpdate(handle, to_decrypt, in_len, cipher, &decrypted_len);
+  if (ret == TEE_ERROR_SHORT_BUFFER) {
+    IMSG("ERROR: Cipher update error\n");
+    TEE_FreeOperation(handle);
+    return TEE_ERROR_BAD_PARAMETERS;
+  }*/
+
+  ret = TEE_MACComputeFinal(handle, in, in_len, re_hmac, &re_hmac_len);
+  if (ret == TEE_ERROR_MAC_INVALID) {
+    TEE_FreeOperation(handle);
+    return TEE_ERROR_BAD_PARAMETERS;
+  }
+
+  //memcpy (out, cipher, decrypted_len);
+
+  // finish off
+  memcpy (out, re_hmac, re_hmac_len);
+  *out_len = re_hmac_len;
+  //out[cipher_len] = '\0';
+
+  // clean up after yourself
+  TEE_FreeOperation(handle);
+  TEE_FreeTransientObject (key);
+
+  return 0;
+}
+
 /*
  * Called when the instance of the TA is created. This is the first call in
  * the TA.
@@ -706,13 +787,12 @@ static TEE_Result inv(uint32_t param_types,
     
   const char *nonce;
   const char *req;
-  const char *hmac;
+  char *hmac = TEE_Malloc(20, 0);
   int nonce_len, req_len, hmac_len;
   uint32_t flags = TEE_DATA_FLAG_ACCESS_READ | TEE_DATA_FLAG_ACCESS_WRITE;
   uint32_t read_count;
   void *dst_nonce;
   void *dst_req;
-  void *dst_hmac;
 
   int session_key_id = 0;
   int iv_id = 1;
@@ -784,17 +864,14 @@ static TEE_Result inv(uint32_t param_types,
   TEE_MemMove(dst_nonce, nonce, nonce_len);
   TEE_MemMove(params[0].memref.buffer, dst_nonce, nonce_len);
 
-  req = "new_req";
+  req = "OK\0";
   req_len = strlen(req);
   dst_req = TEE_Malloc(req_len, TEE_MALLOC_FILL_ZERO);
   TEE_MemMove(dst_req, req, req_len);
   TEE_MemMove(params[1].memref.buffer, dst_req, req_len);
 
-  hmac = "new_hmac";
-  hmac_len = strlen(hmac);
-  dst_hmac = TEE_Malloc(hmac_len, TEE_MALLOC_FILL_ZERO);
-  TEE_MemMove(dst_hmac, hmac, hmac_len);
-  TEE_MemMove(params[2].memref.buffer, dst_hmac, hmac_len);
+  gen_hmac((char*) req, req_len, hmac, &hmac_len, (unsigned char*) session_key);
+  TEE_MemMove(params[2].memref.buffer, hmac, hmac_len);
 
 	IMSG("INV: Answering with values %s, %s and %s\n", (char *) params[0].memref.buffer,
 		(char *) params[1].memref.buffer, (char *) params[2].memref.buffer);

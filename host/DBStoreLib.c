@@ -230,7 +230,7 @@ int aes_ctr(char * in, int in_len, char * out, int * out_len, unsigned char * ke
 void gen_hmac(char * in, int in_len, char * out, int * out_len, unsigned char * key) {
 
 	unsigned char * result = (unsigned char *) malloc(sizeof(char) * 20);
-	int len;
+	unsigned int len;
 
 	HMAC_CTX ctx;
     HMAC_CTX_init(&ctx);
@@ -246,6 +246,25 @@ void gen_hmac(char * in, int in_len, char * out, int * out_len, unsigned char * 
     memcpy(out, result, 20);
 
     free(result);
+}
+
+int verify_hmac(char * in, int in_len, char * hmac, int * hmac_len, unsigned char * key) {
+	char * generated_hmac = (char *) malloc(sizeof(char) * 20);
+	int len;
+
+	printf("entrei\n");
+
+	gen_hmac(in, in_len, generated_hmac, &len, key);
+	*hmac_len = len;
+
+	printf("entrei2\n");
+
+	if(memcmp(generated_hmac, hmac, 20) == 0) {
+		free(generated_hmac);
+		return 1;
+	}
+	free(generated_hmac);
+	return 0;
 }
 
 void call_ta_init(int call_type, const char *appid, char *session_key, char *iv)
@@ -419,6 +438,11 @@ void call_ta_inv(int call_type, const char *req, char * session_key, char *iv)
 	TEEC_UUID uuid = TA_DBSTORE_UUID; //will be DBStore code running on TZ!
 	uint32_t err_origin;
 
+	char *re_nonce;
+	char *re_req;
+	char *re_hmac;
+	char *res_op;
+
 	int out_nonce_len, out_req_len;
 	int crypt_nonce_len = (NONCE_LEN/16 + 1) * 32;
 	char *crypt_nonce = (char*) malloc(sizeof(char) * crypt_nonce_len);
@@ -426,7 +450,7 @@ void call_ta_inv(int call_type, const char *req, char * session_key, char *iv)
 	char *crypt_req = (char*) malloc(sizeof(char) * crypt_req_len);
 
 	char *hmac = (char *) malloc(sizeof(char) * 20);
-	int hmac_len;
+	int hmac_len, re_hmac_len;
 
 	char *nonce = (char*) malloc(sizeof(char) * NONCE_LEN);
 
@@ -521,15 +545,33 @@ void call_ta_inv(int call_type, const char *req, char * session_key, char *iv)
 	 * TA_HELLO_WORLD_CMD_INC_VALUE is the actual function in the TA to be
 	 * called.
 	 */
-	printf("Invoking DBStore operation with statement %s\n", (char *) reqSM.buffer);
-	print_bytes("HMAC: ", hmacSM.buffer, 20);
+	printf("INV:Invoking DBStore operation with statement %s\n", (char *) reqSM.buffer);
+	print_bytes("INV: HMAC - ", hmacSM.buffer, 20);
 	res = TEEC_InvokeCommand(&sess, TA_DBSTORE_INV, &op,
 		&err_origin);
 	if (res != TEEC_SUCCESS)
 		errx(1, "TEEC_InvokeCommand failed with code 0x%x origin 0x%x",
 			res, err_origin);
-	printf("DBStore answered with values %s, %s and %s\n", (char *) nonceSM.buffer,
-		(char *) reqSM.buffer, (char *) hmacSM.buffer);
+
+	re_nonce = (char *) nonceSM.buffer;
+	re_req = (char *) reqSM.buffer;
+	re_hmac = (char *) hmacSM.buffer;
+
+	printf("DBStore answered with values %s, %s and %s\n", re_nonce,
+		re_req, re_hmac);
+
+	printf("INV: Verifying received HMAC...\n");
+
+	//Such a stupid hack... this needs to be fixed!
+	if(strncmp(re_req, "OK", 2) == 0)
+		res_op = "OK";
+	else
+		res_op = "NO";
+
+	if(verify_hmac((char*) res_op, 2, re_hmac, &re_hmac_len, session_key))
+		printf("INV: HMAC verified\n");
+	else
+		printf("INV: ERROR - Could not verify HMAC\n");
 
 	/*
 	 * We're done with the TA, close the session and
@@ -542,6 +584,11 @@ void call_ta_inv(int call_type, const char *req, char * session_key, char *iv)
 	TEEC_CloseSession(&sess);
 
 	TEEC_FinalizeContext(&ctx);
+
+	free(nonce);
+	free(hmac);
+	free(crypt_nonce);
+	free(crypt_req);
 }
 
 int main(int argc, char *argv[])
