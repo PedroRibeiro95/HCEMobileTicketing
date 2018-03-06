@@ -786,13 +786,13 @@ static TEE_Result inv(uint32_t param_types,
 	TEE_ObjectHandle file_handle;
     
   const char *nonce;
-  const char *req;
+  char *reply;
   char *hmac = TEE_Malloc(20, 0);
-  int nonce_len, req_len, hmac_len;
+  int nonce_len, reply_len, hmac_len;
   uint32_t flags = TEE_DATA_FLAG_ACCESS_READ | TEE_DATA_FLAG_ACCESS_WRITE;
   uint32_t read_count;
   void *dst_nonce;
-  void *dst_req;
+  //void *dst_req;
 
   int session_key_id = 0;
   int iv_id = 1;
@@ -808,6 +808,9 @@ static TEE_Result inv(uint32_t param_types,
 
   char *re_hmac = params[2].memref.buffer;
   //int re_hmac_len;
+
+  int crypt_reply_len;
+  char *crypt_reply = TEE_Malloc(32, 0);
 
 	DMSG("has been called");
 
@@ -852,11 +855,14 @@ static TEE_Result inv(uint32_t param_types,
   /**********************************************************************/
 
   IMSG("INV: Verifying HMAC...\n");
-  if(verify_hmac(sql_stmt, sql_len, re_hmac, 20, (unsigned char*) session_key) == 0)
+  if(verify_hmac(sql_stmt, sql_len, re_hmac, 20, (unsigned char*) session_key) == 0) {
+    reply = (char*) "OK";
     IMSG("INV: Successfully verified HMAC\n");
-  else
+  }
+  else {
+    reply = (char*) "NO";
     IMSG("ERROR: Could not verify HMAC\n");
-
+  }
 
 	nonce = "new_nonce";
 	nonce_len = strlen(nonce);
@@ -864,13 +870,14 @@ static TEE_Result inv(uint32_t param_types,
   TEE_MemMove(dst_nonce, nonce, nonce_len);
   TEE_MemMove(params[0].memref.buffer, dst_nonce, nonce_len);
 
-  req = "OK\0";
-  req_len = strlen(req);
-  dst_req = TEE_Malloc(req_len, TEE_MALLOC_FILL_ZERO);
-  TEE_MemMove(dst_req, req, req_len);
-  TEE_MemMove(params[1].memref.buffer, dst_req, req_len);
+  reply_len = strlen(reply);
+  encrypt_aes_ctr(reply, 2, crypt_reply, &crypt_reply_len, (unsigned char*) session_key, (unsigned char*) iv);
 
-  gen_hmac((char*) req, req_len, hmac, &hmac_len, (unsigned char*) session_key);
+  //dst_reply = TEE_Malloc(reply_len, TEE_MALLOC_FILL_ZERO);
+  //TEE_MemMove(dst_reply, reply, reply_len);
+  TEE_MemMove(params[1].memref.buffer, crypt_reply, crypt_reply_len);
+
+  gen_hmac((char*) reply, reply_len, hmac, &hmac_len, (unsigned char*) session_key);
   TEE_MemMove(params[2].memref.buffer, hmac, hmac_len);
 
 	IMSG("INV: Answering with values %s, %s and %s\n", (char *) params[0].memref.buffer,
@@ -879,6 +886,7 @@ static TEE_Result inv(uint32_t param_types,
   TEE_Free(decrypt_nonce);
   TEE_Free(decrypt_req);
   TEE_Free(sql_stmt);
+  TEE_Free(crypt_reply);
 
 	return TEE_SUCCESS;
 }

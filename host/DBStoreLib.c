@@ -441,13 +441,15 @@ void call_ta_inv(int call_type, const char *req, char * session_key, char *iv)
 	char *re_nonce;
 	char *re_req;
 	char *re_hmac;
-	char *res_op;
 
 	int out_nonce_len, out_req_len;
 	int crypt_nonce_len = (NONCE_LEN/16 + 1) * 32;
 	char *crypt_nonce = (char*) malloc(sizeof(char) * crypt_nonce_len);
 	int crypt_req_len = (strlen(req)/16 + 1) * 32;
 	char *crypt_req = (char*) malloc(sizeof(char) * crypt_req_len);
+
+	int decrypt_reply_len = 2;
+	char *decrypt_reply = (char*) malloc(sizeof(char) * decrypt_reply_len);
 
 	char *hmac = (char *) malloc(sizeof(char) * 20);
 	int hmac_len, re_hmac_len;
@@ -467,7 +469,7 @@ void call_ta_inv(int call_type, const char *req, char * session_key, char *iv)
 	//char crypto_nonce[32];
 
 	//Generate HMAC for the message
-    gen_hmac((char *) req, strlen(req), hmac, &hmac_len, session_key);
+    gen_hmac((char *) req, strlen(req), hmac, &hmac_len, (unsigned char*) session_key);
 
     nonceSM.flags = TEEC_MEM_INPUT | TEEC_MEM_OUTPUT;
     nonceSM.size  = crypt_nonce_len;
@@ -557,18 +559,14 @@ void call_ta_inv(int call_type, const char *req, char * session_key, char *iv)
 	re_req = (char *) reqSM.buffer;
 	re_hmac = (char *) hmacSM.buffer;
 
-	printf("DBStore answered with values %s, %s and %s\n", re_nonce,
-		re_req, re_hmac);
+	printf("DBStore answered with values %s, %s and %s\n", re_nonce, re_req, re_hmac);
+
+	printf("INV: Decrypting DBStore reply...\n");
+	aes_ctr(re_req, crypt_req_len, decrypt_reply, &decrypt_reply_len, (unsigned char*) session_key, (unsigned char*) iv, 2, 0);
+	printf("INV: Decrypted DBStore reply - %s\n", decrypt_reply);
 
 	printf("INV: Verifying received HMAC...\n");
-
-	//Such a stupid hack... this needs to be fixed!
-	if(strncmp(re_req, "OK", 2) == 0)
-		res_op = "OK";
-	else
-		res_op = "NO";
-
-	if(verify_hmac((char*) res_op, 2, re_hmac, &re_hmac_len, session_key))
+	if(verify_hmac(decrypt_reply, 2, re_hmac, &re_hmac_len, (unsigned char*) session_key))
 		printf("INV: HMAC verified\n");
 	else
 		printf("INV: ERROR - Could not verify HMAC\n");
@@ -589,6 +587,7 @@ void call_ta_inv(int call_type, const char *req, char * session_key, char *iv)
 	free(hmac);
 	free(crypt_nonce);
 	free(crypt_req);
+	free(decrypt_reply);
 }
 
 int main(int argc, char *argv[])
