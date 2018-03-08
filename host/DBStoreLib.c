@@ -99,7 +99,7 @@ struct ctr_state {
 	const EVP_CIPHER *cipher_type;
 };
 
-void print_bytes(char * string, char * bytes, int len) {
+void print_bytes(char * string, unsigned char * bytes, int len) {
 	printf("%s ", string);
  
     for (int i = 0; i != len; i++)
@@ -175,7 +175,7 @@ int encrypt_using_public_key (char * public_key, char * in, int in_len, unsigned
 }
 
 // decrypt in string using the public key
-int decrypt_using_private_key (unsigned char * in, int in_len, char * out, int * out_len) {
+int decrypt_using_private_key (unsigned char * in, int in_len, unsigned char * out, int * out_len) {
 
    RSA * rsa;
 
@@ -213,7 +213,7 @@ void ctr_encrypt_decrypt(struct ctr_state * params, unsigned char * in, int in_l
 	free(received);
 }
 
-int aes_ctr(char * in, int in_len, char * out, int * out_len, unsigned char * key, unsigned char * iv, int message_len, int op) {
+int aes_ctr(unsigned char * in, int in_len, unsigned char * out, int * out_len, unsigned char * key, unsigned char * iv, int message_len, int op) {
 
 	struct ctr_state *params = (struct ctr_state *) malloc(sizeof(struct ctr_state));
 
@@ -227,7 +227,7 @@ int aes_ctr(char * in, int in_len, char * out, int * out_len, unsigned char * ke
 	return 0;
 }
 
-void gen_hmac(char * in, int in_len, char * out, int * out_len, unsigned char * key) {
+void gen_hmac(char * in, int in_len, unsigned char * out, int * out_len, unsigned char * key) {
 
 	unsigned char * result = (unsigned char *) malloc(sizeof(char) * 20);
 	unsigned int len;
@@ -248,8 +248,8 @@ void gen_hmac(char * in, int in_len, char * out, int * out_len, unsigned char * 
     free(result);
 }
 
-int verify_hmac(char * in, int in_len, char * hmac, int * hmac_len, unsigned char * key) {
-	char * generated_hmac = (char *) malloc(sizeof(char) * 20);
+int verify_hmac(char * in, int in_len, unsigned char * hmac, int * hmac_len, unsigned char * key) {
+	unsigned char * generated_hmac = (unsigned char *) malloc(sizeof(unsigned char) * 20);
 	int len;
 
 	gen_hmac(in, in_len, generated_hmac, &len, key);
@@ -332,7 +332,7 @@ void call_ta_init(int call_type, const char *appid, unsigned char *session_key, 
 
 	free(nonce);
 
-	//Assigning shared buffers to parameters
+	//Assigning shared buffers to parameters and the corresponding local buffers
 	op.params[0].memref.parent = &signatureSM;
     op.params[0].memref.size = 256;
 
@@ -373,14 +373,14 @@ void call_ta_init(int call_type, const char *appid, unsigned char *session_key, 
 	if(decrypt_using_private_key(modulusSM.buffer, 256, decrypt_rsa, &decrypt_rsa_len) != 1)
 		printf("Bad decrypto...");
 
-	print_bytes("INIT: Decrypted session key ", decrypt_rsa, decrypt_rsa_len);
+	print_bytes("INIT: Decrypted session key - ", decrypt_rsa, 16);
 	memcpy(r_iv, cryptoSM.buffer, 16);
-	printf("INIT: Received IV\n");
+	print_bytes("INIT: Received IV - ", r_iv, 16);
 
 	//Decrypting AES-CTR-crypted responde from DBStore TA and getting the Transformed Challenge
-	aes_ctr(signatureSM.buffer, 256, decrypt_aes, &decrypt_aes_len, decrypt_rsa, r_iv, message_len, 0);
+	aes_ctr(signatureSM.buffer, 256, (unsigned char *) decrypt_aes, &decrypt_aes_len, decrypt_rsa, r_iv, message_len, 0);
 
-	printf("INIT: Decrypted challenge is %s\n", decrypt_aes);
+	printf("INIT: Decrypted challenge - %s\n", decrypt_aes);
 	
 	//Verifying if received Transformed Challenge corresponds to the expected
 	if(verify_challenge(message, decrypt_aes) == 0)
@@ -407,79 +407,74 @@ void call_ta_inv(int call_type, const char *req, unsigned char * session_key, un
 	TEEC_Context ctx;
 	TEEC_Session sess;
 	TEEC_Operation op = {0};
-	// TEEC_UUID uuid = TA_HELLO_WORLD_UUID;
 	TEEC_UUID uuid = TA_DBSTORE_UUID; //will be DBStore code running on TZ!
 	uint32_t err_origin;
 
-	char *re_nonce;
-	char *re_req;
-	char *re_hmac;
-
+	//These variables will hold the parameters of the request for the DBStore TA
+	char *nonce = (char*) malloc(sizeof(char) * NONCE_LEN);
 	int out_nonce_len, out_req_len;
 	int crypt_nonce_len = (NONCE_LEN/16 + 1) * 32;
-	char *crypt_nonce = (char*) malloc(sizeof(char) * crypt_nonce_len);
+	unsigned char *crypt_nonce = (unsigned char *) malloc(sizeof(unsigned char) * crypt_nonce_len);
 	int crypt_req_len = (strlen(req)/16 + 1) * 32;
-	char *crypt_req = (char*) malloc(sizeof(char) * crypt_req_len);
+	unsigned char *crypt_req = (unsigned char *) malloc(sizeof(unsigned char) * crypt_req_len);
+	unsigned char *hmac = (unsigned char *) malloc(sizeof(unsigned char) * 20);
+	int hmac_len, re_hmac_len;
 
+	//These variables will be using for holding the parameters of the response sent by DBStore TA
+	char *re_nonce;
+	unsigned char *re_req;
+	unsigned char *re_hmac;
 	int decrypt_reply_len = 2;
 	char *decrypt_reply = (char*) malloc(sizeof(char) * decrypt_reply_len);
 
-	char *hmac = (char *) malloc(sizeof(char) * 20);
-	int hmac_len, re_hmac_len;
-
-	char *nonce = (char*) malloc(sizeof(char) * NONCE_LEN);
-
+	//Generating nonce
 	rand_str(nonce, NONCE_LEN);
+	printf("INV: Generated nonce - %s\n", nonce);
 
-	print_bytes("INIT: Session key ", session_key, 16);
-
-	printf("INV: Generated nonce is %s\n", nonce);
-
-	/* Shared buffers */
+	//Preparing shared buffers
 	TEEC_SharedMemory nonceSM = {0};
 	TEEC_SharedMemory reqSM = {0};
 	TEEC_SharedMemory hmacSM = {0};
 
-	//char crypto_appid[32];
-	//char crypto_nonce[32];
-
 	//Generate HMAC for the message
     gen_hmac((char *) req, strlen(req), hmac, &hmac_len, session_key);
+    print_bytes("INV: HMAC - ", hmac, 20);
 
+    //Starts preparing the shared buffers with the local data
     nonceSM.flags = TEEC_MEM_INPUT | TEEC_MEM_OUTPUT;
     nonceSM.size  = crypt_nonce_len;
 	nonceSM.buffer = calloc(crypt_nonce_len, sizeof(char));
 
 	reqSM.flags = TEEC_MEM_INPUT | TEEC_MEM_OUTPUT;
     reqSM.size  = crypt_req_len;
-	reqSM.buffer = calloc(crypt_req_len, sizeof(char));
+	reqSM.buffer = calloc(crypt_req_len, sizeof(unsigned char));
 
 	hmacSM.flags = TEEC_MEM_INPUT | TEEC_MEM_OUTPUT;
     hmacSM.size  = hmac_len;
-	hmacSM.buffer = calloc(hmac_len, sizeof(char));
+	hmacSM.buffer = calloc(hmac_len, sizeof(unsigned char));
 
-	/* Initialize a context connecting us to the TEE */
+	//Initializing context and connecting to DBStore TA
 	res = TEEC_InitializeContext(NULL, &ctx);
 	if (res != TEEC_SUCCESS)
 		errx(1, "TEEC_InitializeContext failed with code 0x%x", res);
 
-	/*
-	 * Open a session to the "hello world" TA, the TA will print "hello
-	 * world!" in the log when the session is created.
-	 */
 	res = TEEC_OpenSession(&ctx, &sess, &uuid,
 			       TEEC_LOGIN_PUBLIC, NULL, NULL, &err_origin);
 	if (res != TEEC_SUCCESS)
 		errx(1, "TEEC_Opensession failed with code 0x%x origin 0x%x",
 			res, err_origin);
 
+	//Defining parameter types	
 	op.paramTypes = TEEC_PARAM_TYPES(TEEC_MEMREF_WHOLE, TEEC_MEMREF_WHOLE,
 					 TEEC_MEMREF_WHOLE, TEEC_VALUE_INOUT);
 
-	//Encryption phase
-	aes_ctr(nonce, NONCE_LEN, crypt_nonce, &out_nonce_len, session_key, iv, crypt_nonce_len, 1);
-	aes_ctr((char *) req, strlen(req), crypt_req, &out_req_len, session_key, iv, crypt_req_len, 1);
+	//Encrypting both Nonce and SQL Statement
+	aes_ctr((unsigned char *) nonce, NONCE_LEN, crypt_nonce, &out_nonce_len, session_key, iv, crypt_nonce_len, 1);
+	aes_ctr((unsigned char *) req, strlen(req), crypt_req, &out_req_len, session_key, iv, crypt_req_len, 1);
 
+	free(nonce);
+
+	//Assigning shared buffers to parameters and the corresponding local buffers
 	op.params[0].memref.parent = &nonceSM;
     op.params[0].memref.size = crypt_nonce_len;
     memcpy(nonceSM.buffer, crypt_nonce, crypt_nonce_len);
@@ -492,9 +487,13 @@ void call_ta_inv(int call_type, const char *req, unsigned char * session_key, un
     op.params[2].memref.size = hmac_len;
     memcpy(hmacSM.buffer, hmac, hmac_len);
 
+    free(crypt_nonce);
+    free(crypt_req);
+    free(hmac);
+
     op.params[3].value.a = strlen(req);
 
-	/* Use TEE Client API to allocate the underlying memory buffer. */
+	//Registering shared buffers
 	res = TEEC_RegisterSharedMemory(&ctx, &nonceSM);
     if (res != TEEC_SUCCESS)
 		errx(1, "TEEC_RegisterSharedMemory failed with code 0x%x origin 0x%x",
@@ -510,46 +509,37 @@ void call_ta_inv(int call_type, const char *req, unsigned char * session_key, un
 		errx(1, "TEEC_RegisterSharedMemory failed with code 0x%x origin 0x%x",
 			res, err_origin);
 
-	printf("INV:Invoking DBStore operation with statement %s\n", (char *) reqSM.buffer);
-	print_bytes("INV: HMAC - ", hmacSM.buffer, 20);
+	//Invoke operation will be invoked on DBStore TA
+	printf("INV: Invoking ŚQL operation on DBStore\n");
 	res = TEEC_InvokeCommand(&sess, TA_DBSTORE_INV, &op,
 		&err_origin);
 	if (res != TEEC_SUCCESS)
 		errx(1, "TEEC_InvokeCommand failed with code 0x%x origin 0x%x",
 			res, err_origin);
 
+	//Getting the parameters from DBStore TA's response
 	re_nonce = (char *) nonceSM.buffer;
-	re_req = (char *) reqSM.buffer;
-	re_hmac = (char *) hmacSM.buffer;
+	re_req = (unsigned char *) reqSM.buffer;
+	re_hmac = (unsigned char *) hmacSM.buffer;
 
 	printf("DBStore answered with values %s, %s and %s\n", re_nonce, re_req, re_hmac);
 
+	//Decrypting the confirmation response from DBStore TA
 	printf("INV: Decrypting DBStore reply...\n");
-	aes_ctr(re_req, crypt_req_len, decrypt_reply, &decrypt_reply_len, session_key, iv, 2, 0);
+	aes_ctr(re_req, crypt_req_len, (unsigned char *) decrypt_reply, &decrypt_reply_len, session_key, iv, 2, 0);
 	printf("INV: Decrypted DBStore reply - %s\n", decrypt_reply);
 
+	//Verifying if received HMAC matches with the generated one
 	printf("INV: Verifying received HMAC...\n");
 	if(verify_hmac(decrypt_reply, 2, re_hmac, &re_hmac_len, session_key))
 		printf("INV: HMAC verified\n");
 	else
 		printf("INV: ERROR - Could not verify HMAC\n");
 
-	/*
-	 * We're done with the TA, close the session and
-	 * destroy the context.
-	 *
-	 * The TA will print "Goodbye!" in the log when the
-	 * session is closed.
-	 */
-
 	TEEC_CloseSession(&sess);
 
 	TEEC_FinalizeContext(&ctx);
 
-	free(nonce);
-	free(hmac);
-	free(crypt_nonce);
-	free(crypt_req);
 	free(decrypt_reply);
 }
 
