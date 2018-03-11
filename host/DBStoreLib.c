@@ -103,7 +103,7 @@ void print_bytes(char * string, unsigned char * bytes, int len) {
 	printf("%s ", string);
  
     for (int i = 0; i != len; i++)
-        printf("%02x", (unsigned int)string[i]);
+        printf("%02x", (unsigned int)bytes[i]);
  
     printf("\n");
 }
@@ -261,6 +261,19 @@ int verify_hmac(char * in, int in_len, unsigned char * hmac, int * hmac_len, uns
 	}
 	free(generated_hmac);
 	return 0;
+}
+
+int update_session_key(unsigned char *session_key) {
+	unsigned char * new_key = (unsigned char *) malloc(sizeof(unsigned char) * 20);
+
+	SHA_CTX ctx;
+	SHA1_Init(&ctx);
+	SHA1_Update(&ctx, session_key, 16);
+	SHA1_Final(new_key, &ctx);
+
+	memcpy(session_key, new_key, 16);
+
+	return 1;
 }
 
 void call_ta_init(int call_type, const char *appid, unsigned char *session_key, unsigned char *iv)
@@ -426,6 +439,11 @@ void call_ta_inv(int call_type, const char *req, unsigned char * session_key, un
 	unsigned char *re_hmac;
 	int decrypt_reply_len = 2;
 	char *decrypt_reply = (char*) malloc(sizeof(char) * decrypt_reply_len);
+
+	//Renewing session key
+	printf("INV: Updating session key...\n");
+	update_session_key(session_key);
+	printf("INV: Session key updated - %s\n", (char *) session_key);
 
 	//Generating nonce
 	rand_str(nonce, NONCE_LEN);

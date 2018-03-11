@@ -86,13 +86,13 @@ void transform_challenge(char * challenge) {
   }
 }
 
-void print_bytes(char * string, int len) {
-  printf("%s ", string);
+void print_bytes(const char * string, unsigned char * bytes, int len) {
+  IMSG("%s ", string);
  
     for (int i = 0; i != len; i++)
-        printf("%02x", (unsigned int)string[i]);
+        IMSG("%02x", (unsigned int)bytes[i]);
  
-    printf("\n");
+    IMSG("\n");
 }
 
 int decrypt_using_private_key (unsigned char * in, int in_len, char * out, int * out_len) {
@@ -608,7 +608,7 @@ int update_session_key(unsigned char *session_key) {
   TEE_Result ret = TEE_SUCCESS; // return code
   //void * to_hamc = NULL;
   void * new_key = NULL;
-  uint32_t key_size = 16;
+  uint32_t key_size = 20;
   TEE_OperationHandle handle = (TEE_OperationHandle) NULL;
 
   // create your structures to de / decrypt
@@ -625,12 +625,19 @@ int update_session_key(unsigned char *session_key) {
   }
 
   // hmac
-  TEE_DigestDoFinal(handle, session_key, key_size, new_key, &key_size);
+  ret = TEE_DigestDoFinal(handle, session_key, 16, new_key, &key_size);
+  if (ret == TEE_ERROR_SHORT_BUFFER) {
+    TEE_FreeOperation(handle);
+    IMSG("ERROR: Buffer too short\n");
+    return TEE_ERROR_BAD_PARAMETERS;
+  }
+  else
+    IMSG("INV: Success renewing key!\n");
 
   //memcpy (out, cipher, decrypted_len);
 
   // finish off
-  memcpy (session_key, new_key, key_size);
+  memcpy (session_key, new_key, 16);
 
   // clean up after yourself
   TEE_FreeOperation(handle);
@@ -817,6 +824,7 @@ static TEE_Result inv(uint32_t param_types,
 						   TEE_PARAM_TYPE_MEMREF_INPUT,
 						   TEE_PARAM_TYPE_NONE);
 
+  TEE_Result res;
 	TEE_ObjectHandle file_handle;
     
   const char *nonce;
@@ -830,8 +838,8 @@ static TEE_Result inv(uint32_t param_types,
 
   int session_key_id = 0;
   int iv_id = 1;
-  char session_key[16];
-  char iv[16];
+  unsigned char session_key[16];
+  unsigned char iv[16];
 
   int decrypt_nonce_len, decrypt_req_len;
   char *decrypt_nonce = TEE_Malloc(32, 0);
@@ -850,9 +858,6 @@ static TEE_Result inv(uint32_t param_types,
 
 	if (param_types != exp_param_types)
 		//return TEE_ERROR_BAD_PARAMETERS;
-
-	IMSG("INV: Got values %s, %s and %s from NW\n", (char *) params[0].memref.buffer,
-		(char *) params[1].memref.buffer, (char *) params[2].memref.buffer);
   
   //Will grab both session key and IV from the persistent objects
 	IMSG("INV: Opening persistent objects...\n");
@@ -861,7 +866,7 @@ static TEE_Result inv(uint32_t param_types,
 	//if (res == TEE_HANDLE_NULL)
 	//	IMSG("Bad handle...\n");
 	TEE_ReadObjectData(file_handle, session_key, 16, &read_count);
-	IMSG("INV: Read session key \"%s\" from persistent object\n", session_key);
+	print_bytes("INV: Read session key - ", session_key, 16);
 	TEE_CloseObject(file_handle);
 
   TEE_OpenPersistentObject(TEE_STORAGE_PRIVATE, &iv_id, sizeof(int),
@@ -869,7 +874,21 @@ static TEE_Result inv(uint32_t param_types,
   //if (res == TEE_HANDLE_NULL)
   //  IMSG("Bad handle...\n");
   TEE_ReadObjectData(file_handle, iv, 16, &read_count);
-  IMSG("INV: Read IV \"%s\" from persistent object\n", iv);
+  print_bytes("INV: Read IV - ", iv, 16);
+  TEE_CloseObject(file_handle);
+
+  IMSG("INV: Updating session key...\n");
+  update_session_key(session_key);
+  //print_bytes("INV: Updated session key - ", session_key, 16);
+  IMSG("INV: Updated session key - %s\n", (char *) session_key);
+
+  IMSG("INV: Writing to persistent storage the new session key...\n");
+  res = TEE_CreatePersistentObject(TEE_STORAGE_PRIVATE, &session_key_id, sizeof(int),
+    TEE_DATA_FLAG_ACCESS_WRITE, TEE_HANDLE_NULL, session_key, 17, &file_handle);
+  if (res != TEE_SUCCESS)
+    IMSG("Error creating session key object...\n");
+  IMSG("INV: New key Successfully written!\n");
+
   TEE_CloseObject(file_handle);
   /**************************************************************/
 	

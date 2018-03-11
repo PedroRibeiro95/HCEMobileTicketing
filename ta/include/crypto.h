@@ -11,6 +11,6 @@ int verify_hmac (char * in, int in_len, unsigned char * hmac, int hmac_len, unsi
 int gen_hmac (char * in, int in_len, unsigned char * out, int * out_len, unsigned char * session_key);
 int update_session_key(unsigned char *session_key);
 
-void print_bytes(char * string, int len); //to remove from here
+void print_bytes(const char * string, unsigned char * bytes, int len); //to remove from here
 
 #endif /*CRYPTO_H*/
