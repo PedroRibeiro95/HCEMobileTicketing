@@ -95,7 +95,7 @@ void print_bytes(char * string, int len) {
     printf("\n");
 }
 
-int decrypt_using_private_key (char * in, int in_len, char * out, int * out_len) {
+int decrypt_using_private_key (unsigned char * in, int in_len, char * out, int * out_len) {
 
    TEE_Result ret = TEE_SUCCESS; // return code
    TEE_ObjectHandle key = (TEE_ObjectHandle) NULL;
@@ -190,7 +190,7 @@ int decrypt_using_private_key (char * in, int in_len, char * out, int * out_len)
    return 0;
 }
 
-int encrypt_using_public_key (uint8_t * modulus, const char * in, int in_len, char * out, int * out_len) {
+int encrypt_using_public_key (uint8_t * modulus, char * in, int in_len, unsigned char * out, int * out_len) {
 
    TEE_Result ret = TEE_SUCCESS; // return code
    TEE_ObjectHandle key = (TEE_ObjectHandle) NULL;
@@ -275,7 +275,7 @@ int encrypt_using_public_key (uint8_t * modulus, const char * in, int in_len, ch
    return 0;
 }
 
-int encrypt_aes_ctr(char * in, int in_len, char * out, int * out_len, unsigned char * session_key, unsigned char * iv) {
+int encrypt_aes_ctr(char * in, int in_len, unsigned char * out, int * out_len, unsigned char * session_key, unsigned char * iv) {
   TEE_Result ret = TEE_SUCCESS; // return code
   TEE_ObjectHandle key = (TEE_ObjectHandle) NULL;
   TEE_Attribute aes_attrs[1];
@@ -359,7 +359,7 @@ int encrypt_aes_ctr(char * in, int in_len, char * out, int * out_len, unsigned c
   return 0;
 }
 
-int decrypt_aes_ctr(char * in, int in_len, char * out, int * out_len, unsigned char * session_key, unsigned char * iv) {
+int decrypt_aes_ctr(unsigned char * in, int in_len, char * out, int * out_len, unsigned char * session_key, unsigned char * iv) {
   TEE_Result ret = TEE_SUCCESS; // return code
   TEE_ObjectHandle key = (TEE_ObjectHandle) NULL;
   TEE_Attribute aes_attrs[1];
@@ -443,7 +443,7 @@ int decrypt_aes_ctr(char * in, int in_len, char * out, int * out_len, unsigned c
   return 0;
 }
 
-int verify_hmac (char * in, int in_len, char * hmac, int hmac_len, unsigned char * session_key) {
+int verify_hmac (char * in, int in_len, unsigned char * hmac, int hmac_len, unsigned char * session_key) {
   TEE_Result ret = TEE_SUCCESS; // return code
   TEE_ObjectHandle key = (TEE_ObjectHandle) NULL;
   TEE_Attribute aes_attrs[1];
@@ -523,7 +523,7 @@ int verify_hmac (char * in, int in_len, char * hmac, int hmac_len, unsigned char
   return 0;
 }
 
-int gen_hmac (char * in, int in_len, char * out, int * out_len, unsigned char * session_key) {
+int gen_hmac (char * in, int in_len, unsigned char * out, int * out_len, unsigned char * session_key) {
   TEE_Result ret = TEE_SUCCESS; // return code
   TEE_ObjectHandle key = (TEE_ObjectHandle) NULL;
   TEE_Attribute aes_attrs[1];
@@ -600,6 +600,40 @@ int gen_hmac (char * in, int in_len, char * out, int * out_len, unsigned char * 
   // clean up after yourself
   TEE_FreeOperation(handle);
   TEE_FreeTransientObject (key);
+
+  return 0;
+}
+
+int update_session_key(unsigned char *session_key) {
+  TEE_Result ret = TEE_SUCCESS; // return code
+  //void * to_hamc = NULL;
+  void * new_key = NULL;
+  uint32_t key_size = 16;
+  TEE_OperationHandle handle = (TEE_OperationHandle) NULL;
+
+  // create your structures to de / decrypt
+  //to_hmac = TEE_Malloc(in_len, 0);
+  new_key = TEE_Malloc(key_size, 0);
+  if (!new_key) {
+    return TEE_ERROR_BAD_PARAMETERS;
+  }
+
+  // Allocate the operation
+  ret = TEE_AllocateOperation(&handle, TEE_ALG_SHA1, TEE_MODE_DIGEST, 0);
+  if (ret != TEE_SUCCESS) {
+    return -1;
+  }
+
+  // hmac
+  TEE_DigestDoFinal(handle, session_key, key_size, new_key, &key_size);
+
+  //memcpy (out, cipher, decrypted_len);
+
+  // finish off
+  memcpy (session_key, new_key, key_size);
+
+  // clean up after yourself
+  TEE_FreeOperation(handle);
 
   return 0;
 }
@@ -692,14 +726,14 @@ static TEE_Result init(uint32_t param_types,
 	TEE_Result res;
 	TEE_ObjectHandle file_handle;
 
-  char decrypted[256] = {0};
+  char *decrypted = TEE_Malloc(256, 0);
   int decrypted_len;
-  char encrypted_rsa[256] = {0};
+  unsigned char *encrypted_rsa = TEE_Malloc(256, 0);
   int encrypted_rsa_len;
-  char encrypted_aes[256] = {0}; //FIXME!!!! This may cause a buffer overflow! This one should be dynamically allocated
+  unsigned char *encrypted_aes = TEE_Malloc(256, 0); //FIXME!!!! This may cause a buffer overflow! This one should be dynamically allocated
   int encrypted_aes_len;
   uint8_t * modulus; //params[1]
-  char * encrypted_message; //params[2]
+  unsigned char * encrypted_message; //params[2]
   unsigned char * session_key = TEE_Malloc(16, TEE_MALLOC_FILL_ZERO);
   unsigned char * iv = TEE_Malloc(16, TEE_MALLOC_FILL_ZERO);
 
@@ -710,7 +744,7 @@ static TEE_Result init(uint32_t param_types,
 	DMSG("has been called");
 
   modulus = (uint8_t *) params[1].memref.buffer;
-  encrypted_message = (char *) params[2].memref.buffer;
+  encrypted_message = (unsigned char *) params[2].memref.buffer;
 
 	if (param_types != exp_param_types)
 		//return TEE_ERROR_BAD_PARAMETERS;
@@ -787,7 +821,7 @@ static TEE_Result inv(uint32_t param_types,
     
   const char *nonce;
   char *reply;
-  char *hmac = TEE_Malloc(20, 0);
+  unsigned char *hmac = TEE_Malloc(20, 0);
   int nonce_len, reply_len, hmac_len;
   uint32_t flags = TEE_DATA_FLAG_ACCESS_READ | TEE_DATA_FLAG_ACCESS_WRITE;
   uint32_t read_count;
@@ -806,11 +840,11 @@ static TEE_Result inv(uint32_t param_types,
   int sql_len = params[3].value.a;
   char *sql_stmt = TEE_Malloc(sql_len + 1, 0);
 
-  char *re_hmac = params[2].memref.buffer;
+  unsigned char *re_hmac = params[2].memref.buffer;
   //int re_hmac_len;
 
   int crypt_reply_len;
-  char *crypt_reply = TEE_Malloc(32, 0);
+  unsigned char *crypt_reply = TEE_Malloc(32, 0);
 
 	DMSG("has been called");
 
