@@ -87,12 +87,12 @@ void transform_challenge(char * challenge) {
 }
 
 void print_bytes(const char * string, unsigned char * bytes, int len) {
-  IMSG("%s ", string);
+  printf("%s ", string);
  
     for (int i = 0; i != len; i++)
-        IMSG("%02x", (unsigned int)bytes[i]);
+        printf("%02x", (unsigned int)bytes[i]);
  
-    IMSG("\n");
+    printf("\n");
 }
 
 int decrypt_using_private_key (unsigned char * in, int in_len, char * out, int * out_len) {
@@ -794,14 +794,14 @@ static TEE_Result init(uint32_t param_types,
   //Storing session key and IV using persistent storage. Only way to estabilish a session
   IMSG("INIT: Creating persistent objects for storing key and IV...\n");
   res = TEE_CreatePersistentObject(TEE_STORAGE_PRIVATE, &session_key_id, sizeof(int),
-    TEE_DATA_FLAG_ACCESS_WRITE, TEE_HANDLE_NULL, session_key, 17, &file_handle);
+    TEE_DATA_FLAG_ACCESS_WRITE, TEE_HANDLE_NULL, session_key, 16, &file_handle);
   if (res != TEE_SUCCESS)
     IMSG("Error creating session key object...\n");
 
   TEE_CloseObject(file_handle);
 
   res = TEE_CreatePersistentObject(TEE_STORAGE_PRIVATE, &iv_id, sizeof(int),
-    TEE_DATA_FLAG_ACCESS_WRITE, TEE_HANDLE_NULL, iv, 17, &file_handle);
+    TEE_DATA_FLAG_ACCESS_WRITE, TEE_HANDLE_NULL, iv, 16, &file_handle);
   if (res != TEE_SUCCESS)
     IMSG("Error creating IV object...\n");
 
@@ -838,8 +838,8 @@ static TEE_Result inv(uint32_t param_types,
 
   int session_key_id = 0;
   int iv_id = 1;
-  unsigned char session_key[16];
-  unsigned char iv[16];
+  unsigned char *session_key = TEE_Malloc(16, 0);
+  unsigned char *iv = TEE_Malloc(16, 0);
 
   int decrypt_nonce_len, decrypt_req_len;
   char *decrypt_nonce = TEE_Malloc(32, 0);
@@ -867,7 +867,17 @@ static TEE_Result inv(uint32_t param_types,
 	//	IMSG("Bad handle...\n");
 	TEE_ReadObjectData(file_handle, session_key, 16, &read_count);
 	print_bytes("INV: Read session key - ", session_key, 16);
-	TEE_CloseObject(file_handle);
+  TEE_CloseObject(file_handle);
+
+  IMSG("INV: Updating session key...\n");
+  update_session_key(session_key);
+  //print_bytes("INV: Updated session key - ", session_key, 16);
+  print_bytes("INV: Updated session key - ", session_key, 16);
+  res = TEE_CreatePersistentObject(TEE_STORAGE_PRIVATE, &session_key_id, sizeof(int),
+    TEE_DATA_FLAG_ACCESS_WRITE | TEE_DATA_FLAG_OVERWRITE, TEE_HANDLE_NULL, session_key, 16, &file_handle);
+  if (res != TEE_SUCCESS)
+    IMSG("ERROR: Could not write to session key object...\n");
+  IMSG("INV: New key Successfully written!\n");
 
   TEE_OpenPersistentObject(TEE_STORAGE_PRIVATE, &iv_id, sizeof(int),
     flags, &file_handle);
@@ -875,20 +885,6 @@ static TEE_Result inv(uint32_t param_types,
   //  IMSG("Bad handle...\n");
   TEE_ReadObjectData(file_handle, iv, 16, &read_count);
   print_bytes("INV: Read IV - ", iv, 16);
-  TEE_CloseObject(file_handle);
-
-  IMSG("INV: Updating session key...\n");
-  update_session_key(session_key);
-  //print_bytes("INV: Updated session key - ", session_key, 16);
-  IMSG("INV: Updated session key - %s\n", (char *) session_key);
-
-  IMSG("INV: Writing to persistent storage the new session key...\n");
-  res = TEE_CreatePersistentObject(TEE_STORAGE_PRIVATE, &session_key_id, sizeof(int),
-    TEE_DATA_FLAG_ACCESS_WRITE, TEE_HANDLE_NULL, session_key, 17, &file_handle);
-  if (res != TEE_SUCCESS)
-    IMSG("Error creating session key object...\n");
-  IMSG("INV: New key Successfully written!\n");
-
   TEE_CloseObject(file_handle);
   /**************************************************************/
 	
@@ -933,13 +929,17 @@ static TEE_Result inv(uint32_t param_types,
   gen_hmac((char*) reply, reply_len, hmac, &hmac_len, (unsigned char*) session_key);
   TEE_MemMove(params[2].memref.buffer, hmac, hmac_len);
 
-	IMSG("INV: Answering with values %s, %s and %s\n", (char *) params[0].memref.buffer,
-		(char *) params[1].memref.buffer, (char *) params[2].memref.buffer);
+	IMSG("INV: Answering with values: \n");
+  IMSG("Nonce - %s\n", (char *) params[0].memref.buffer);
+	print_bytes("Reply - ", params[1].memref.buffer, crypt_reply_len);
+  print_bytes("HMAC - ", params[2].memref.buffer, hmac_len);
 
   TEE_Free(decrypt_nonce);
   TEE_Free(decrypt_req);
   TEE_Free(sql_stmt);
   TEE_Free(crypt_reply);
+  TEE_Free(session_key);
+  TEE_Free(iv);
 
 	return TEE_SUCCESS;
 }

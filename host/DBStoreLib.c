@@ -273,6 +273,8 @@ int update_session_key(unsigned char *session_key) {
 
 	memcpy(session_key, new_key, 16);
 
+	free(new_key);
+
 	return 1;
 }
 
@@ -440,11 +442,6 @@ void call_ta_inv(int call_type, const char *req, unsigned char * session_key, un
 	int decrypt_reply_len = 2;
 	char *decrypt_reply = (char*) malloc(sizeof(char) * decrypt_reply_len);
 
-	//Renewing session key
-	printf("INV: Updating session key...\n");
-	update_session_key(session_key);
-	printf("INV: Session key updated - %s\n", (char *) session_key);
-
 	//Generating nonce
 	rand_str(nonce, NONCE_LEN);
 	printf("INV: Generated nonce - %s\n", nonce);
@@ -540,7 +537,10 @@ void call_ta_inv(int call_type, const char *req, unsigned char * session_key, un
 	re_req = (unsigned char *) reqSM.buffer;
 	re_hmac = (unsigned char *) hmacSM.buffer;
 
-	printf("DBStore answered with values %s, %s and %s\n", re_nonce, re_req, re_hmac);
+	printf("INV: DBStore answered:\n");
+	printf("Nonce - %s\n", re_nonce);
+	print_bytes("Reply - ", re_req, 16);
+	print_bytes("HMAC - ", re_hmac, 20);
 
 	//Decrypting the confirmation response from DBStore TA
 	printf("INV: Decrypting DBStore reply...\n");
@@ -586,6 +586,10 @@ int main(int argc, char *argv[])
 		}
 		else if(strncmp(input, "inv", 3) == 0) {
 			if(session_key != NULL) {
+				//Renewing session key
+				printf("INV: Updating session key...\n");
+				update_session_key(session_key);
+				print_bytes("INV: Session key updated - ", session_key, 16);
 				call_ta_inv(1, "ola", session_key, iv);
 			}
 			else
