@@ -12,7 +12,7 @@ LOCAL_SRC_FILES += host/DBStoreLib.c
 LOCAL_C_INCLUDES := $(LOCAL_PATH)/ta/include \
 		$(OPTEE_CLIENT_EXPORT)/include \
 
-LOCAL_SHARED_LIBRARIES := libteec
+LOCAL_SHARED_LIBRARIES := libteec libsqlite3
 LOCAL_MODULE := dbstore
 LOCAL_MODULE_TAGS := optional
 include $(BUILD_EXECUTABLE)

@@ -28,9 +28,12 @@
 #include <tee_internal_api.h>
 #include <tee_internal_api_extensions.h>
 #include <string.h>
-
+#include <stdlib.h>
 #include <dbstore_ta.h>
 #include <crypto.h>
+#include <dbparser.h>
+
+//#include <stdint.h>
 
 #define SIZE_OF_VEC(vec) (sizeof(vec) - 1)
 
@@ -836,6 +839,12 @@ static TEE_Result inv(uint32_t param_types,
   void *dst_nonce;
   //void *dst_req;
 
+  char memseg[400];
+
+  db_query_mm_t mm;
+  //db_op_base_t* root;
+  //db_tuple_t    tuple;
+
   int session_key_id = 0;
   int iv_id = 1;
   unsigned char *session_key = TEE_Malloc(16, 0);
@@ -940,6 +949,11 @@ static TEE_Result inv(uint32_t param_types,
   TEE_Free(crypt_reply);
   TEE_Free(session_key);
   TEE_Free(iv);
+
+  IMSG("INV: Trying to run LittleD...\n");
+
+  init_query_mm(&mm, memseg, 400);
+  parse((char *) "CREATE TABLE sensors (id int, temp int);", &mm);
 
 	return TEE_SUCCESS;
 }

@@ -538,14 +538,14 @@ void call_ta_inv(int call_type, const char *req, unsigned char * session_key, un
 	re_hmac = (unsigned char *) hmacSM.buffer;
 
 	printf("INV: DBStore answered:\n");
-	printf("Nonce - %s\n", re_nonce);
+	//printf("Nonce - %s\n", re_nonce);
 	print_bytes("Reply - ", re_req, 16);
 	print_bytes("HMAC - ", re_hmac, 20);
 
 	//Decrypting the confirmation response from DBStore TA
 	printf("INV: Decrypting DBStore reply...\n");
 	aes_ctr(re_req, crypt_req_len, (unsigned char *) decrypt_reply, &decrypt_reply_len, session_key, iv, 2, 0);
-	printf("INV: Decrypted DBStore reply - %s\n", decrypt_reply);
+	printf("INV: Decrypted DBStore reply - %.5s\n", decrypt_reply);
 
 	//Verifying if received HMAC matches with the generated one
 	printf("INV: Verifying received HMAC...\n");
