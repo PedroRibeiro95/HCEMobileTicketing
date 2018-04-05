@@ -843,6 +843,7 @@ db_int parseSelect(db_lexer_t *lexerp, db_op_base_t **rootpp,
 	db_uint8 whichexpr;
 	db_uint8 whichattr;
 	char *aliasname;
+	db_int *aux_intp;
 	
 	// TODO: These guys are big, can we do away with them by using our own stack?  Hopefully.
 	/* These track the second last and last token in the expression for
@@ -1064,7 +1065,9 @@ db_int parseSelect(db_lexer_t *lexerp, db_op_base_t **rootpp,
 				/* Setup expression. */
 				eetarr[((db_int)numexpressions)-1].nodes = expr;
 				//eetarr[((db_int)numexpressions)-1].size = DB_QMM_SIZEOF_FTOP(mmp);
-				memcpy(&eetarr[((db_int)numexpressions)-1].size, ((unsigned char*)((mmp)->next_front))-sizeof(void*), sizeof(db_int));
+				aux_intp = malloc(sizeof(db_int));
+				memcpy(aux_intp, (unsigned char*)((mmp)->next_front), sizeof(db_int));
+				memcpy(&eetarr[((db_int)numexpressions)-1].size, aux_intp-sizeof(void*), sizeof(db_int));
 				eetarr[((db_int)numexpressions)-1].stack_size = 2*eetarr[numexpressions-1].size;
 									// FIXME: This is not a fix.  Must handle sizes properly, apparently.
 									// NOTE: A real fix will be implemented once everything converted to memory allocator.
@@ -1088,6 +1091,8 @@ db_int parseSelect(db_lexer_t *lexerp, db_op_base_t **rootpp,
 				last = lexerp->token;
 				
 				lexerp->offset = thisend;
+
+				free(aux_intp);
 			}
 			else
 			{
@@ -1263,6 +1268,8 @@ db_op_base_t* parse(char* command, db_query_mm_t* mmp)
 	db_lexer_t lexer;
 	lexer_init(&lexer, command);
 
+	IMSG("Cheguei1\n");
+
 	if(hasaggregates) {}
 	
 	/* Do the first pass.  The goal here is simply to get all the clauses
@@ -1300,7 +1307,7 @@ db_op_base_t* parse(char* command, db_query_mm_t* mmp)
 			clausestack_top->end = lexer.token.end;
 		}
 	}
-	
+	IMSG("Cheguei2\n");
 	/* Sort clauses. TODO: Better sorting algorithm? Does it matter? */
 	j = 1;
 	for (; j < clausestack_bottom - clausestack_top; ++j)
@@ -1331,6 +1338,7 @@ db_op_base_t* parse(char* command, db_query_mm_t* mmp)
 	//db_int retval;
 	
 	/* For each clause... */
+	IMSG("Cheguei4\n");
 	while (clausestack_top != clausestack_bottom)
 	{
 		/* Make sure no empty clauses exist. */
@@ -1387,7 +1395,7 @@ db_op_base_t* parse(char* command, db_query_mm_t* mmp)
 				return NULL;
 		}
 #endif
-		
+		IMSG("Cheguei3\n");
 		/* Check return values. */
 		if (1 != retval)
 		{

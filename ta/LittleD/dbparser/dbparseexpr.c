@@ -193,6 +193,7 @@ db_int parseexpression(db_eetnode_t **exprp, db_lexer_t *lexerp, db_int start,
 	db_int type;
 
 	int i;
+	db_int *aux_intp;
 
 	db_int lasttype = DB_EETNODE_COUNT;
 	db_int size = 0;
@@ -209,7 +210,10 @@ db_int parseexpression(db_eetnode_t **exprp, db_lexer_t *lexerp, db_int start,
 	else
 	{
 		//size = DB_QMM_SIZEOF_FTOP(mmp); HACK
-		memcpy(&size, ((unsigned char*)((mmp)->next_front))-sizeof(void*), sizeof(db_int));
+		aux_intp = malloc(sizeof(db_int));
+		memcpy(aux_intp, (unsigned char*)((mmp)->next_front), sizeof(db_int));
+		memcpy(&size, aux_intp-sizeof(void*), sizeof(db_int));
+		free(aux_intp);
 	}
 	
 	stack = db_qmm_balloc(mmp, 0);
