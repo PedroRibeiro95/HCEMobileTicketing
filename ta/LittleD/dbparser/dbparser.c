@@ -1268,8 +1268,6 @@ db_op_base_t* parse(char* command, db_query_mm_t* mmp)
 	db_lexer_t lexer;
 	lexer_init(&lexer, command);
 
-	IMSG("Cheguei1\n");
-
 	if(hasaggregates) {}
 	
 	/* Do the first pass.  The goal here is simply to get all the clauses
@@ -1307,7 +1305,6 @@ db_op_base_t* parse(char* command, db_query_mm_t* mmp)
 			clausestack_top->end = lexer.token.end;
 		}
 	}
-	IMSG("Cheguei2\n");
 	/* Sort clauses. TODO: Better sorting algorithm? Does it matter? */
 	j = 1;
 	for (; j < clausestack_bottom - clausestack_top; ++j)
@@ -1338,7 +1335,6 @@ db_op_base_t* parse(char* command, db_query_mm_t* mmp)
 	//db_int retval;
 	
 	/* For each clause... */
-	IMSG("Cheguei4\n");
 	while (clausestack_top != clausestack_bottom)
 	{
 		/* Make sure no empty clauses exist. */
@@ -1349,7 +1345,6 @@ db_op_base_t* parse(char* command, db_query_mm_t* mmp)
 			closeexecutiontree(rootp, mmp);
 			return NULL;
 		}
-		
 		/* Process the next clause. */
 		if (DB_LEXER_TOKENBCODE_CLAUSE_FROM == clausestack_top->bcode)
 		{
@@ -1369,12 +1364,13 @@ db_op_base_t* parse(char* command, db_query_mm_t* mmp)
 #if defined(DB_CTCONF_SETTING_FEATURE_CREATE_TABLE) && 1==DB_CTCONF_SETTING_FEATURE_CREATE_TABLE
 		else if (DB_LEXER_TOKENBCODE_CLAUSE_CREATE == clausestack_top->bcode)
 		{
+			IMSG("Aqui\n");
 			lexer.offset = clausestack_top->start;
-			
 			// TODO: Get stuff figured out with preventing this mixed with other commands.
 			retval = processCreate(&lexer, clausestack_top->end, mmp);
 			if (1 == retval)
 			{
+				IMSG("oioi\n");
 				return DB_PARSER_OP_NONE;
 			}
 			else
@@ -1395,7 +1391,6 @@ db_op_base_t* parse(char* command, db_query_mm_t* mmp)
 				return NULL;
 		}
 #endif
-		IMSG("Cheguei3\n");
 		/* Check return values. */
 		if (1 != retval)
 		{
@@ -1409,6 +1404,7 @@ db_op_base_t* parse(char* command, db_query_mm_t* mmp)
 		// TODO move this to parseClauseExpression, optimize joins, something. :)
 		if (!builtselect && DB_LEXER_TOKENBCODE_CLAUSE_WHERE < clausestack_top->bcode)
 		{
+			IMSG("Ola1\n");
 			if (NULL == expr)
 			{
 				builtselect = 1;

@@ -43,6 +43,8 @@
 */
 db_int createTable(db_lexer_t *lexerp, db_int end, db_query_mm_t *mmp)
 {
+	TEE_Result res;
+	uint32_t flags = TEE_DATA_FLAG_OVERWRITE | TEE_DATA_FLAG_ACCESS_WRITE;
 	TEE_ObjectHandle newtable = NULL;
 	char *tablename = NULL;
 	db_uint8 attrcount;
@@ -65,8 +67,11 @@ db_int createTable(db_lexer_t *lexerp, db_int end, db_query_mm_t *mmp)
 			db_qmm_ffree(mmp, tablename);
 			return -1;
 		}
-		
-		db_openwritefile(tablename, newtable);
+		//db_openwritefile(tablename, newtable);
+		res = TEE_CreatePersistentObject(TEE_STORAGE_PRIVATE, tablename, strlen(tablename),
+	    flags, TEE_HANDLE_NULL, NULL, 0, &newtable);
+	  	if (res != TEE_SUCCESS)
+	    	IMSG("Error creating table...\n");
 	}
 	
 	/* Throw away the bracket. */
