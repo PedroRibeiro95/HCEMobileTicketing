@@ -26,16 +26,20 @@
 
 db_int init_index(db_index_t *indexp, char *name)
 {
+	uint32_t flags = TEE_DATA_FLAG_ACCESS_READ | TEE_DATA_FLAG_ACCESS_WRITE;
 	/* Prepare for ugly. */
 	char realname[8 + strlen(name)];
 	snprintf(realname, 8 + strlen(name), "DB_IDX_%s", name);
 	
-	db_openreadfile(realname, indexp->indexref);
+	//db_openreadfile(realname, indexp->indexref);
+	TEE_OpenPersistentObject(TEE_STORAGE_PRIVATE, realname, strlen(realname),
+		flags, &indexp->indexref);
 	if (DB_STORAGE_NOFILE == indexp->indexref || 1!=db_fileread(indexp->indexref, &(indexp->type), 1))
 	{
+		printf("index type %d\n", indexp->type);
 		return 0;
 	}
-	
+	printf("index type1 %d\n", indexp->type);
 	return 1;
 }
 
@@ -104,6 +108,7 @@ db_index_offset_t db_index_getoffset(scan_t *sp, db_uint8 indexon,
 		total_size += (sp->base.header->num_attr) % 8 > 0 ? 1 : 0;
 		if (sizeof(long)!=db_fileread(index.indexref, (unsigned char*)&(last), sizeof(long)))
 		{
+			printf("last %lo\n", last);
 			return -1;
 		}
 		if (last > 0)

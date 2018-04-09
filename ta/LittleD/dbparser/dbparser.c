@@ -331,6 +331,13 @@ db_int parseFrom(db_lexer_t *lexerp, db_op_base_t **rootpp, db_query_mm_t *mmp,
 	db_int i;
 	char *tempstring;
 
+	/* A flag to signal ... JOIN ... ON ... syntax. */
+	db_uint8 jointype;
+
+	/* This is the name of the relation to build, NOT its alias. */
+	db_int tablename_start;
+	db_int tablename_end;
+
 	/* Variables needed through entire process. */
 	db_lexer_token_t	cur_ident;	/* Current identifier. */
 	
@@ -353,16 +360,11 @@ db_int parseFrom(db_lexer_t *lexerp, db_op_base_t **rootpp, db_query_mm_t *mmp,
 	
 	lexerp->offset = start;
 	*numtablesp = 0;
-	
+
 	/* Build needed scan operators. */
 	while (end > lexerp->offset && 1==lexer_next(lexerp))
 	{
-		/* A flag to signal ... JOIN ... ON ... syntax. */
-		db_uint8 jointype = 0;
-		
-		/* This is the name of the relation to build, NOT its alias. */
-		db_int tablename_start;
-		db_int tablename_end;
+		jointype = 0;
 		
 		/* If this is a comma... */
 		if ((db_uint8)DB_LEXER_TT_COMMA == lexerp->token.type)
@@ -646,7 +648,7 @@ db_int parseFrom(db_lexer_t *lexerp, db_op_base_t **rootpp, db_query_mm_t *mmp,
 			}
 		}
 	}
-	
+
 	// TODO: Optimize expressions.
 	
 	/* If there are multiple tables then we build out joins. */
@@ -908,6 +910,7 @@ db_int parseSelect(db_lexer_t *lexerp, db_op_base_t **rootpp,
 				/* Check for *, T.* */
 				db_int thisend = lexerp->offset;
 				lexerp->offset = thisstart;
+
 				if (end > lexerp->offset && 1==lexer_next(lexerp))
 				{
 					/* Get all fields from the query (*). */
@@ -938,8 +941,9 @@ db_int parseSelect(db_lexer_t *lexerp, db_op_base_t **rootpp,
 						lexerp->token.end = start;
 						last = lexerp->token;
 						
-						if (lexerp->offset > end)
+						if (lexerp->offset > end) {
 							break;
+						}
 						else
 							continue;
 					}
@@ -1364,13 +1368,11 @@ db_op_base_t* parse(char* command, db_query_mm_t* mmp)
 #if defined(DB_CTCONF_SETTING_FEATURE_CREATE_TABLE) && 1==DB_CTCONF_SETTING_FEATURE_CREATE_TABLE
 		else if (DB_LEXER_TOKENBCODE_CLAUSE_CREATE == clausestack_top->bcode)
 		{
-			IMSG("Aqui\n");
 			lexer.offset = clausestack_top->start;
 			// TODO: Get stuff figured out with preventing this mixed with other commands.
 			retval = processCreate(&lexer, clausestack_top->end, mmp);
 			if (1 == retval)
 			{
-				IMSG("oioi\n");
 				return DB_PARSER_OP_NONE;
 			}
 			else
@@ -1404,7 +1406,6 @@ db_op_base_t* parse(char* command, db_query_mm_t* mmp)
 		// TODO move this to parseClauseExpression, optimize joins, something. :)
 		if (!builtselect && DB_LEXER_TOKENBCODE_CLAUSE_WHERE < clausestack_top->bcode)
 		{
-			IMSG("Ola1\n");
 			if (NULL == expr)
 			{
 				builtselect = 1;
@@ -1422,7 +1423,7 @@ db_op_base_t* parse(char* command, db_query_mm_t* mmp)
 				}
 				eetp->nodes = expr;
 				//eetp->size = DB_QMM_SIZEOF_BCHUNK(expr);
-				memcpy(&eetp->size, (unsigned char *) expr - sizeof(db_int), sizeof(db_int));
+				memcpy(&eetp->size, ((unsigned char *) expr) - sizeof(db_int), sizeof(db_int));
 				eetp->stack_size = 2*eetp->size; // FIXME: This is not a fix.  Must handle sizes properly, apparently.
 									// NOTE: A real fix will be implemented once everything converted to memory allocator.
 				//if (1)

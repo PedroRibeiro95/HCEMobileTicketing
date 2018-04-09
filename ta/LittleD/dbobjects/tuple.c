@@ -28,10 +28,11 @@
 db_int getintbyname(db_tuple_t *tp, char *attr_name, relation_header_t *hp)
 {
 	db_uint8 offset = getoffsetbyname(hp, attr_name);
-	db_int8 return_val;
+	db_int return_val;
+	
 	/* Convert char pointer to db_int pointer so we can return db_int
 	   value. */
-	memcpy(&return_val, &(tp->bytes[offset]), sizeof(db_int8));
+	memcpy(&return_val, &(tp->bytes[offset]), sizeof(db_int));
 	//return *((db_int8)(&(tp->bytes[offset])));
 	return return_val;
 }
@@ -40,10 +41,10 @@ db_int getintbyname(db_tuple_t *tp, char *attr_name, relation_header_t *hp)
 db_int getintbypos(db_tuple_t *tp, db_int pos, relation_header_t *hp)
 {
 	db_uint8 offset = getoffsetbypos(hp, pos);
-	db_int8 return_val;
+	db_int return_val;
 	/* Convert char pointer to db_int pointer so we can return
 	   db_int value. */
-	memcpy(&return_val, &(tp->bytes[offset]), sizeof(db_int8));
+	memcpy(&return_val, &(tp->bytes[offset]), sizeof(db_int));
 	//return *((db_uint8*)(&(tp->bytes[(db_int)offset])));
 	return return_val;
 }

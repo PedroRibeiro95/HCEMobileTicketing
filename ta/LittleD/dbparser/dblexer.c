@@ -455,6 +455,7 @@ db_int offset_isletter(db_lexer_t *lexerp)
 	char nchar;
 	if (peekchar(lexerp, &nchar) && isletter(nchar))
 	{
+		//printf("char %c\n", nchar);
 		return 1;
 	}
 	else
@@ -561,7 +562,7 @@ db_int token_whichelement(db_lexer_token_t *tokenp, db_lexer_t *lexerp, struct k
 		db_int max = 0;
 		while (array[i].word[max] != '\0')
 			max++;
-		temp = malloc(sizeof(char) * max);
+		temp = (char *) malloc(sizeof(char) * max);
 		for (j = 0; j < max; ++j)
 		{
 			temp[j] = array[i].word[j];
@@ -571,9 +572,8 @@ db_int token_whichelement(db_lexer_token_t *tokenp, db_lexer_t *lexerp, struct k
 			free(temp);
 			return i;
 		}
-	}
-	if(temp != NULL)
 		free(temp);
+	}
 	return -1;
 }
 
@@ -597,7 +597,6 @@ db_int token_iselement(db_lexer_token_t *tokenp, db_lexer_t *lexerp, struct keyw
 	{
 		return (token_whichelement(tokenp,lexerp,array,arraysize)>-1);
 	}
-	
 	*which = token_whichelement(tokenp, lexerp, array, arraysize);
 	return (*which > -1);
 }

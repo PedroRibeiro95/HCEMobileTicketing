@@ -839,9 +839,16 @@ static TEE_Result inv(uint32_t param_types,
   void *dst_nonce;
   //void *dst_req;
 
+  /* LittleD stuff */
   char memseg[400];
-
   db_query_mm_t mm;
+  db_op_base_t* root;
+  db_tuple_t    tuple;
+
+  int id;
+  int sensor_val;
+  /*****************/
+ 
   //db_op_base_t* root;
   //db_tuple_t    tuple;
 
@@ -954,6 +961,25 @@ static TEE_Result inv(uint32_t param_types,
 
   init_query_mm(&mm, memseg, 400);
   parse((char *) "CREATE TABLE sensors (id int, temp int);", &mm);
+
+  init_query_mm(&mm, memseg, 400);
+  parse((char*) "INSERT INTO sensors VALUES (1, 221);", &mm);
+
+  init_query_mm(&mm, memseg, 400);
+  root = parse((char*) "SELECT * FROM sensors;", &mm);
+  if (root == NULL)
+  {
+      printf((char*) "NULL root\n");
+  }
+  else
+  {
+      init_tuple(&tuple, root->header->tuple_size, root->header->num_attr, &mm);
+
+      next(root, &tuple, &mm);
+      id = getintbyname(&tuple, (char*) "id", root->header);
+      sensor_val = getintbyname(&tuple, (char*) "temp", root->header);;
+      printf("sensor val: %i (%i)\n", sensor_val, id);
+  }
 
 	return TEE_SUCCESS;
 }

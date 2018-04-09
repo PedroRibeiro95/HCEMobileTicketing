@@ -30,6 +30,7 @@
 /* Initialize the scan operator. */
 db_int init_scan(scan_t *sp, char* relationName, db_query_mm_t *mmp)
 {		
+	uint32_t flags = TEE_DATA_FLAG_ACCESS_READ | TEE_DATA_FLAG_ACCESS_WRITE;
 	TEE_ObjectHandle idxmetafile = NULL;
 	int i, j;
 	char metaname[9+strlen(relationName)];
@@ -48,13 +49,17 @@ db_int init_scan(scan_t *sp, char* relationName, db_query_mm_t *mmp)
 		sp->tuple_start += (long)(sp->base.header->size_name[i]);
 	}
 	
-	db_openreadfile(relationName, sp->relation);
+	//db_openreadfile(relationName, sp->relation);
+	TEE_OpenPersistentObject(TEE_STORAGE_PRIVATE, relationName, strlen(relationName),
+		flags, &sp->relation);
 	rewind_scan(sp, mmp);
 	
 	/* Build up index info. */
 	//sprintf(metaname, "DB_IDXM_%s", relationName);
 	snprintf(metaname, 9+strlen(relationName), "DB_IDXM_%s", relationName);
-	db_openreadfile(metaname, idxmetafile);
+	//db_openreadfile(metaname, idxmetafile);
+	TEE_OpenPersistentObject(TEE_STORAGE_PRIVATE, metaname, strlen(metaname),
+		flags, &idxmetafile);
 	
 	if (DB_STORAGE_NOFILE == idxmetafile)
 	{

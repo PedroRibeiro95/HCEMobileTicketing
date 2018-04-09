@@ -67,11 +67,13 @@ db_uint8 gettypebypos(relation_header_t *hp, db_int pos)
 db_int getrelationheader(relation_header_t **hpp, char *relationname, db_query_mm_t *mmp)
 {
 	//db_fileref_t relation = db_openreadfile(relationname);
-
+	uint32_t flags = TEE_DATA_FLAG_ACCESS_READ | TEE_DATA_FLAG_ACCESS_WRITE;
 	TEE_ObjectHandle relation = NULL;
 	db_int i;		/* Looping variable */
 
-	db_openreadfile(relationname, relation);
+	//db_openreadfile(relationname, relation);
+	TEE_OpenPersistentObject(TEE_STORAGE_PRIVATE, relationname, strlen(relationname),
+		flags, &relation);
 	
 	db_filerewind(relation);
 

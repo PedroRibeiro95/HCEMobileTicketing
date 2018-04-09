@@ -716,6 +716,8 @@ db_int setupattribute(db_eetnode_attr_t *attrnodep, db_lexer_t *lexerp, db_op_ba
 		gettokenstring(&temptoken, attrname, lexerp);
 		
 		retval = getposbyname(evalpoint->header, attrname);
+
+		printf("tablename %s attrname %s retval %d\n", tablename, attrname, retval);
 		switch(retval)
 		{
 			case -1:

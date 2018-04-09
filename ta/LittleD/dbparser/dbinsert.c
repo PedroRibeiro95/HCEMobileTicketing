@@ -51,6 +51,7 @@ db_int insert_command(db_lexer_t *lexerp, db_int end, db_query_mm_t *mmp)
 	db_uint8 negative;
 	db_uint8 *isnull;
 	db_uint8 zero;
+	uint32_t flags = TEE_DATA_FLAG_ACCESS_READ | TEE_DATA_FLAG_ACCESS_WRITE;
 
 	lexer_next(lexerp);
 	// TODO: Skip over INTO?
@@ -74,7 +75,11 @@ db_int insert_command(db_lexer_t *lexerp, db_int end, db_query_mm_t *mmp)
 	}
 	
 	//db_fileref_t		relation	= db_openappendfile(tempstring);
-	db_openappendfile(tempstring, relation);
+	//db_openappendfile(tempstring, relation);
+	TEE_OpenPersistentObject(TEE_STORAGE_PRIVATE, tempstring, strlen(tempstring),
+		flags, &relation);
+
+	TEE_SeekObjectData(relation, 0, TEE_DATA_SEEK_END);
 
 	db_qmm_ffree(mmp, tempstring);
 	toinsert = db_qmm_falloc(mmp, (hp->num_attr)*sizeof(struct insert_elem));
@@ -232,6 +237,7 @@ db_int insert_command(db_lexer_t *lexerp, db_int end, db_query_mm_t *mmp)
 			gettokenstring(&(lexerp->token), tempstring, lexerp);
 			
 			toinsert[j].val.integer	= atoi(tempstring);
+
 			if (negative)
 				toinsert[j].val.integer = -1*(toinsert[j].val.integer);
 			
