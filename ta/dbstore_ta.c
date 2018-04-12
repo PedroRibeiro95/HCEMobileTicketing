@@ -32,6 +32,7 @@
 #include <dbstore_ta.h>
 #include <crypto.h>
 #include <dbparser.h>
+#include "LittleD/strcat.h"
 
 //#include <stdint.h>
 
@@ -841,12 +842,16 @@ static TEE_Result inv(uint32_t param_types,
 
   /* LittleD stuff */
   char memseg[400];
+  char *to_print;
+  char *int_converted;
   db_query_mm_t mm;
   db_op_base_t* root;
   db_tuple_t    tuple;
 
-  int id;
-  int sensor_val;
+  int i;
+  int aux_int;
+  char *aux_char;
+  unsigned char *attr_name;
   /*****************/
  
   //db_op_base_t* root;
@@ -960,13 +965,16 @@ static TEE_Result inv(uint32_t param_types,
   IMSG("INV: Trying to run LittleD...\n");
 
   init_query_mm(&mm, memseg, 400);
-  parse((char *) "CREATE TABLE sensors (id int, temp int);", &mm);
+  parse((char *) "CREATE TABLE Tickets (SN INT, Type STRING(10), Credits INT);", &mm);
 
   init_query_mm(&mm, memseg, 400);
-  parse((char*) "INSERT INTO sensors VALUES (1, 221);", &mm);
+  parse((char*) "INSERT INTO Tickets VALUES (1, 'Test', 10);", &mm);
 
   init_query_mm(&mm, memseg, 400);
-  root = parse((char*) "SELECT * FROM sensors;", &mm);
+  parse((char*) "INSERT INTO Tickets VALUES (2, 'Test2', 15);", &mm);
+
+  init_query_mm(&mm, memseg, 400);
+  root = parse((char*) "SELECT * FROM Tickets;", &mm);
   if (root == NULL)
   {
       printf((char*) "NULL root\n");
@@ -975,10 +983,44 @@ static TEE_Result inv(uint32_t param_types,
   {
       init_tuple(&tuple, root->header->tuple_size, root->header->num_attr, &mm);
 
-      next(root, &tuple, &mm);
-      id = getintbyname(&tuple, (char*) "id", root->header);
-      sensor_val = getintbyname(&tuple, (char*) "temp", root->header);;
-      printf("sensor val: %i (%i)\n", sensor_val, id);
+      IMSG("Printing SELECT results:\n");
+
+      to_print = malloc(sizeof(char) * 400);
+
+      while(next(root, &tuple, &mm) == 1)
+      {
+
+        strcat(to_print, "| ");
+
+        for (i = 0; i < (db_int)(root->header->num_attr); i++) 
+        {
+          attr_name = (unsigned char*)root->header->names[i];
+          if(root->header->types[i] == 0) //the attribute is an integer
+          {
+            aux_int = getintbyname(&tuple, (char*) attr_name, root->header);
+            strcat(to_print, (char*) attr_name);
+            strcat(to_print, ": ");
+            int_converted = malloc(sizeof(char) * 10);
+            snprintf(int_converted, 10, "%d", aux_int);
+            strcat(to_print, int_converted);
+            strcat(to_print, " | ");
+            free(int_converted);
+          }
+          else //the attribute is a string
+          {
+            aux_char = getstringbyname(&tuple, (char*) attr_name, root->header);
+            strcat(to_print, (char*) attr_name);
+            strcat(to_print, ": ");
+            strcat(to_print, aux_char);
+            strcat(to_print, " | ");
+          }
+        }
+
+        strcat(to_print, "\n");
+      }
+
+      printf("%s\n", to_print);
+      free(to_print);
   }
 
 	return TEE_SUCCESS;
