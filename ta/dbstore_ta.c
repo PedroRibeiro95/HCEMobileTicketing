@@ -356,9 +356,9 @@ int encrypt_aes_ctr(char * in, int in_len, unsigned char * out, int * out_len, u
   //out[cipher_len] = '\0';
 
   // clean up after yourself
-  TEE_FreeOperation(handle);
-  TEE_FreeTransientObject (key);
-  TEE_Free (cipher);
+  //TEE_FreeOperation(handle); //FIXME
+  //TEE_FreeTransientObject (key);
+  //TEE_Free (cipher);
 
   return 0;
 }
@@ -417,7 +417,7 @@ int decrypt_aes_ctr(unsigned char * in, int in_len, char * out, int * out_len, u
   // decrypt
   TEE_CipherInit(handle, iv, 16);
 
-  ret = TEE_CipherUpdate(handle, to_decrypt, in_len, cipher, &decrypted_len);
+  /*ret = TEE_CipherUpdate(handle, to_decrypt, in_len, cipher, &decrypted_len);
   if (ret == TEE_ERROR_SHORT_BUFFER) {
     IMSG("ERROR: Cipher update error\n");
     TEE_FreeOperation(handle);
@@ -425,7 +425,7 @@ int decrypt_aes_ctr(unsigned char * in, int in_len, char * out, int * out_len, u
   }
 
   memcpy (out, cipher, decrypted_len);
-  *out_len = decrypted_len;
+  *out_len = decrypted_len;*/
 
   ret = TEE_CipherDoFinal(handle, to_decrypt, in_len, cipher, &decrypted_len);
   if (ret == TEE_ERROR_SHORT_BUFFER) {
@@ -434,15 +434,18 @@ int decrypt_aes_ctr(unsigned char * in, int in_len, char * out, int * out_len, u
     return TEE_ERROR_BAD_PARAMETERS;
   }
 
+  memcpy (out, cipher, decrypted_len);
+  *out_len = decrypted_len;
+
   // finish off
   //memcpy (out, cipher, decrypted_len);
   //*out_len = decrypted_len;
   //out[cipher_len] = '\0';
 
   // clean up after yourself
-  TEE_FreeOperation(handle);
-  TEE_FreeTransientObject (key);
-  TEE_Free (cipher);
+  //TEE_FreeTransientObject(key);
+  //TEE_FreeOperation(handle); //FIXME: BOth of these are crashing for some reason
+  //TEE_Free(cipher);
 
   return 0;
 }
@@ -507,11 +510,15 @@ int verify_hmac (char * in, int in_len, unsigned char * hmac, int hmac_len, unsi
     return TEE_ERROR_BAD_PARAMETERS;
   }*/
 
+  //IMSG("aqui1\n");
+
   ret = TEE_MACCompareFinal(handle, in, in_len, hmac, hmac_len);
   if (ret == TEE_ERROR_MAC_INVALID) {
     TEE_FreeOperation(handle);
     return TEE_ERROR_BAD_PARAMETERS;
   }
+
+  //IMSG("aqui2\n");
 
   //memcpy (out, cipher, decrypted_len);
 
@@ -521,8 +528,8 @@ int verify_hmac (char * in, int in_len, unsigned char * hmac, int hmac_len, unsi
   //out[cipher_len] = '\0';
 
   // clean up after yourself
-  TEE_FreeOperation(handle);
-  TEE_FreeTransientObject (key);
+  //TEE_FreeOperation(handle); //FIXME: Crashing for some mysterious reason
+  //TEE_FreeTransientObject (key);
 
   return 0;
 }
@@ -602,8 +609,8 @@ int gen_hmac (char * in, int in_len, unsigned char * out, int * out_len, unsigne
   //out[cipher_len] = '\0';
 
   // clean up after yourself
-  TEE_FreeOperation(handle);
-  TEE_FreeTransientObject (key);
+  //TEE_FreeOperation(handle); //FIXME
+  //TEE_FreeTransientObject (key);
 
   return 0;
 }
@@ -832,7 +839,7 @@ static TEE_Result inv(uint32_t param_types,
 	TEE_ObjectHandle file_handle;
     
   const char *nonce;
-  char *reply;
+  char *reply = (char*) "NO";
   unsigned char *hmac = TEE_Malloc(20, 0);
   int nonce_len, reply_len, hmac_len;
   uint32_t flags = TEE_DATA_FLAG_ACCESS_READ | TEE_DATA_FLAG_ACCESS_WRITE;
@@ -867,7 +874,7 @@ static TEE_Result inv(uint32_t param_types,
   char *decrypt_req = TEE_Malloc(32, 0);
 
   int sql_len = params[3].value.a;
-  char *sql_stmt = TEE_Malloc(sql_len + 1, 0);
+  char *sql_stmt = TEE_Malloc(sql_len, 0);
 
   unsigned char *re_hmac = params[2].memref.buffer;
   //int re_hmac_len;
@@ -911,7 +918,7 @@ static TEE_Result inv(uint32_t param_types,
 	
   //Decrypting both nonce and SQL request received from the remote client
   IMSG("INV: Decrypting the nonce received from the remote client...\n");
-  IMSG("size nonce crypt %d\n", params[0].memref.size);
+  //IMSG("size nonce crypt %d\n", params[0].memref.size);
   decrypt_aes_ctr(params[0].memref.buffer, params[0].memref.size, decrypt_nonce, &decrypt_nonce_len,
     (unsigned char*) session_key, (unsigned char*) iv);
   decrypt_nonce[7] = '\0';
@@ -920,17 +927,78 @@ static TEE_Result inv(uint32_t param_types,
   IMSG("INV: Decrypting the request received from the remote client...\n");
   decrypt_aes_ctr(params[1].memref.buffer, params[1].memref.size, decrypt_req, &decrypt_req_len, 
     (unsigned char*) session_key, (unsigned char*) iv);
+  IMSG("SQL Len %d\n", sql_len);
   TEE_MemMove(sql_stmt, decrypt_req, sql_len);
+  sql_stmt[sql_len] = '\0';
   IMSG("INV: Decrypted request is %s\n", sql_stmt);
   /**********************************************************************/
 
   IMSG("INV: Verifying HMAC...\n");
   if(verify_hmac(sql_stmt, sql_len, re_hmac, 20, (unsigned char*) session_key) == 0) {
-    reply = (char*) "OK";
     IMSG("INV: Successfully verified HMAC\n");
+    IMSG("INV: Running query...\n");
+
+    if(!(strncmp(sql_stmt, "SELECT", 6) == 0))
+    {
+      init_query_mm(&mm, memseg, 400);
+      parse(sql_stmt, &mm);
+      reply = (char*) "OK";
+    }
+    else
+    {
+      init_query_mm(&mm, memseg, 400);
+      root = parse((char*) sql_stmt, &mm);
+      if (root == NULL)
+      {
+          printf((char*) "NULL root\n");
+      }
+      else
+      {
+          init_tuple(&tuple, root->header->tuple_size, root->header->num_attr, &mm);
+
+          IMSG("Printing SELECT results:\n");
+
+          to_print = malloc(sizeof(char) * 400);
+
+          while(next(root, &tuple, &mm) == 1)
+          {
+
+            strcat(to_print, "| ");
+
+            for (i = 0; i < (db_int)(root->header->num_attr); i++) 
+            {
+              attr_name = (unsigned char*)root->header->names[i];
+              if(root->header->types[i] == 0) //the attribute is an integer
+              {
+                aux_int = getintbyname(&tuple, (char*) attr_name, root->header);
+                strcat(to_print, (char*) attr_name);
+                strcat(to_print, ": ");
+                int_converted = malloc(sizeof(char) * 10);
+                snprintf(int_converted, 10, "%d", aux_int);
+                strcat(to_print, int_converted);
+                strcat(to_print, " | ");
+                free(int_converted);
+              }
+              else //the attribute is a string
+              {
+                aux_char = getstringbyname(&tuple, (char*) attr_name, root->header);
+                strcat(to_print, (char*) attr_name);
+                strcat(to_print, ": ");
+                strcat(to_print, aux_char);
+                strcat(to_print, " | ");
+              }
+            }
+
+            strcat(to_print, "\n");
+            reply = (char*) "OK";
+          }
+
+          printf("%s\n", to_print);
+          free(to_print);
+      }
+    }
   }
   else {
-    reply = (char*) "NO";
     IMSG("ERROR: Could not verify HMAC\n");
   }
 
@@ -955,73 +1023,12 @@ static TEE_Result inv(uint32_t param_types,
 	print_bytes("Reply - ", params[1].memref.buffer, crypt_reply_len);
   print_bytes("HMAC - ", params[2].memref.buffer, hmac_len);
 
-  TEE_Free(decrypt_nonce);
-  TEE_Free(decrypt_req);
-  TEE_Free(sql_stmt);
-  TEE_Free(crypt_reply);
-  TEE_Free(session_key);
-  TEE_Free(iv);
-
-  IMSG("INV: Trying to run LittleD...\n");
-
-  init_query_mm(&mm, memseg, 400);
-  parse((char *) "CREATE TABLE Tickets (SN INT, Type STRING(10), Credits INT);", &mm);
-
-  init_query_mm(&mm, memseg, 400);
-  parse((char*) "INSERT INTO Tickets VALUES (1, 'Test', 10);", &mm);
-
-  init_query_mm(&mm, memseg, 400);
-  parse((char*) "INSERT INTO Tickets VALUES (2, 'Test2', 15);", &mm);
-
-  init_query_mm(&mm, memseg, 400);
-  root = parse((char*) "SELECT * FROM Tickets;", &mm);
-  if (root == NULL)
-  {
-      printf((char*) "NULL root\n");
-  }
-  else
-  {
-      init_tuple(&tuple, root->header->tuple_size, root->header->num_attr, &mm);
-
-      IMSG("Printing SELECT results:\n");
-
-      to_print = malloc(sizeof(char) * 400);
-
-      while(next(root, &tuple, &mm) == 1)
-      {
-
-        strcat(to_print, "| ");
-
-        for (i = 0; i < (db_int)(root->header->num_attr); i++) 
-        {
-          attr_name = (unsigned char*)root->header->names[i];
-          if(root->header->types[i] == 0) //the attribute is an integer
-          {
-            aux_int = getintbyname(&tuple, (char*) attr_name, root->header);
-            strcat(to_print, (char*) attr_name);
-            strcat(to_print, ": ");
-            int_converted = malloc(sizeof(char) * 10);
-            snprintf(int_converted, 10, "%d", aux_int);
-            strcat(to_print, int_converted);
-            strcat(to_print, " | ");
-            free(int_converted);
-          }
-          else //the attribute is a string
-          {
-            aux_char = getstringbyname(&tuple, (char*) attr_name, root->header);
-            strcat(to_print, (char*) attr_name);
-            strcat(to_print, ": ");
-            strcat(to_print, aux_char);
-            strcat(to_print, " | ");
-          }
-        }
-
-        strcat(to_print, "\n");
-      }
-
-      printf("%s\n", to_print);
-      free(to_print);
-  }
+  //TEE_Free(decrypt_nonce); //FIXME
+  //TEE_Free(decrypt_req);
+  //TEE_Free(sql_stmt);
+  //TEE_Free(crypt_reply);
+  //TEE_Free(session_key);
+  //TEE_Free(iv);
 
 	return TEE_SUCCESS;
 }

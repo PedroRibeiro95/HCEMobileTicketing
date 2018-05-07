@@ -99,6 +99,14 @@ struct ctr_state {
 	const EVP_CIPHER *cipher_type;
 };
 
+int inputlen(char * input) {
+	int len = 0;
+
+	for(; input[len] != '\n'; len++) {}
+
+	return len;
+}
+
 void print_bytes(char * string, unsigned char * bytes, int len) {
 	printf("%s ", string);
  
@@ -485,7 +493,7 @@ void call_ta_inv(int call_type, const char *req, unsigned char * session_key, un
 
 	//Encrypting both Nonce and SQL Statement
 	aes_ctr((unsigned char *) nonce, NONCE_LEN, crypt_nonce, &out_nonce_len, session_key, iv, crypt_nonce_len, 1);
-	aes_ctr((unsigned char *) req, strlen(req), crypt_req, &out_req_len, session_key, iv, crypt_req_len, 1);
+	aes_ctr((unsigned char *) req, strlen(req) + 1, crypt_req, &out_req_len, session_key, iv, crypt_req_len, 1);
 
 	free(nonce);
 
@@ -506,7 +514,7 @@ void call_ta_inv(int call_type, const char *req, unsigned char * session_key, un
     free(crypt_req);
     free(hmac);
 
-    op.params[3].value.a = strlen(req);
+    op.params[3].value.a = call_type; //FIXME
 
 	//Registering shared buffers
 	res = TEEC_RegisterSharedMemory(&ctx, &nonceSM);
@@ -565,7 +573,11 @@ int main(int argc, char *argv[])
 {	
 	unsigned char *session_key = NULL;
 	unsigned char *iv = NULL;
-	char input[5];
+	char input[400];
+	//char request[100];
+	char *request = NULL;
+	int request_len;
+	char *test_input = "CREATE TABLE sensors (id int, temp int);";
 	while(1) {
 
 		printf("Welcome to DBStore!\n");
@@ -573,7 +585,7 @@ int main(int argc, char *argv[])
 		printf("Write \"inv\" to start invocation protocol (sending o o o and session_key\n");
 		printf("Write \"exit\" to quit the program\n");
 
-		fgets(input, 6, stdin);
+		fgets(input, 400, stdin);
 
 		if(strncmp(input, "init", 4) == 0) {
 			if(session_key == NULL) {
@@ -588,9 +600,19 @@ int main(int argc, char *argv[])
 			if(session_key != NULL) {
 				//Renewing session key
 				printf("INV: Updating session key...\n");
+				request_len = inputlen(input) - 4;
+				//printf("DEBUG: Req len %d\n", request_len);
+				//printf("DEBUG: Printing input %s\n", input);
+				request = (char *) malloc(sizeof(char) * (request_len + 1));
+				memcpy(request, &input[4], request_len);
+				request[request_len] = '\0';
+				printf("DEBUG: request %s\n", request);
+				printf("DEBUG: request len %d\n", request_len);
 				update_session_key(session_key);
 				print_bytes("INV: Session key updated - ", session_key, 16);
-				call_ta_inv(1, "ola", session_key, iv);
+				printf("len test: input %lu, pre %lu\n", strlen(request), strlen(test_input));
+				//call_ta_inv(request_len, request, session_key, iv);
+				call_ta_inv(request_len, request, session_key, iv);
 			}
 			else
 				printf("ERROR: DBStore not initialized\n");
