@@ -307,8 +307,10 @@ int encrypt_aes_ctr(char * in, int in_len, unsigned char * out, int * out_len, u
   }
 
   // create your structures to de / encrypt
-  to_encrypt = TEE_Malloc(in_len, 0);
-  cipher = TEE_Malloc(encrypted_len, 0);
+  /*to_encrypt = TEE_Malloc(in_len, 0);
+  cipher = TEE_Malloc(encrypted_len, 0);*/
+  to_encrypt = malloc(sizeof(unsigned char) * in_len);
+  cipher = malloc(sizeof(unsigned char) * encrypted_len);
   if (!to_encrypt || !cipher) {
     return TEE_ERROR_BAD_PARAMETERS;
   }
@@ -356,9 +358,10 @@ int encrypt_aes_ctr(char * in, int in_len, unsigned char * out, int * out_len, u
   //out[cipher_len] = '\0';
 
   // clean up after yourself
-  //TEE_FreeOperation(handle); //FIXME
-  //TEE_FreeTransientObject (key);
+  TEE_FreeOperation(handle); //FIXME
+  TEE_FreeTransientObject (key);
   //TEE_Free (cipher);
+  free(cipher);
 
   return 0;
 }
@@ -391,8 +394,10 @@ int decrypt_aes_ctr(unsigned char * in, int in_len, char * out, int * out_len, u
   }
 
   // create your structures to de / decrypt
-  to_decrypt = TEE_Malloc(in_len, 0);
-  cipher = TEE_Malloc(decrypted_len, 0);
+  /*to_decrypt = TEE_Malloc(in_len, 0);
+  cipher = TEE_Malloc(decrypted_len, 0);*/
+  to_decrypt = malloc(sizeof(unsigned char) * in_len);
+  cipher = malloc(sizeof(unsigned char) * decrypted_len);
   if (!to_decrypt || !cipher) {
     return TEE_ERROR_BAD_PARAMETERS;
   }
@@ -443,9 +448,10 @@ int decrypt_aes_ctr(unsigned char * in, int in_len, char * out, int * out_len, u
   //out[cipher_len] = '\0';
 
   // clean up after yourself
-  //TEE_FreeTransientObject(key);
-  //TEE_FreeOperation(handle); //FIXME: BOth of these are crashing for some reason
+  TEE_FreeTransientObject(key);
+  TEE_FreeOperation(handle); //FIXME: BOth of these are crashing for some reason
   //TEE_Free(cipher);
+  free(cipher);
 
   return 0;
 }
@@ -528,8 +534,8 @@ int verify_hmac (char * in, int in_len, unsigned char * hmac, int hmac_len, unsi
   //out[cipher_len] = '\0';
 
   // clean up after yourself
-  //TEE_FreeOperation(handle); //FIXME: Crashing for some mysterious reason
-  //TEE_FreeTransientObject (key);
+  TEE_FreeOperation(handle); //FIXME: Crashing for some mysterious reason
+  TEE_FreeTransientObject(key);
 
   return 0;
 }
@@ -563,7 +569,8 @@ int gen_hmac (char * in, int in_len, unsigned char * out, int * out_len, unsigne
 
   // create your structures to de / decrypt
   //to_hmac = TEE_Malloc(in_len, 0);
-  re_hmac = TEE_Malloc(re_hmac_len, 0);
+  //re_hmac = TEE_Malloc(re_hmac_len, 0);
+  re_hmac = malloc(sizeof(unsigned char) * re_hmac_len);
   if (!re_hmac) {
     return TEE_ERROR_BAD_PARAMETERS;
   }
@@ -609,8 +616,9 @@ int gen_hmac (char * in, int in_len, unsigned char * out, int * out_len, unsigne
   //out[cipher_len] = '\0';
 
   // clean up after yourself
-  //TEE_FreeOperation(handle); //FIXME
-  //TEE_FreeTransientObject (key);
+  TEE_FreeOperation(handle); //FIXME
+  TEE_FreeTransientObject (key);
+  free(re_hmac);
 
   return 0;
 }
@@ -752,10 +760,9 @@ static TEE_Result init(uint32_t param_types,
   int encrypted_aes_len;
   uint8_t * modulus; //params[1]
   unsigned char * encrypted_message; //params[2]
-  unsigned char * session_key = TEE_Malloc(16, TEE_MALLOC_FILL_ZERO);
-  unsigned char * iv = TEE_Malloc(16, TEE_MALLOC_FILL_ZERO);
+  unsigned char *session_key = malloc(sizeof(unsigned char) * 16);
+  unsigned char *iv = malloc(sizeof(unsigned char) * 16);
 
-  //const char *content = "teste";
   int session_key_id = 0; //this should be derived from the app id!
   int iv_id = 1; //this should be derived from the app id + 1!
 
@@ -838,13 +845,12 @@ static TEE_Result inv(uint32_t param_types,
   TEE_Result res;
 	TEE_ObjectHandle file_handle;
     
-  const char *nonce;
   char *reply = (char*) "NO";
-  unsigned char *hmac = TEE_Malloc(20, 0);
-  int nonce_len, reply_len, hmac_len;
+  //unsigned char *hmac = TEE_Malloc(20, 0);
+  unsigned char *hmac = malloc(sizeof(unsigned char) * 20);
+  int reply_len, hmac_len;
   uint32_t flags = TEE_DATA_FLAG_ACCESS_READ | TEE_DATA_FLAG_ACCESS_WRITE;
   uint32_t read_count;
-  void *dst_nonce;
   //void *dst_req;
 
   /* LittleD stuff */
@@ -866,21 +872,22 @@ static TEE_Result inv(uint32_t param_types,
 
   int session_key_id = 0;
   int iv_id = 1;
-  unsigned char *session_key = TEE_Malloc(16, 0);
-  unsigned char *iv = TEE_Malloc(16, 0);
+  unsigned char *session_key = malloc(sizeof(unsigned char) * 16);
+  unsigned char *iv = malloc(sizeof(unsigned char) * 16);
 
   int decrypt_nonce_len, decrypt_req_len;
-  char *decrypt_nonce = TEE_Malloc(32, 0);
-  char *decrypt_req = TEE_Malloc(32, 0);
+  char *decrypt_nonce = malloc(sizeof(char) * 32);
+  char *decrypt_req = malloc(sizeof(char) * 32);
 
+  char *nonce_re = malloc(sizeof(char) * 8);
   int sql_len = params[3].value.a;
-  char *sql_stmt = TEE_Malloc(sql_len, 0);
+  char *sql_stmt = malloc(sizeof(char) * sql_len);
 
   unsigned char *re_hmac = params[2].memref.buffer;
-  //int re_hmac_len;
 
-  int crypt_reply_len;
-  unsigned char *crypt_reply = TEE_Malloc(32, 0);
+  int crypt_reply_len, crypt_nonce_len;
+  unsigned char *crypt_reply = malloc(sizeof(unsigned char) * 32);
+  unsigned char *crypt_nonce = malloc(sizeof(unsigned char) * 32);
 
 	DMSG("has been called");
 
@@ -889,10 +896,10 @@ static TEE_Result inv(uint32_t param_types,
   
   //Will grab both session key and IV from the persistent objects
 	IMSG("INV: Opening persistent objects...\n");
-	TEE_OpenPersistentObject(TEE_STORAGE_PRIVATE, &session_key_id, sizeof(int),
+	res = TEE_OpenPersistentObject(TEE_STORAGE_PRIVATE, &session_key_id, sizeof(int),
 		flags, &file_handle);
-	//if (res == TEE_HANDLE_NULL)
-	//	IMSG("Bad handle...\n");
+	if (res != TEE_SUCCESS)
+		IMSG("ERROR: Could not open persistent object (session key)...\n");
 	TEE_ReadObjectData(file_handle, session_key, 16, &read_count);
 	print_bytes("INV: Read session key - ", session_key, 16);
   TEE_CloseObject(file_handle);
@@ -907,10 +914,10 @@ static TEE_Result inv(uint32_t param_types,
     IMSG("ERROR: Could not write to session key object...\n");
   IMSG("INV: New key Successfully written!\n");
 
-  TEE_OpenPersistentObject(TEE_STORAGE_PRIVATE, &iv_id, sizeof(int),
+  res = TEE_OpenPersistentObject(TEE_STORAGE_PRIVATE, &iv_id, sizeof(int),
     flags, &file_handle);
-  //if (res == TEE_HANDLE_NULL)
-  //  IMSG("Bad handle...\n");
+  if (res != TEE_SUCCESS)
+    IMSG("ERROR: Could not open persistent object (IV)...\n");
   TEE_ReadObjectData(file_handle, iv, 16, &read_count);
   print_bytes("INV: Read IV - ", iv, 16);
   TEE_CloseObject(file_handle);
@@ -918,11 +925,11 @@ static TEE_Result inv(uint32_t param_types,
 	
   //Decrypting both nonce and SQL request received from the remote client
   IMSG("INV: Decrypting the nonce received from the remote client...\n");
-  //IMSG("size nonce crypt %d\n", params[0].memref.size);
   decrypt_aes_ctr(params[0].memref.buffer, params[0].memref.size, decrypt_nonce, &decrypt_nonce_len,
     (unsigned char*) session_key, (unsigned char*) iv);
-  decrypt_nonce[7] = '\0';
-  IMSG("INV: Decrypted nonce is %s\n", decrypt_nonce);
+  TEE_MemMove(nonce_re, decrypt_nonce, 8);
+  nonce_re[8] = '\0';
+  IMSG("INV: Decrypted nonce is %s\n", nonce_re);
 
   IMSG("INV: Decrypting the request received from the remote client...\n");
   decrypt_aes_ctr(params[1].memref.buffer, params[1].memref.size, decrypt_req, &decrypt_req_len, 
@@ -1002,33 +1009,32 @@ static TEE_Result inv(uint32_t param_types,
     IMSG("ERROR: Could not verify HMAC\n");
   }
 
-	nonce = "new_nonce";
-	nonce_len = strlen(nonce);
-  dst_nonce = TEE_Malloc(nonce_len, TEE_MALLOC_FILL_ZERO);
-  TEE_MemMove(dst_nonce, nonce, nonce_len);
-  TEE_MemMove(params[0].memref.buffer, dst_nonce, nonce_len);
+  IMSG("INV: Generating new nonce for reply...\n");
+  transform_challenge(decrypt_nonce);
+  IMSG("INV: Nonce generated - %s\n", decrypt_nonce);
+  
+  IMSG("INV: Encrypting nonce using AES-CTR...\n");
+  encrypt_aes_ctr(decrypt_nonce, NONCE_LEN, crypt_nonce, &crypt_nonce_len, (unsigned char*) session_key, (unsigned char*) iv);
+  TEE_MemMove(params[0].memref.buffer, crypt_nonce, crypt_nonce_len);
+  print_bytes("INV: Nonce encrypted - ", crypt_nonce, crypt_nonce_len);
 
-  reply_len = strlen(reply);
+  IMSG("INV: Encrypting reply using AES-CTR...\n");
   encrypt_aes_ctr(reply, 2, crypt_reply, &crypt_reply_len, (unsigned char*) session_key, (unsigned char*) iv);
-
-  //dst_reply = TEE_Malloc(reply_len, TEE_MALLOC_FILL_ZERO);
-  //TEE_MemMove(dst_reply, reply, reply_len);
   TEE_MemMove(params[1].memref.buffer, crypt_reply, crypt_reply_len);
+  print_bytes("INV: Reply encrypted - ", crypt_reply, crypt_reply_len);
 
+  IMSG("INV: Generating HMAC for reply...");
+  reply_len = strlen(reply);
   gen_hmac((char*) reply, reply_len, hmac, &hmac_len, (unsigned char*) session_key);
   TEE_MemMove(params[2].memref.buffer, hmac, hmac_len);
-
-	IMSG("INV: Answering with values: \n");
-  IMSG("Nonce - %s\n", (char *) params[0].memref.buffer);
-	print_bytes("Reply - ", params[1].memref.buffer, crypt_reply_len);
-  print_bytes("HMAC - ", params[2].memref.buffer, hmac_len);
-
-  //TEE_Free(decrypt_nonce); //FIXME
-  //TEE_Free(decrypt_req);
-  //TEE_Free(sql_stmt);
-  //TEE_Free(crypt_reply);
-  //TEE_Free(session_key);
-  //TEE_Free(iv);
+  print_bytes("INV: HMAC generated - ", hmac, hmac_len);
+  
+  //free(decrypt_nonce);
+  //free(decrypt_req);
+  //free(sql_stmt);
+  //free(crypt_reply);
+  //free(session_key);
+  //free(iv);
 
 	return TEE_SUCCESS;
 }

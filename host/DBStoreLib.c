@@ -444,11 +444,12 @@ void call_ta_inv(int call_type, const char *req, unsigned char * session_key, un
 	int hmac_len, re_hmac_len;
 
 	//These variables will be using for holding the parameters of the response sent by DBStore TA
-	char *re_nonce;
+	unsigned char *re_nonce;
 	unsigned char *re_req;
 	unsigned char *re_hmac;
-	int decrypt_reply_len = 2;
-	char *decrypt_reply = (char*) malloc(sizeof(char) * decrypt_reply_len);
+	int decrypt_reply_len = 2, decrypt_nonce_len = NONCE_LEN;
+	char *decrypt_reply = (char *) malloc(sizeof(char) * decrypt_reply_len);
+	char *decrypt_nonce = (char *) malloc(sizeof(char) * decrypt_nonce_len);
 
 	//Generating nonce
 	rand_str(nonce, NONCE_LEN);
@@ -492,7 +493,7 @@ void call_ta_inv(int call_type, const char *req, unsigned char * session_key, un
 					 TEEC_MEMREF_WHOLE, TEEC_VALUE_INOUT);
 
 	//Encrypting both Nonce and SQL Statement
-	aes_ctr((unsigned char *) nonce, NONCE_LEN, crypt_nonce, &out_nonce_len, session_key, iv, crypt_nonce_len, 1);
+	aes_ctr((unsigned char *) nonce, NONCE_LEN-1, crypt_nonce, &out_nonce_len, session_key, iv, crypt_nonce_len, 1);
 	aes_ctr((unsigned char *) req, strlen(req) + 1, crypt_req, &out_req_len, session_key, iv, crypt_req_len, 1);
 
 	free(nonce);
@@ -541,19 +542,24 @@ void call_ta_inv(int call_type, const char *req, unsigned char * session_key, un
 			res, err_origin);
 
 	//Getting the parameters from DBStore TA's response
-	re_nonce = (char *) nonceSM.buffer;
+	re_nonce = (unsigned char *) nonceSM.buffer;
 	re_req = (unsigned char *) reqSM.buffer;
 	re_hmac = (unsigned char *) hmacSM.buffer;
 
 	printf("INV: DBStore answered:\n");
-	//printf("Nonce - %s\n", re_nonce);
-	print_bytes("Reply - ", re_req, 16);
+	print_bytes("Nonce - ", re_nonce, 4);
+	print_bytes("Reply - ", re_req, 4);
 	print_bytes("HMAC - ", re_hmac, 20);
+
+	//Decrypting the received nonce from DBStore TA
+	printf("INV: Decrypting DBStore nonce...\n");
+	aes_ctr(re_nonce, crypt_nonce_len, (unsigned char *) decrypt_nonce, &decrypt_nonce_len, session_key, iv, 2, 0);
+	printf("INV: Decrypted DBStore nonce - %s\n", decrypt_nonce);
 
 	//Decrypting the confirmation response from DBStore TA
 	printf("INV: Decrypting DBStore reply...\n");
 	aes_ctr(re_req, crypt_req_len, (unsigned char *) decrypt_reply, &decrypt_reply_len, session_key, iv, 2, 0);
-	printf("INV: Decrypted DBStore reply - %.5s\n", decrypt_reply);
+	printf("INV: Decrypted DBStore reply - %.2s\n", decrypt_reply);
 
 	//Verifying if received HMAC matches with the generated one
 	printf("INV: Verifying received HMAC...\n");
@@ -577,7 +583,6 @@ int main(int argc, char *argv[])
 	//char request[100];
 	char *request = NULL;
 	int request_len;
-	char *test_input = "CREATE TABLE sensors (id int, temp int);";
 	while(1) {
 
 		printf("Welcome to DBStore!\n");
@@ -606,11 +611,8 @@ int main(int argc, char *argv[])
 				request = (char *) malloc(sizeof(char) * (request_len + 1));
 				memcpy(request, &input[4], request_len);
 				request[request_len] = '\0';
-				printf("DEBUG: request %s\n", request);
-				printf("DEBUG: request len %d\n", request_len);
 				update_session_key(session_key);
 				print_bytes("INV: Session key updated - ", session_key, 16);
-				printf("len test: input %lu, pre %lu\n", strlen(request), strlen(test_input));
 				//call_ta_inv(request_len, request, session_key, iv);
 				call_ta_inv(request_len, request, session_key, iv);
 			}
