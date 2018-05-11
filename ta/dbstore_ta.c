@@ -949,12 +949,14 @@ static TEE_Result inv(uint32_t param_types,
     {
       init_query_mm(&mm, memseg, 400);
       parse(sql_stmt, &mm);
+      free(sql_stmt);
       reply = (char*) "OK";
     }
     else
     {
       init_query_mm(&mm, memseg, 400);
       root = parse((char*) sql_stmt, &mm);
+      free(sql_stmt);
       if (root == NULL)
       {
           printf((char*) "NULL root\n");
@@ -1016,26 +1018,25 @@ static TEE_Result inv(uint32_t param_types,
   IMSG("INV: Encrypting nonce using AES-CTR...\n");
   encrypt_aes_ctr(nonce_re, 8, crypt_nonce, &crypt_nonce_len, (unsigned char*) session_key, (unsigned char*) iv);
   TEE_MemMove(params[0].memref.buffer, crypt_nonce, crypt_nonce_len);
+  free(nonce_re);
+  free(crypt_nonce);
   print_bytes("INV: Nonce encrypted - ", crypt_nonce, crypt_nonce_len);
 
   IMSG("INV: Encrypting reply using AES-CTR...\n");
   encrypt_aes_ctr(reply, 2, crypt_reply, &crypt_reply_len, (unsigned char*) session_key, (unsigned char*) iv);
   TEE_MemMove(params[1].memref.buffer, crypt_reply, crypt_reply_len);
+  free(crypt_reply);
   print_bytes("INV: Reply encrypted - ", crypt_reply, crypt_reply_len);
 
   IMSG("INV: Generating HMAC for reply...");
   reply_len = strlen(reply);
   gen_hmac((char*) reply, reply_len, hmac, &hmac_len, (unsigned char*) session_key);
   TEE_MemMove(params[2].memref.buffer, hmac, hmac_len);
+  free(hmac);
   print_bytes("INV: HMAC generated - ", hmac, hmac_len);
   
   //free(decrypt_nonce); CANT FREE THESE FOR SOME DIABOLIC REASON
   //free(decrypt_req);
-  free(nonce_re);
-  free(sql_stmt);
-  free(crypt_reply);
-  free(crypt_nonce);
-  free(hmac);
   free(session_key);
   free(iv);
 

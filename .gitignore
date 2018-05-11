@@ -58,3 +58,4 @@ Makefile~
 test.sublime-workspace
 !libcrypto.a
 .gitignore~
+*.md~
