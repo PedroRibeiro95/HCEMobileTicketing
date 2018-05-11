@@ -881,7 +881,7 @@ static TEE_Result inv(uint32_t param_types,
 
   char *nonce_re = malloc(sizeof(char) * 8);
   int sql_len = params[3].value.a;
-  char *sql_stmt = malloc(sizeof(char) * sql_len);
+  char *sql_stmt = malloc(sizeof(char) * (sql_len + 1));
 
   unsigned char *re_hmac = params[2].memref.buffer;
 
@@ -906,7 +906,6 @@ static TEE_Result inv(uint32_t param_types,
 
   IMSG("INV: Updating session key...\n");
   update_session_key(session_key);
-  //print_bytes("INV: Updated session key - ", session_key, 16);
   print_bytes("INV: Updated session key - ", session_key, 16);
   res = TEE_CreatePersistentObject(TEE_STORAGE_PRIVATE, &session_key_id, sizeof(int),
     TEE_DATA_FLAG_ACCESS_WRITE | TEE_DATA_FLAG_OVERWRITE, TEE_HANDLE_NULL, session_key, 16, &file_handle);
@@ -927,17 +926,18 @@ static TEE_Result inv(uint32_t param_types,
   IMSG("INV: Decrypting the nonce received from the remote client...\n");
   decrypt_aes_ctr(params[0].memref.buffer, params[0].memref.size, decrypt_nonce, &decrypt_nonce_len,
     (unsigned char*) session_key, (unsigned char*) iv);
-  TEE_MemMove(nonce_re, decrypt_nonce, 8);
-  nonce_re[8] = '\0';
+  memcpy(nonce_re, decrypt_nonce, 7);
+  nonce_re[7] = '\0';
   IMSG("INV: Decrypted nonce is %s\n", nonce_re);
 
   IMSG("INV: Decrypting the request received from the remote client...\n");
   decrypt_aes_ctr(params[1].memref.buffer, params[1].memref.size, decrypt_req, &decrypt_req_len, 
     (unsigned char*) session_key, (unsigned char*) iv);
   IMSG("SQL Len %d\n", sql_len);
-  TEE_MemMove(sql_stmt, decrypt_req, sql_len);
+  memcpy(sql_stmt, decrypt_req, sql_len);
   sql_stmt[sql_len] = '\0';
   IMSG("INV: Decrypted request is %s\n", sql_stmt);
+
   /**********************************************************************/
 
   IMSG("INV: Verifying HMAC...\n");
@@ -1010,11 +1010,11 @@ static TEE_Result inv(uint32_t param_types,
   }
 
   IMSG("INV: Generating new nonce for reply...\n");
-  transform_challenge(decrypt_nonce);
-  IMSG("INV: Nonce generated - %s\n", decrypt_nonce);
+  transform_challenge(nonce_re);
+  IMSG("INV: Nonce generated - %s\n", nonce_re);
   
   IMSG("INV: Encrypting nonce using AES-CTR...\n");
-  encrypt_aes_ctr(decrypt_nonce, NONCE_LEN, crypt_nonce, &crypt_nonce_len, (unsigned char*) session_key, (unsigned char*) iv);
+  encrypt_aes_ctr(nonce_re, 8, crypt_nonce, &crypt_nonce_len, (unsigned char*) session_key, (unsigned char*) iv);
   TEE_MemMove(params[0].memref.buffer, crypt_nonce, crypt_nonce_len);
   print_bytes("INV: Nonce encrypted - ", crypt_nonce, crypt_nonce_len);
 
@@ -1029,12 +1029,15 @@ static TEE_Result inv(uint32_t param_types,
   TEE_MemMove(params[2].memref.buffer, hmac, hmac_len);
   print_bytes("INV: HMAC generated - ", hmac, hmac_len);
   
-  //free(decrypt_nonce);
+  //free(decrypt_nonce); CANT FREE THESE FOR SOME DIABOLIC REASON
   //free(decrypt_req);
-  //free(sql_stmt);
-  //free(crypt_reply);
-  //free(session_key);
-  //free(iv);
+  free(nonce_re);
+  free(sql_stmt);
+  free(crypt_reply);
+  free(crypt_nonce);
+  free(hmac);
+  free(session_key);
+  free(iv);
 
 	return TEE_SUCCESS;
 }

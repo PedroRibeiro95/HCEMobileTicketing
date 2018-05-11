@@ -547,13 +547,13 @@ void call_ta_inv(int call_type, const char *req, unsigned char * session_key, un
 	re_hmac = (unsigned char *) hmacSM.buffer;
 
 	printf("INV: DBStore answered:\n");
-	print_bytes("Nonce - ", re_nonce, 4);
+	print_bytes("Nonce - ", re_nonce, 8);
 	print_bytes("Reply - ", re_req, 4);
 	print_bytes("HMAC - ", re_hmac, 20);
 
 	//Decrypting the received nonce from DBStore TA
 	printf("INV: Decrypting DBStore nonce...\n");
-	aes_ctr(re_nonce, crypt_nonce_len, (unsigned char *) decrypt_nonce, &decrypt_nonce_len, session_key, iv, 2, 0);
+	aes_ctr(re_nonce, crypt_nonce_len, (unsigned char *) decrypt_nonce, &decrypt_nonce_len, session_key, iv, 8, 0);
 	printf("INV: Decrypted DBStore nonce - %s\n", decrypt_nonce);
 
 	//Decrypting the confirmation response from DBStore TA
