@@ -11,18 +11,18 @@ We propose DBStore, an SQL-based management system for sensitive data backed by 
 
 1. Finish Initialization protocol:
    - [x] Adapt the algorithm in the thesis to OP-TEE
-   - [x] Encryption algorithms all being applied correctly
-   - [ ] Protection against replay attacks
+   - [x] Cryptographic algorithms all being applied correctly
    - [x] Code cleanup
    - [x] Better memory management (mallocs, frees)
    - [ ] Detect and treat error codes
+   - [ ] Protection against replay attacks
 2. Finish Invocation protocol
    - [x] Adapt the algorithm in the thesis to OP-TEE
-   - [x] Encryption algorithms all being applied correctly
-   - [ ] Protection against replay attacks
+   - [x] Cryptographic algorithms all being applied correctly
    - [x] Code cleanup
    - [x] Better memory management (mallocs, frees)
    - [ ] Detect and treat error codes
+   - [ ] Protection against replay attacks
 3. Get SQL up and running (using LittleD library)
    - [x] Adapt LittleD to use the Global Platform's API for IO, as well as adding missing libc functions
    - [x] Get LittleD to compile and run on the emulator
