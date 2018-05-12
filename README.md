@@ -15,19 +15,19 @@ We propose DBStore, an SQL-based management system for sensitive data backed by 
    - [x] Code cleanup
    - [x] Better memory management (mallocs, frees)
    - [ ] Detect and treat error codes
-   - [ ] Protection against replay attacks
+   - [x] Protection against replay attacks
 2. Finish Invocation protocol
    - [x] Adapt the algorithm in the thesis to OP-TEE
    - [x] Cryptographic algorithms all being applied correctly
    - [x] Code cleanup
    - [x] Better memory management (mallocs, frees)
    - [ ] Detect and treat error codes
-   - [ ] Protection against replay attacks
+   - [x] Protection against replay attacks
 3. Get SQL up and running (using LittleD library)
    - [x] Adapt LittleD to use the Global Platform's API for IO, as well as adding missing libc functions
    - [x] Get LittleD to compile and run on the emulator
    - [x] Run the example on LittleD's github
-   - [ ] Manage to run the queries from the paper (or at least an adaptation)
+   - [x] Manage to run the queries from the paper (or at least an adaptation)
 4. Port the prototype to the Nitrogen board
    - [ ] Compile OP-TEE using the instructions provided by Nuno Duarte
    - [ ] Configuring Android to be able to run on the board
