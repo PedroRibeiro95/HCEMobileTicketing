@@ -430,7 +430,7 @@ void call_ta_init(int call_type, const char *appid, unsigned char *session_key, 
 	free(r_iv);
 }
 
-void call_ta_inv(int call_type, const char *req, unsigned char * session_key, unsigned char *iv)
+void call_ta_inv(int call_type, const char *req, unsigned char * session_key, unsigned char *iv, int *counter)
 {
 	TEEC_Result res;
 	TEEC_Context ctx;
@@ -440,7 +440,7 @@ void call_ta_inv(int call_type, const char *req, unsigned char * session_key, un
 	uint32_t err_origin;
 
 	//These variables will hold the parameters of the request for the DBStore TA
-	char *nonce = (char*) malloc(sizeof(char) * NONCE_LEN);
+	char *nonce = (char*) calloc(8, sizeof(char));
 	int out_nonce_len, out_req_len;
 	int crypt_nonce_len = (NONCE_LEN/16 + 1) * 32;
 	unsigned char *crypt_nonce = (unsigned char *) malloc(sizeof(unsigned char) * crypt_nonce_len);
@@ -458,8 +458,10 @@ void call_ta_inv(int call_type, const char *req, unsigned char * session_key, un
 	char *decrypt_nonce = (char *) malloc(sizeof(char) * decrypt_nonce_len);
 
 	//Generating nonce
-	rand_str(nonce, NONCE_LEN);
-	printf("INV: Generated nonce - %s\n", nonce);
+	/*rand_str(nonce, NONCE_LEN);
+	printf("INV: Generated nonce - %s\n", nonce);*/
+
+	sprintf(nonce, "%d", ++(*counter));
 
 	//Preparing shared buffers
 	TEEC_SharedMemory nonceSM = {0};
@@ -499,10 +501,10 @@ void call_ta_inv(int call_type, const char *req, unsigned char * session_key, un
 					 TEEC_MEMREF_WHOLE, TEEC_VALUE_INOUT);
 
 	//Encrypting both Nonce and SQL Statement
-	aes_ctr((unsigned char *) nonce, NONCE_LEN-1, crypt_nonce, &out_nonce_len, session_key, iv, crypt_nonce_len, 1);
+	aes_ctr((unsigned char *) nonce, 8, crypt_nonce, &out_nonce_len, session_key, iv, crypt_nonce_len, 1);
 	aes_ctr((unsigned char *) req, strlen(req) + 1, crypt_req, &out_req_len, session_key, iv, crypt_req_len, 1);
 
-	free(nonce);
+	//free(nonce);
 
 	//Assigning shared buffers to parameters and the corresponding local buffers
 	op.params[0].memref.parent = &nonceSM;
@@ -558,21 +560,29 @@ void call_ta_inv(int call_type, const char *req, unsigned char * session_key, un
 	print_bytes("HMAC - ", re_hmac, 20);
 
 	//Decrypting the received nonce from DBStore TA
-	printf("INV: Decrypting DBStore nonce...\n");
+	printf("INV: Decrypting DBStore counter...\n");
 	aes_ctr(re_nonce, crypt_nonce_len, (unsigned char *) decrypt_nonce, &decrypt_nonce_len, session_key, iv, 8, 0);
-	printf("INV: Decrypted DBStore nonce - %s\n", decrypt_nonce);
+	printf("INV: Decrypted DBStore counter - %s\n", decrypt_nonce);
 
-	//Decrypting the confirmation response from DBStore TA
-	printf("INV: Decrypting DBStore reply...\n");
-	aes_ctr(re_req, crypt_req_len, (unsigned char *) decrypt_reply, &decrypt_reply_len, session_key, iv, 2, 0);
-	printf("INV: Decrypted DBStore reply - %.2s\n", decrypt_reply);
+	sprintf(nonce, "%d", ++(*counter));
 
-	//Verifying if received HMAC matches with the generated one
-	printf("INV: Verifying received HMAC...\n");
-	if(verify_hmac(decrypt_reply, 2, re_hmac, &re_hmac_len, session_key))
-		printf("INV: HMAC verified\n");
+	if(strncmp(nonce, decrypt_nonce, strlen(nonce)) == 0) {
+		printf("INV: Message is fresh\n");
+
+		//Decrypting the confirmation response from DBStore TA
+		printf("INV: Decrypting DBStore reply...\n");
+		aes_ctr(re_req, crypt_req_len, (unsigned char *) decrypt_reply, &decrypt_reply_len, session_key, iv, 2, 0);
+		printf("INV: Decrypted DBStore reply - %.2s\n", decrypt_reply);
+
+		//Verifying if received HMAC matches with the generated one
+		printf("INV: Verifying received HMAC...\n");
+		if(verify_hmac(decrypt_reply, 2, re_hmac, &re_hmac_len, session_key))
+			printf("INV: HMAC verified\n");
+		else
+			printf("INV: ERROR - Could not verify HMAC\n");
+	}
 	else
-		printf("INV: ERROR - Could not verify HMAC\n");
+		printf("ERROR: Message not fresh\n");
 
 	TEEC_CloseSession(&sess);
 
@@ -621,7 +631,7 @@ int main(int argc, char *argv[])
 				update_session_key(session_key);
 				print_bytes("INV: Session key updated - ", session_key, 16);
 				//call_ta_inv(request_len, request, session_key, iv);
-				call_ta_inv(request_len, request, session_key, iv);
+				call_ta_inv(request_len, request, session_key, iv, &counter);
 			}
 			else
 				printf("ERROR: DBStore not initialized\n");

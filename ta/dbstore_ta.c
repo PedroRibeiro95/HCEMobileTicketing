@@ -770,6 +770,7 @@ static TEE_Result init(uint32_t param_types,
 
   int session_key_id = 0; //this should be derived from the app id!
   int iv_id = 1; //this should be derived from the app id + 1!
+  int counter_id = 2; //this should be derived from the app id + 2!
 
 	DMSG("has been called");
 
@@ -844,6 +845,16 @@ static TEE_Result init(uint32_t param_types,
 
   TEE_CloseObject(file_handle);
 
+  //Updates counter so that it matches the one it should receive in the first inv (helps with file reads)
+  snprintf(counter_c, 8, "%d", ++int_counter);
+
+  res = TEE_CreatePersistentObject(TEE_STORAGE_PRIVATE, &counter_id, sizeof(int),
+    TEE_DATA_FLAG_ACCESS_WRITE, TEE_HANDLE_NULL, counter_c, strlen(counter_c), &file_handle);
+  if (res != TEE_SUCCESS)
+    IMSG("Error creating counter object...\n");
+
+  TEE_CloseObject(file_handle);
+
 	return TEE_SUCCESS;
 }
 
@@ -891,14 +902,17 @@ static TEE_Result inv(uint32_t param_types,
 
   int session_key_id = 0;
   int iv_id = 1;
+  int counter_id = 2;
   unsigned char *session_key = malloc(sizeof(unsigned char) * 16);
   unsigned char *iv = malloc(sizeof(unsigned char) * 16);
+  char *counter_c = calloc(8, sizeof(unsigned char));
 
   int decrypt_nonce_len, decrypt_req_len;
   char *decrypt_nonce = malloc(sizeof(char) * 32);
   char *decrypt_req = malloc(sizeof(char) * 32);
 
-  char *nonce_re = malloc(sizeof(char) * 8);
+  int int_counter;
+  char *nonce_re = calloc(8, sizeof(char));
   int sql_len = params[3].value.a;
   char *sql_stmt = malloc(sizeof(char) * (sql_len + 1));
 
@@ -931,6 +945,7 @@ static TEE_Result inv(uint32_t param_types,
   if (res != TEE_SUCCESS)
     IMSG("ERROR: Could not write to session key object...\n");
   IMSG("INV: New key Successfully written!\n");
+  TEE_CloseObject(file_handle);
 
   res = TEE_OpenPersistentObject(TEE_STORAGE_PRIVATE, &iv_id, sizeof(int),
     flags, &file_handle);
@@ -942,100 +957,121 @@ static TEE_Result inv(uint32_t param_types,
   /**************************************************************/
 	
   //Decrypting both nonce and SQL request received from the remote client
-  IMSG("INV: Decrypting the nonce received from the remote client...\n");
+  IMSG("INV: Decrypting the counter received from the remote client...\n");
   decrypt_aes_ctr(params[0].memref.buffer, params[0].memref.size, decrypt_nonce, &decrypt_nonce_len,
     (unsigned char*) session_key, (unsigned char*) iv);
-  memcpy(nonce_re, decrypt_nonce, 7);
-  nonce_re[7] = '\0';
-  IMSG("INV: Decrypted nonce is %s\n", nonce_re);
+  memcpy(nonce_re, decrypt_nonce, 8);
+  //nonce_re[7] = '\0';
+  IMSG("INV: Decrypted counter is %s\n", nonce_re);
 
-  IMSG("INV: Decrypting the request received from the remote client...\n");
-  decrypt_aes_ctr(params[1].memref.buffer, params[1].memref.size, decrypt_req, &decrypt_req_len, 
-    (unsigned char*) session_key, (unsigned char*) iv);
-  IMSG("SQL Len %d\n", sql_len);
-  memcpy(sql_stmt, decrypt_req, sql_len);
-  sql_stmt[sql_len] = '\0';
-  IMSG("INV: Decrypted request is %s\n", sql_stmt);
+  IMSG("INV: Obtaining counter saved in persistent object...\n");
+  res = TEE_OpenPersistentObject(TEE_STORAGE_PRIVATE, &counter_id, sizeof(int),
+    flags, &file_handle);
+  if (res != TEE_SUCCESS)
+    IMSG("ERROR: Could not open persistent object (IV)...\n");
+  TEE_ReadObjectData(file_handle, counter_c, strlen(nonce_re), &read_count);
+  IMSG("INV: Read counter - %s\n", counter_c);
+  TEE_CloseObject(file_handle);
 
-  /**********************************************************************/
+  if(strncmp(counter_c, nonce_re, strlen(counter_c)) == 0) {
 
-  IMSG("INV: Verifying HMAC...\n");
-  if(verify_hmac(sql_stmt, sql_len, re_hmac, 20, (unsigned char*) session_key) == 0) {
-    IMSG("INV: Successfully verified HMAC\n");
-    IMSG("INV: Running query...\n");
+    IMSG("INV: Message is fresh\n");
 
-    if(!(strncmp(sql_stmt, "SELECT", 6) == 0))
-    {
-      init_query_mm(&mm, memseg, 400);
-      parse(sql_stmt, &mm);
-      free(sql_stmt);
-      reply = (char*) "OK";
-    }
-    else
-    {
-      init_query_mm(&mm, memseg, 400);
-      root = parse((char*) sql_stmt, &mm);
-      free(sql_stmt);
-      if (root == NULL)
+    IMSG("INV: Decrypting the request received from the remote client...\n");
+    decrypt_aes_ctr(params[1].memref.buffer, params[1].memref.size, decrypt_req, &decrypt_req_len, 
+      (unsigned char*) session_key, (unsigned char*) iv);
+    IMSG("SQL Len %d\n", sql_len);
+    memcpy(sql_stmt, decrypt_req, sql_len);
+    sql_stmt[sql_len] = '\0';
+    IMSG("INV: Decrypted request is %s\n", sql_stmt);
+
+    /**********************************************************************/
+
+    IMSG("INV: Verifying HMAC...\n");
+    if(verify_hmac(sql_stmt, sql_len, re_hmac, 20, (unsigned char*) session_key) == 0) {
+      IMSG("INV: Successfully verified HMAC\n");
+      IMSG("INV: Running query...\n");
+
+      if(!(strncmp(sql_stmt, "SELECT", 6) == 0))
       {
-          printf((char*) "NULL root\n");
+        init_query_mm(&mm, memseg, 400);
+        parse(sql_stmt, &mm);
+        free(sql_stmt);
+        reply = (char*) "OK";
       }
       else
       {
-          init_tuple(&tuple, root->header->tuple_size, root->header->num_attr, &mm);
+        init_query_mm(&mm, memseg, 400);
+        root = parse((char*) sql_stmt, &mm);
+        free(sql_stmt);
+        if (root == NULL)
+        {
+            printf((char*) "NULL root\n");
+        }
+        else
+        {
+            init_tuple(&tuple, root->header->tuple_size, root->header->num_attr, &mm);
 
-          IMSG("Printing SELECT results:\n");
+            IMSG("Printing SELECT results:\n");
 
-          to_print = malloc(sizeof(char) * 400);
+            to_print = malloc(sizeof(char) * 400);
 
-          while(next(root, &tuple, &mm) == 1)
-          {
-
-            strcat(to_print, "| ");
-
-            for (i = 0; i < (db_int)(root->header->num_attr); i++) 
+            while(next(root, &tuple, &mm) == 1)
             {
-              attr_name = (unsigned char*)root->header->names[i];
-              if(root->header->types[i] == 0) //the attribute is an integer
+
+              strcat(to_print, "| ");
+
+              for (i = 0; i < (db_int)(root->header->num_attr); i++) 
               {
-                aux_int = getintbyname(&tuple, (char*) attr_name, root->header);
-                strcat(to_print, (char*) attr_name);
-                strcat(to_print, ": ");
-                int_converted = malloc(sizeof(char) * 10);
-                snprintf(int_converted, 10, "%d", aux_int);
-                strcat(to_print, int_converted);
-                strcat(to_print, " | ");
-                free(int_converted);
+                attr_name = (unsigned char*)root->header->names[i];
+                if(root->header->types[i] == 0) //the attribute is an integer
+                {
+                  aux_int = getintbyname(&tuple, (char*) attr_name, root->header);
+                  strcat(to_print, (char*) attr_name);
+                  strcat(to_print, ": ");
+                  int_converted = malloc(sizeof(char) * 10);
+                  snprintf(int_converted, 10, "%d", aux_int);
+                  strcat(to_print, int_converted);
+                  strcat(to_print, " | ");
+                  free(int_converted);
+                }
+                else //the attribute is a string
+                {
+                  aux_char = getstringbyname(&tuple, (char*) attr_name, root->header);
+                  strcat(to_print, (char*) attr_name);
+                  strcat(to_print, ": ");
+                  strcat(to_print, aux_char);
+                  strcat(to_print, " | ");
+                }
               }
-              else //the attribute is a string
-              {
-                aux_char = getstringbyname(&tuple, (char*) attr_name, root->header);
-                strcat(to_print, (char*) attr_name);
-                strcat(to_print, ": ");
-                strcat(to_print, aux_char);
-                strcat(to_print, " | ");
-              }
+
+              strcat(to_print, "\n");
+              reply = (char*) "OK";
             }
 
-            strcat(to_print, "\n");
-            reply = (char*) "OK";
-          }
-
-          printf("%s\n", to_print);
-          free(to_print);
+            printf("%s\n", to_print);
+            free(to_print);
+        }
       }
     }
+    else {
+      IMSG("ERROR: Could not verify HMAC\n");
+    }
   }
-  else {
-    IMSG("ERROR: Could not verify HMAC\n");
-  }
+  else
+    IMSG("ERROR: Message not fresh\n");
 
-  IMSG("INV: Generating new nonce for reply...\n");
+  /*IMSG("INV: Generating new nonce for reply...\n");
   transform_challenge(nonce_re);
-  IMSG("INV: Nonce generated - %s\n", nonce_re);
+  IMSG("INV: Nonce generated - %s\n", nonce_re);*/
+
+  IMSG("INV: Updating counter to sent back to NW...\n");
+  int_counter = atoi(counter_c);
+  snprintf(counter_c, 8, "%d", ++int_counter);
+  IMSG("INV: Counter updated - %s\n", counter_c);
   
   IMSG("INV: Encrypting nonce using AES-CTR...\n");
-  encrypt_aes_ctr(nonce_re, 8, crypt_nonce, &crypt_nonce_len, (unsigned char*) session_key, (unsigned char*) iv);
+  encrypt_aes_ctr(counter_c, 8, crypt_nonce, &crypt_nonce_len, (unsigned char*) session_key, (unsigned char*) iv);
   TEE_MemMove(params[0].memref.buffer, crypt_nonce, crypt_nonce_len);
   free(nonce_re);
   free(crypt_nonce);
@@ -1053,6 +1089,13 @@ static TEE_Result inv(uint32_t param_types,
   TEE_MemMove(params[2].memref.buffer, hmac, hmac_len);
   free(hmac);
   print_bytes("INV: HMAC generated - ", hmac, hmac_len);
+
+  //Updates counter so that it matches the one it should receive on the next inv (helps with file reads)
+  snprintf(counter_c, 8, "%d", ++int_counter);
+  res = TEE_CreatePersistentObject(TEE_STORAGE_PRIVATE, &counter_id, sizeof(int),
+    TEE_DATA_FLAG_ACCESS_WRITE | TEE_DATA_FLAG_OVERWRITE, TEE_HANDLE_NULL, counter_c, 8, &file_handle);
+  if (res != TEE_SUCCESS)
+    IMSG("Error creating counter object...\n");
   
   //free(decrypt_nonce); CANT FREE THESE FOR SOME DIABOLIC REASON
   //free(decrypt_req);
