@@ -286,7 +286,7 @@ int update_session_key(unsigned char *session_key) {
 	return 1;
 }
 
-void call_ta_init(int call_type, const char *appid, unsigned char *session_key, unsigned char *iv)
+void call_ta_init(int call_type, const char *appid, unsigned char *session_key, unsigned char *iv, int *counter)
 {
 	TEEC_Result res;
 	TEEC_Context ctx;
@@ -301,10 +301,10 @@ void call_ta_init(int call_type, const char *appid, unsigned char *session_key, 
 	TEEC_SharedMemory modulusSM = {0};
 
 	//Initializing variables for Initialization invocation on DBStore TA
-	int message_len = strlen(appid) + NONCE_LEN + 1;
+	int message_len = strlen(appid) + 2;
 
-	char *nonce = (char *) malloc(sizeof(char) * NONCE_LEN);
-	char *message = (char *) malloc(sizeof(char) * message_len);
+	//char *counter_buff = (char *) malloc(sizeof(char) * NONCE_LEN);
+	char *message = (char *) calloc(message_len, sizeof(char));
 
 	unsigned char *crypto_req = (unsigned char *) malloc(sizeof(unsigned char) * CRYPTO_LEN);
 	int crypto_req_len;
@@ -313,6 +313,7 @@ void call_ta_init(int call_type, const char *appid, unsigned char *session_key, 
 	char *decrypt_aes = (char *) malloc(sizeof(char) * message_len); //will hold the modified challenge
 	int decrypt_aes_len;
 	unsigned char *r_iv = (unsigned char *) malloc(sizeof(unsigned char) * 16);
+	char *counter_c = NULL;
 
 	//Starts preparing the shared buffers with the local data
     cryptoSM.flags = TEEC_MEM_INPUT | TEEC_MEM_OUTPUT;
@@ -342,18 +343,15 @@ void call_ta_init(int call_type, const char *appid, unsigned char *session_key, 
 	op.paramTypes = TEEC_PARAM_TYPES(TEEC_MEMREF_WHOLE, TEEC_MEMREF_WHOLE,
 					 TEEC_MEMREF_WHOLE, TEEC_NONE);
 
-	//Generates the nonce and concats it with the appid (APPID_NONCE)
-	srand(time(NULL));
-	rand_str(nonce, NONCE_LEN);
-	strcat(message, appid);
-	strcat(message, "_");
-	strcat(message, nonce);
+	//Concats appid with counter (appid:counter)
+	sprintf(message, "%s:%d", appid, *counter);
 
 	//Encrypting the message using DBStore's Public Key
 	if(encrypt_using_public_key(public_key_dbstore, message, strlen(message), crypto_req, &crypto_req_len) != 1)
 		printf("Encryption gone wrong...\n");
+	free(message);
 
-	free(nonce);
+	//free(nonce);
 
 	//Assigning shared buffers to parameters and the corresponding local buffers
 	op.params[0].memref.parent = &signatureSM;
@@ -406,12 +404,20 @@ void call_ta_init(int call_type, const char *appid, unsigned char *session_key, 
 	printf("INIT: Decrypted challenge - %s\n", decrypt_aes);
 	
 	//Verifying if received Transformed Challenge corresponds to the expected
-	if(verify_challenge(message, decrypt_aes) == 0)
+	/*if(verify_challenge(message, decrypt_aes) == 0)
 		printf("INIT: Authenticated DBStore\n");
 	else
-		printf("INIT: Could not authenticate DBStore\n");
+		printf("INIT: Could not authenticate DBStore\n");*/
 
-	free(message);
+	counter_c = (char*) calloc(16, sizeof(char));
+	sprintf(counter_c, "%d", ++(*counter));
+
+	if(strncmp(counter_c, decrypt_aes, strlen(counter_c)) == 0)
+		printf("INIT: DBStore message is fresh and authenticated\n");
+	else
+		printf("ERROR: DBStore message is not fresh (counter received: %s, local counter: %s\n", decrypt_aes, counter_c);
+
+	free(counter_c);
 	free(decrypt_aes);
 
 	TEEC_CloseSession(&sess);
@@ -579,6 +585,7 @@ int main(int argc, char *argv[])
 {	
 	unsigned char *session_key = NULL;
 	unsigned char *iv = NULL;
+	int counter = 0;
 	char input[400];
 	//char request[100];
 	char *request = NULL;
@@ -596,7 +603,7 @@ int main(int argc, char *argv[])
 			if(session_key == NULL) {
 				session_key = (unsigned char *) malloc(sizeof(unsigned char) * 16);
 				iv = (unsigned char *) malloc(sizeof(unsigned char) * 16);
-				call_ta_init(0, "o", session_key, iv);
+				call_ta_init(0, "o", session_key, iv, &counter);
 			}
 			else
 				printf("ERROR: DBStore was already initialized\n");

@@ -33,6 +33,7 @@
 #include <crypto.h>
 #include <dbparser.h>
 #include "LittleD/strcat.h"
+#include "LittleD/atoi.h"
 
 //#include <stdint.h>
 
@@ -752,7 +753,7 @@ static TEE_Result init(uint32_t param_types,
 	TEE_Result res;
 	TEE_ObjectHandle file_handle;
 
-  char *decrypted = TEE_Malloc(256, 0);
+  char *decrypted = (char*) calloc(64, sizeof(char));
   int decrypted_len;
   unsigned char *encrypted_rsa = TEE_Malloc(256, 0);
   int encrypted_rsa_len;
@@ -762,6 +763,10 @@ static TEE_Result init(uint32_t param_types,
   unsigned char * encrypted_message; //params[2]
   unsigned char *session_key = malloc(sizeof(unsigned char) * 16);
   unsigned char *iv = malloc(sizeof(unsigned char) * 16);
+
+  char *appid = calloc(8, sizeof(char));
+  char *counter_c = calloc(16, sizeof(char));
+  int i, parse_counter = 0, int_counter;
 
   int session_key_id = 0; //this should be derived from the app id!
   int iv_id = 1; //this should be derived from the app id + 1!
@@ -782,9 +787,23 @@ static TEE_Result init(uint32_t param_types,
   IMSG("INIT: Decrypted value is %s\n", decrypted);
 
   //Transforming challenge
-  IMSG("INIT: Transforming challenge to authenticate DBStore...\n");
-  transform_challenge(decrypted); //to guarantee the mutual authentication
-  IMSG("INIT: Challenge transformed: %s\n", decrypted);
+  IMSG("INIT: Obtaining appid and counter...\n");
+  //transform_challenge(decrypted); //to guarantee the mutual authentication
+  for(i = 0; i < (int) strlen(decrypted); i++) {
+    if(decrypted[i] != ':' && parse_counter == 0)
+      appid[i] = decrypted[i];
+    else if(decrypted[i] == ':')
+      parse_counter = i + 1;
+    else
+      counter_c[i - parse_counter] = decrypted[i];
+  }
+  free(decrypted);
+  IMSG("INIT: Appid and counter obatined - %s and %s\n", appid, counter_c);
+
+  IMSG("INIT: Updating counter to send back to NW...\n");
+  int_counter = atoi(counter_c);
+  snprintf(counter_c, 16, "%d", ++int_counter);
+  IMSG("INIT: Counter updated - %s\n", counter_c);
 
   //Generating AES session key and IV for AES-CBC encryption
   IMSG("INIT: Generating session key and IV...\n");
@@ -795,7 +814,7 @@ static TEE_Result init(uint32_t param_types,
   IMSG("INIT: IV: %s\n", iv);
 
   IMSG("INIT: Encrypting transformed challenge with AES-CTR...\n");
-  encrypt_aes_ctr(decrypted, decrypted_len, encrypted_aes, &encrypted_aes_len, session_key, iv);
+  encrypt_aes_ctr(counter_c, strlen(counter_c) + 1, encrypted_aes, &encrypted_aes_len, session_key, iv);
   IMSG("INIT: Encrypted challenge using AES-CTR\n");
 
   //Encrypting (session key)+(IV) with PKey to return back to the application

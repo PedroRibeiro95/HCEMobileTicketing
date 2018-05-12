@@ -26,6 +26,7 @@
 #include "../dbmm/db_query_mm.h"
 #include "dblexer.h"
 #include "../dbstorage/dbstorage.h"
+#include "../atoi.h"
 
 #ifdef __cplusplus
 extern "C" {

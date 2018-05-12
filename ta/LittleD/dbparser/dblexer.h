@@ -342,7 +342,6 @@ db_int isstartofoperator(db_lexer_token_t *tokenp, db_lexer_t *lexerp);
 db_int isfunction(db_lexer_token_t *tokenp, db_lexer_t *lexerp, db_int *which);
 db_int isaggrfunction(db_lexer_token_t *tokenp, db_lexer_t *lexerp, db_int *which);
 void settoken(db_lexer_token_t *tokenp, db_uint8 type, db_int which, db_int start, db_int end);
-int atoi(char *str);
 
 #ifdef __cplusplus
 }

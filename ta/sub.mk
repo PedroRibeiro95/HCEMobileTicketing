@@ -1,6 +1,7 @@
 global-incdirs-y += include
 srcs-y += dbstore_ta.c
 srcs-y += LittleD/strcat.c
+srcs-y += LittleD/atoi.c
 srcs-y += LittleD/dbobjects/relation.c
 srcs-y += LittleD/dbobjects/tuple.c
 srcs-y += LittleD/dbmm/db_query_mm.c

@@ -33,6 +33,7 @@ extern "C" {
 #include "../dbops/db_ops.h"
 #include "../dbmm/db_query_mm.h"
 #include "../dblogic/eet.h"
+#include "../atoi.h"
 
 /* Parse an expression into evaluable form. */
 /**

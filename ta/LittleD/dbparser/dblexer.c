@@ -23,6 +23,7 @@
 
 #include "dblexer.h"
 #include "../debug.h"
+#include "../atoi.h"
 
 /*** Macros for Lexer modes ***/
 /**
@@ -196,19 +197,6 @@ static struct keyword aggrfunctions[] = {
 	{"LAST",	DB_LEXER_TOKENINFO_UNIMPORTANT,		DB_AGGR_LAST},
 	{"COUNT",	DB_LEXER_TOKENINFO_UNIMPORTANT,		DB_AGGR_COUNTROWS}
 };
-
-int atoi(char *str)
-{
-    int res = 0; // Initialize result
-  
-    // Iterate through all characters of input string and
-    // update result
-    for (int i = 0; str[i] != '\0'; ++i)
-        res = res*10 + str[i] - '0';
-  
-    // return result.
-    return res;
-}
 
 /**
 @brief		Get token info for a token in one of the keyword arrays.
