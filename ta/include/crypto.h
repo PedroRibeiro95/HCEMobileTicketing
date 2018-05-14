@@ -15,5 +15,6 @@ int update_session_key(unsigned char *session_key);
 void rand_str(char *dest, size_t length);
 
 void print_bytes(const char * string, unsigned char * bytes, int len); //to remove from here
+int is_digit (char c);
 
 #endif /*CRYPTO_H*/

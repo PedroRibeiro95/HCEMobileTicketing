@@ -82,6 +82,11 @@ uint8_t private_key_dbstore[] =
 "\xec\xf7\xe0\x60\x45\x79\xaa\x6c\x54\xa0\xb6\xae\x3e\xcc\x94"
 "\x61";
 
+int is_digit (char c) {
+    if ((c>='0') && (c<='9')) return 1;
+    return 0;
+}
+
 void transform_challenge(char * challenge) {
   int i = 0;
 
@@ -768,9 +773,7 @@ static TEE_Result init(uint32_t param_types,
   char *counter_c = calloc(16, sizeof(char));
   int i, parse_counter = 0, int_counter;
 
-  int session_key_id = 0; //this should be derived from the app id!
-  int iv_id = 1; //this should be derived from the app id + 1!
-  int counter_id = 2; //this should be derived from the app id + 2!
+  int session_key_id, iv_id, counter_id, int_appid;
 
 	DMSG("has been called");
 
@@ -800,6 +803,11 @@ static TEE_Result init(uint32_t param_types,
   }
   free(decrypted);
   IMSG("INIT: Appid and counter obatined - %s and %s\n", appid, counter_c);
+
+  int_appid = 2 * atoi(appid);
+  session_key_id = int_appid;
+  iv_id = int_appid + 1;
+  counter_id = int_appid + 2;
 
   IMSG("INIT: Updating counter to send back to NW...\n");
   int_counter = atoi(counter_c);
@@ -900,23 +908,25 @@ static TEE_Result inv(uint32_t param_types,
   //db_op_base_t* root;
   //db_tuple_t    tuple;
 
-  int session_key_id = 0;
-  int iv_id = 1;
-  int counter_id = 2;
+  int session_key_id, iv_id, counter_id, int_appid = 2; //FIXME
   unsigned char *session_key = malloc(sizeof(unsigned char) * 16);
   unsigned char *iv = malloc(sizeof(unsigned char) * 16);
-  char *counter_c = calloc(8, sizeof(unsigned char));
+  char *counter_c = calloc(8, sizeof(char));
+  char *re_counter = calloc(8, sizeof(char));
 
-  int decrypt_nonce_len, decrypt_req_len;
-  char *decrypt_nonce = malloc(sizeof(char) * 32);
+  int decrypt_counter_len, decrypt_req_len;
+  char *decrypt_counter = malloc(sizeof(char) * 32);
   char *decrypt_req = malloc(sizeof(char) * 32);
 
   int int_counter;
-  char *nonce_re = calloc(8, sizeof(char));
+  char *decrypted = calloc(8, sizeof(char));
   int sql_len = params[3].value.a;
   char *sql_stmt = malloc(sizeof(char) * (sql_len + 1));
 
-  unsigned char *re_hmac = params[2].memref.buffer;
+  //unsigned char *re_hmac = params[2].memref.buffer;
+  int counter_len = params[2].memref.size - 20;
+  unsigned char *re_hmac = calloc(20, sizeof(unsigned char));
+  char *appid = calloc(counter_len, sizeof(char));
 
   int crypt_reply_len, crypt_nonce_len;
   unsigned char *crypt_reply = malloc(sizeof(unsigned char) * 32);
@@ -924,8 +934,18 @@ static TEE_Result inv(uint32_t param_types,
 
 	DMSG("has been called");
 
+  memcpy(re_hmac, (unsigned char*) params[2].memref.buffer + counter_len, 20);
+  memcpy(appid, params[2].memref.buffer, counter_len);
+
+  printf("appid %s\n", appid);
+
 	if (param_types != exp_param_types)
 		//return TEE_ERROR_BAD_PARAMETERS;
+
+  int_appid = 2 * atoi(appid);
+  session_key_id = int_appid;
+  iv_id = int_appid + 1;
+  counter_id = int_appid + 2;
   
   //Will grab both session key and IV from the persistent objects
 	IMSG("INV: Opening persistent objects...\n");
@@ -958,24 +978,24 @@ static TEE_Result inv(uint32_t param_types,
 	
   //Decrypting both nonce and SQL request received from the remote client
   IMSG("INV: Decrypting the counter received from the remote client...\n");
-  decrypt_aes_ctr(params[0].memref.buffer, params[0].memref.size, decrypt_nonce, &decrypt_nonce_len,
+  decrypt_aes_ctr(params[0].memref.buffer, params[0].memref.size, decrypt_counter, &decrypt_counter_len,
     (unsigned char*) session_key, (unsigned char*) iv);
-  memcpy(nonce_re, decrypt_nonce, 8);
-  //nonce_re[7] = '\0';
-  IMSG("INV: Decrypted counter is %s\n", nonce_re);
+  memcpy(re_counter, decrypt_counter, 8);
+  //decrypted[7] = '\0';
+  IMSG("INV: Decrypted counter is %s\n", decrypted);
 
   IMSG("INV: Obtaining counter saved in persistent object...\n");
   res = TEE_OpenPersistentObject(TEE_STORAGE_PRIVATE, &counter_id, sizeof(int),
     flags, &file_handle);
   if (res != TEE_SUCCESS)
     IMSG("ERROR: Could not open persistent object (IV)...\n");
-  TEE_ReadObjectData(file_handle, counter_c, strlen(nonce_re), &read_count);
+  TEE_ReadObjectData(file_handle, counter_c, strlen(re_counter), &read_count);
   IMSG("INV: Read counter - %s\n", counter_c);
   TEE_CloseObject(file_handle);
 
-  if(strncmp(counter_c, nonce_re, strlen(counter_c)) == 0) {
-
+  if(strncmp(counter_c, re_counter, strlen(counter_c)) == 0) {
     IMSG("INV: Message is fresh\n");
+    //free(re_counter);
 
     IMSG("INV: Decrypting the request received from the remote client...\n");
     decrypt_aes_ctr(params[1].memref.buffer, params[1].memref.size, decrypt_req, &decrypt_req_len, 
@@ -1073,7 +1093,7 @@ static TEE_Result inv(uint32_t param_types,
   IMSG("INV: Encrypting nonce using AES-CTR...\n");
   encrypt_aes_ctr(counter_c, 8, crypt_nonce, &crypt_nonce_len, (unsigned char*) session_key, (unsigned char*) iv);
   TEE_MemMove(params[0].memref.buffer, crypt_nonce, crypt_nonce_len);
-  free(nonce_re);
+  //free(decrypted);
   free(crypt_nonce);
   print_bytes("INV: Nonce encrypted - ", crypt_nonce, crypt_nonce_len);
 

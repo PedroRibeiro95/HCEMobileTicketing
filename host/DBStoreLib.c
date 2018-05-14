@@ -430,7 +430,7 @@ void call_ta_init(int call_type, const char *appid, unsigned char *session_key, 
 	free(r_iv);
 }
 
-void call_ta_inv(int call_type, const char *req, unsigned char * session_key, unsigned char *iv, int *counter)
+void call_ta_inv(int call_type, const char *appid, const char *req, unsigned char * session_key, unsigned char *iv, int *counter)
 {
 	TEEC_Result res;
 	TEEC_Context ctx;
@@ -457,10 +457,6 @@ void call_ta_inv(int call_type, const char *req, unsigned char * session_key, un
 	char *decrypt_reply = (char *) malloc(sizeof(char) * decrypt_reply_len);
 	char *decrypt_nonce = (char *) malloc(sizeof(char) * decrypt_nonce_len);
 
-	//Generating nonce
-	/*rand_str(nonce, NONCE_LEN);
-	printf("INV: Generated nonce - %s\n", nonce);*/
-
 	sprintf(nonce, "%d", ++(*counter));
 
 	//Preparing shared buffers
@@ -482,8 +478,8 @@ void call_ta_inv(int call_type, const char *req, unsigned char * session_key, un
 	reqSM.buffer = calloc(crypt_req_len, sizeof(unsigned char));
 
 	hmacSM.flags = TEEC_MEM_INPUT | TEEC_MEM_OUTPUT;
-    hmacSM.size  = hmac_len;
-	hmacSM.buffer = calloc(hmac_len, sizeof(unsigned char));
+    hmacSM.size  = strlen(appid) + hmac_len;
+	hmacSM.buffer = calloc(strlen(nonce) + hmac_len, sizeof(unsigned char));
 
 	//Initializing context and connecting to DBStore TA
 	res = TEEC_InitializeContext(NULL, &ctx);
@@ -500,8 +496,8 @@ void call_ta_inv(int call_type, const char *req, unsigned char * session_key, un
 	op.paramTypes = TEEC_PARAM_TYPES(TEEC_MEMREF_WHOLE, TEEC_MEMREF_WHOLE,
 					 TEEC_MEMREF_WHOLE, TEEC_VALUE_INOUT);
 
-	//Encrypting both Nonce and SQL Statement
-	aes_ctr((unsigned char *) nonce, 8, crypt_nonce, &out_nonce_len, session_key, iv, crypt_nonce_len, 1);
+	//Encrypting both appid:counter and SQL Statement
+	aes_ctr((unsigned char *) nonce, strlen(nonce), crypt_nonce, &out_nonce_len, session_key, iv, crypt_nonce_len, 1);
 	aes_ctr((unsigned char *) req, strlen(req) + 1, crypt_req, &out_req_len, session_key, iv, crypt_req_len, 1);
 
 	//free(nonce);
@@ -517,7 +513,9 @@ void call_ta_inv(int call_type, const char *req, unsigned char * session_key, un
 
     op.params[2].memref.parent = &hmacSM;
     op.params[2].memref.size = hmac_len;
-    memcpy(hmacSM.buffer, hmac, hmac_len);
+    //memcpy(hmacSM.buffer, hmac, hmac_len);
+    strcat(hmacSM.buffer, appid);
+    strcat(hmacSM.buffer, (char*) hmac);
 
     free(crypt_nonce);
     free(crypt_req);
@@ -613,7 +611,7 @@ int main(int argc, char *argv[])
 			if(session_key == NULL) {
 				session_key = (unsigned char *) malloc(sizeof(unsigned char) * 16);
 				iv = (unsigned char *) malloc(sizeof(unsigned char) * 16);
-				call_ta_init(0, "o", session_key, iv, &counter);
+				call_ta_init(0, "1", session_key, iv, &counter);
 			}
 			else
 				printf("ERROR: DBStore was already initialized\n");
@@ -631,7 +629,7 @@ int main(int argc, char *argv[])
 				update_session_key(session_key);
 				print_bytes("INV: Session key updated - ", session_key, 16);
 				//call_ta_inv(request_len, request, session_key, iv);
-				call_ta_inv(request_len, request, session_key, iv, &counter);
+				call_ta_inv(request_len, "1", request, session_key, iv, &counter);
 			}
 			else
 				printf("ERROR: DBStore not initialized\n");
