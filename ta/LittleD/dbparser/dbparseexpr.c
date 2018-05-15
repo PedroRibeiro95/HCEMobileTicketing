@@ -198,6 +198,8 @@ db_int parseexpression(db_eetnode_t **exprp, db_lexer_t *lexerp, db_int start,
 	db_int lasttype = DB_EETNODE_COUNT;
 	db_int size = 0;
 	char *temp = NULL;
+
+	IMSG("dbparseexpr.c parseexpression\n");
 	
 	/* Re-initialize the lexer. */
 	lexer_init(lexerp, lexerp->command);
@@ -226,8 +228,10 @@ db_int parseexpression(db_eetnode_t **exprp, db_lexer_t *lexerp, db_int start,
 	
 	while (lexerp->offset < end && 1==lexer_next(lexerp) && lexerp->token.start < end)
 	{
+		IMSG("dbparseexpr.c parseexpression while\n");
 		if ((db_uint8)DB_LEXER_TT_INT == lexerp->token.type)
 		{
+			IMSG("dbparseexpr.c parseexpression if int\n");
 			// TODO: Check the size of the integer and build appropriately in future.
 			/* Allocate space for the node. */
 			// TODO: Abstract this part?
@@ -252,6 +256,7 @@ db_int parseexpression(db_eetnode_t **exprp, db_lexer_t *lexerp, db_int start,
 		}
 		else if ((db_uint8)DB_LEXER_TT_STRING == lexerp->token.type)
 		{
+			IMSG("dbparseexpr.c parseexpression if string\n");
 			/* Allocate space for the node. */
 			if (1 != db_qmm_fextend(mmp, sizeof(db_eetnode_dbstring_t)))
 			{
@@ -273,6 +278,7 @@ db_int parseexpression(db_eetnode_t **exprp, db_lexer_t *lexerp, db_int start,
 		}
 		else if ((db_uint8)DB_LEXER_TT_PLACEHOLDER == lexerp->token.type)
 		{
+			IMSG("dbparseexpr.c parseexpression placeholder\n");
 			if (1 != db_qmm_fextend(mmp, sizeof(db_eetnode_placeholder_t)))
 			{
 				return -1;
@@ -291,6 +297,7 @@ db_int parseexpression(db_eetnode_t **exprp, db_lexer_t *lexerp, db_int start,
 		}
 		else if ((db_uint8)DB_LEXER_TT_IDENT == lexerp->token.type)
 		{
+			IMSG("dbparseexpr.c parseexpression ident\n");
 			/* Create start and end offsets for attributes,
 			   relations, and databases. */
 			attr_s = lexerp->token.start;
@@ -303,6 +310,7 @@ db_int parseexpression(db_eetnode_t **exprp, db_lexer_t *lexerp, db_int start,
 			counter = 0;	/* Count number of parts to identifier. */
 			while (counter < 2 && lexerp->offset < end && 1==lexer_next(lexerp))
 			{
+				IMSG("dbparseexpr.c parseexpression ident while\n");
 				if (lexerp->token.type == (db_uint8)DB_LEXER_TT_IDENTCONJ)
 				{
 					if (lexerp->offset < end && 1==lexer_next(lexerp) &&
@@ -329,20 +337,26 @@ db_int parseexpression(db_eetnode_t **exprp, db_lexer_t *lexerp, db_int start,
 					break;
 				}
 			}
+			IMSG("dbparseexpr.c parseexpression ident after while\n");
 			/* Allocate space for the node. */
 			if (1 != db_qmm_fextend(mmp, sizeof(db_eetnode_attr_t)))
 			{
 				return -1;
 			}
+			IMSG("dbparseexpr.c parseexpression ident before malloc\n");
 			newnodepattr = malloc(sizeof(db_eetnode_attr_t));
 			//newnodepattr = POINTERATNBYTES(*exprp, size, db_eetnode_attr_t*);
+			IMSG("dbparseexpr.c parseexpression ident before memcpy\n");
 			memcpy(newnodepattr, (unsigned char*) *exprp + size, sizeof(db_eetnode_attr_t));
 			size+=sizeof(db_eetnode_attr_t);
+
+			IMSG("dbparseexpr.c parseexpression ident after memcpy\n");
 			
 			/* Build the node! */
 			newnodepattr->base.type = DB_EETNODE_ATTR;
 			/* Note, we will borrow pos field so that we can do
 			   less work on setup. */
+			IMSG("dbparseexpr.c parseexpression ident after build node\n");
 			if (db_s != -1)
 			{
 				newnodepattr->tokenstart = db_s;
@@ -358,10 +372,12 @@ db_int parseexpression(db_eetnode_t **exprp, db_lexer_t *lexerp, db_int start,
 				newnodepattr->tokenstart = attr_s;
 				newnodepattr->pos = 1;
 			}
+			IMSG("dbparseexpr.c parseexpression ident before free\n");
 			free(newnodepattr);
 		}
 		else if ((db_uint8)DB_LEXER_TT_OP == lexerp->token.type)
 		{
+			IMSG("dbparseexpr.c parseexpression op\n");
 			type = lexerp->token.bcode;
 			
 			/* Four cases in which a subtraction should become a unary
@@ -403,6 +419,7 @@ db_int parseexpression(db_eetnode_t **exprp, db_lexer_t *lexerp, db_int start,
 		}
 		else if ((db_uint8)DB_LEXER_TT_COMMA == lexerp->token.type)
 		{
+			IMSG("dbparseexpr.c parseexpression comma\n");
 			switch (parseexpr_pop(-1, exprp, stack, &stack_top, &size, (db_uint8)DB_EETNODE_LPAREN, mmp)) {
 			case 1:
 				break;
@@ -413,6 +430,7 @@ db_int parseexpression(db_eetnode_t **exprp, db_lexer_t *lexerp, db_int start,
 		}
 		else if ((db_uint8)DB_LEXER_TT_FUNC == lexerp->token.type)
 		{
+			IMSG("dbparseexpr.c parseexpression func\n");
 			stack_top = db_qmm_bextend(mmp, sizeof(db_eetnode_t));
 			if (NULL == stack_top)
 			{
@@ -432,6 +450,7 @@ db_int parseexpression(db_eetnode_t **exprp, db_lexer_t *lexerp, db_int start,
 		}
 		else if ((db_uint8)DB_LEXER_TT_AGGRFUNC == lexerp->token.type)
 		{
+			IMSG("dbparseexpr.c parseexpression aggrfunc\n");
 			stack_top = db_qmm_bextend(mmp, sizeof(db_eetnode_aggr_temp_t));
 			if (NULL == stack_top)
 			{
@@ -458,6 +477,7 @@ db_int parseexpression(db_eetnode_t **exprp, db_lexer_t *lexerp, db_int start,
 		}
 		else if ((db_uint8)DB_LEXER_TT_LPAREN == lexerp->token.type)
 		{
+			IMSG("dbparseexpr.c parseexpression lparen\n");
 			/* Push bracket onto the stack. */
 			stack_top = db_qmm_bextend(mmp, sizeof(db_eetnode_t));
 			if (NULL == stack_top)
@@ -469,6 +489,7 @@ db_int parseexpression(db_eetnode_t **exprp, db_lexer_t *lexerp, db_int start,
 		}
 		else if ((db_uint8)DB_LEXER_TT_RPAREN == lexerp->token.type)
 		{
+			IMSG("dbparseexpr.c parseexpression rparen\n");
 			switch (parseexpr_pop(-1, exprp, stack, &stack_top, &size, (db_uint8)DB_EETNODE_LPAREN, mmp)) {
 			case 1:
 				break;

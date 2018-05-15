@@ -281,7 +281,7 @@ void db_qmm_bfree(db_query_mm_t *mmp, void *ptr)
 db_int db_qmm_fextend(db_query_mm_t *mmp, db_int size)
 {	
 	db_int dist, tempsize;
-	void * hold_val = malloc(sizeof(void*));
+	//void **temp_addr = malloc(sizeof(void**));
 	/* Check that size requested is valid. */
 	if (size > mmp->size)
 	{
@@ -304,6 +304,8 @@ db_int db_qmm_fextend(db_query_mm_t *mmp, db_int size)
 		mmp->errcode = -4;
 		return -1;
 	}
+
+	IMSG("db_query_mm.c db_qmm_fextend after if\n");
 	
 	/** We can satisfy this request. **/
 	/* Change size of this segment to new size, respecting flag bit. */
@@ -326,26 +328,37 @@ db_int db_qmm_fextend(db_query_mm_t *mmp, db_int size)
 	{
 		tempsize += size;
 	}
+
+	IMSG("db_query_mm.c db_qmm_fextend after second if\n");
 	
 	/* Write out the new size. */
 	//*((db_int*)(*((void**)((char*)(mmp->next_front)-sizeof(void*)))))
 	//	= tempsize;
-	memcpy(/*(char*)(mmp->next_front)-sizeof(void*)*/(void*)((((char*)(mmp->next_front))) - sizeof(void*)), &tempsize, sizeof(db_int)); //WARNING!!!!
+	memcpy((((char*)(mmp->next_front)) - sizeof(void*)), &tempsize, sizeof(db_int)); //WARNING!!!!
 	
+	IMSG("db_query_mm.c db_qmm_fextend after first memcpy\n");
+
 	/* Untoggle size flag again. */
 	tempsize &= ~(1 << ((8*sizeof(db_int))-1));
 	
 	/* Set mmp->next_front. */
 	mmp->next_front = POINTERATNBYTES(mmp->next_front, size, void*);
 	//mmp->next_front = ((void*)(((char*)mmp->next_front)+size));
-	
-	/* Setup new free pointer. */
-	memcpy(hold_val, ((unsigned char*) mmp->next_front) + (-1*sizeof(void*)), sizeof(void*));
-	hold_val =
-		POINTERATNBYTES(mmp->next_front, -1*(tempsize+sizeof(db_int)+sizeof(void*)), void*);
 
-	memcpy(mmp->next_front, hold_val, sizeof(void*));
-	free(hold_val);
+	/* Setup new free pointer. */
+	//*POINTERATNBYTES(mmp->next_front, -1*sizeof(void*), void**) =
+	//	POINTERATNBYTES(mmp->next_front, -1*(tempsize+sizeof(db_int)+sizeof(void*)), void*);
+
+	//temp_addr = (void**) ((unsigned char*) mmp->next_front) + (-1*sizeof(void*));
+	//memcpy(temp_addr, ((unsigned char*) mmp->next_front) + (-1*sizeof(void*)), 8);
+	//*temp_addr = POINTERATNBYTES(mmp->next_front, -1*(tempsize+sizeof(db_int)+sizeof(void*)), void*);
+
+	//*(((unsigned char *) mmp->next_front) + (-1*sizeof(void*))) = 
+	//	POINTERATNBYTES(mmp->next_front, -1*(tempsize+sizeof(db_int)+sizeof(void*)), void*);
+
+	printf("tempsize %d next_front %s\n", tempsize, (char*) mmp->next_front);
+
+	memcpy((((unsigned char *) mmp->next_front) + (-1*sizeof(void*))), (((unsigned char *) mmp->next_front) + (-1*(tempsize+sizeof(db_int)+sizeof(void*)))), 8);
 	
 #if defined(DB_CTCONF_PROFILE_MAXMEM) && DB_CTCONF_PROFILE_MAXMEM == 1
 	dist = mmp->size -
@@ -354,7 +367,7 @@ db_int db_qmm_fextend(db_query_mm_t *mmp, db_int size)
 	if (dist > mmp->maxused)
 		mmp->maxused = dist;
 #endif
-	
+
 	return 1;
 }
 

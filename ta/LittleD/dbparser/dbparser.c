@@ -756,6 +756,8 @@ db_int parseClauseExpression(db_lexer_t *lexerp, db_op_base_t **rootpp, db_query
 	lexerp->offset = start;
 
 	if(rootpp || tablesp || numtablesp) {} //HACK
+
+	IMSG("dbparser.c parseClauseExpression\n");
 	
 	/* Find the end of the expression.  Will be
 	   be delimited by either a clause, a comma,
@@ -773,13 +775,16 @@ db_int parseClauseExpression(db_lexer_t *lexerp, db_op_base_t **rootpp, db_query
 			break;
 		}
 	}
+	IMSG("dbparser.c parseClauseExpression 1\n");
 	lexerp->offset = start;
 	/* If there is an expression to parse, do so now. */
 	if (end > lexerp->offset && 1==lexer_next(lexerp) && lexerp->token.start != exprend)
 	{
+		IMSG("dbparser.c parseClauseExpression 2\n");
 		lexerp->offset = start;
 		if (NULL == *exprp)
 		{
+			IMSG("dbparser.c parseClauseExpression 3\n");
 			switch (parseexpression(exprp, lexerp, lexerp->offset, exprend, mmp, 0)) {
 			case 1:
 				break;
@@ -791,6 +796,7 @@ db_int parseClauseExpression(db_lexer_t *lexerp, db_op_base_t **rootpp, db_query
 		}
 		else
 		{
+			IMSG("dbparser.c parseClauseExpression 4\n");
 			switch (parseexpression(exprp, lexerp, lexerp->offset, exprend, mmp, 1)) {
 			case 1:
 				break;
@@ -1357,6 +1363,7 @@ db_op_base_t* parse(char* command, db_query_mm_t* mmp)
 		}
 		else if (DB_LEXER_TOKENBCODE_CLAUSE_WHERE == clausestack_top->bcode)
 		{
+			IMSG("dbparser.c WHERE\n");
 			retval = parseClauseExpression(&lexer, &rootp, mmp,
 				clausestack_top->start, clausestack_top->end, &tables, &numtables, &expr);
 		}

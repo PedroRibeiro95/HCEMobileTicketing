@@ -598,6 +598,9 @@ int main(int argc, char *argv[])
 	//char request[100];
 	char *request = NULL;
 	int request_len;
+	char *query1 = "CREATE TABLE t (i int);";
+	char *query2 = "INSERT INTO t VALUES (1);";
+	char *query3 = "SELECT * FROM t WHERE i = 1;";
 	while(1) {
 
 		printf("Welcome to DBStore!\n");
@@ -633,6 +636,14 @@ int main(int argc, char *argv[])
 			}
 			else
 				printf("ERROR: DBStore not initialized\n");
+		}
+		else if(strncmp(input, "test", 4) == 0) {
+			update_session_key(session_key);
+			call_ta_inv(strlen(query1), "1", query1, session_key, iv, &counter);
+			update_session_key(session_key);
+			call_ta_inv(strlen(query2), "1", query2, session_key, iv, &counter);
+			update_session_key(session_key);
+			call_ta_inv(strlen(query3), "1", query3, session_key, iv, &counter);
 		}
 		else if(strncmp(input, "exit", 4) == 0) {
 			printf("Exiting DBStore... bye!\n");
