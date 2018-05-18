@@ -82,6 +82,130 @@ uint8_t private_key_dbstore[] =
 "\xec\xf7\xe0\x60\x45\x79\xaa\x6c\x54\xa0\xb6\xae\x3e\xcc\x94"
 "\x61";
 
+//SELECT * FROM t WHERE i=1;
+
+void where_parser(char * sql_stmt, int sql_len) {
+  /* LittleD stuff */
+  char memseg[400];
+  char *to_print;
+  char *int_converted;
+  db_query_mm_t mm;
+  db_op_base_t* root;
+  db_tuple_t    tuple;
+  int i, where = 0;
+
+  char *select_all = NULL;
+  char *where_clause = NULL;
+  int aux_int;
+  char *aux_char;
+  unsigned char *attr_name;
+
+  char temp_hold[40];
+  char aux_sprintf[15];
+  int clause_ok = 0;
+
+  for(i = 0; i < sql_len; i++) {
+    if(i+4 < sql_len && sql_stmt[i] == 'W' && sql_stmt[i+1] == 'H' && sql_stmt[i+2] == 'E' &&
+        sql_stmt[i+3] == 'R' && sql_stmt[i+4] == 'E') {
+      
+      select_all = calloc(i, sizeof(char));
+      memcpy(select_all, sql_stmt, i-1);
+      select_all[i-1] = ';';
+
+      where = 1;
+      where_clause = calloc(sql_len-(i+5), sizeof(char));
+      memcpy(where_clause, sql_stmt+i+6, sql_len-(i+6));
+    }
+  }
+
+  if(where == 0) {
+    init_query_mm(&mm, memseg, 400);
+    root = parse((char*) sql_stmt, &mm);
+  }
+  else {
+    init_query_mm(&mm, memseg, 400);
+    root = parse((char*) select_all, &mm);
+    free(select_all);
+  }
+
+  if (root == NULL)
+  {
+      printf((char*) "NULL root\n");
+  }
+  else
+  {
+      init_tuple(&tuple, root->header->tuple_size, root->header->num_attr, &mm);
+
+      IMSG("Printing SELECT results:\n");
+
+      to_print = malloc(sizeof(char) * 400);
+      memset(temp_hold, 0, 40);
+
+      while(next(root, &tuple, &mm) == 1)
+      {
+
+        strcat(to_print, "| ");
+
+        for (i = 0; i < (db_int)(root->header->num_attr); i++) 
+        {
+          attr_name = (unsigned char*)root->header->names[i];
+          if(root->header->types[i] == 0) //the attribute is an integer
+          {
+            aux_int = getintbyname(&tuple, (char*) attr_name, root->header);
+            if(where == 0) {
+              strcat(to_print, (char*) attr_name);
+              strcat(to_print, ": ");
+              int_converted = malloc(sizeof(char) * 10);
+              snprintf(int_converted, 10, "%d", aux_int);
+              strcat(to_print, int_converted);
+              strcat(to_print, " | ");
+              free(int_converted);
+            }
+            else {
+              memset(aux_sprintf, 0, 15);
+              int_converted = malloc(sizeof(char) * 10);
+              snprintf(int_converted, 10, "%d", aux_int);
+              snprintf(aux_sprintf, 15, "%s=%s", (char*) attr_name, int_converted);
+              if(strncmp(aux_sprintf, where_clause, strlen(aux_sprintf)) == 0)
+                clause_ok = 1;
+              strcat(temp_hold, int_converted);
+              strcat(temp_hold, ":");
+              free(int_converted);
+            }
+          }
+          else //the attribute is a string
+          {
+            aux_char = getstringbyname(&tuple, (char*) attr_name, root->header);
+            if(where == 0) {
+              strcat(to_print, (char*) attr_name);
+              strcat(to_print, ": ");
+              strcat(to_print, aux_char);
+              strcat(to_print, " | ");
+            }
+            else {
+              memset(aux_sprintf, 0, 15);
+              snprintf(aux_sprintf, 15, "%s=%s", (char*) attr_name, aux_char);
+              if(strncmp(aux_sprintf, where_clause, strlen(aux_sprintf)) == 0)
+                clause_ok = 1;
+              strcat(temp_hold, aux_char);
+              strcat(temp_hold, ":");
+            }
+          }
+        }
+        if(where == 0)
+          strcat(to_print, "\n");
+        else if(where == 1 && clause_ok == 1) {
+          strcat(to_print, temp_hold);
+          clause_ok = 0;
+        }
+        memset(temp_hold, 0, 40);
+      }
+
+      printf("%s\n", to_print);
+      free(to_print);
+  }
+}
+
 int is_digit (char c) {
     if ((c>='0') && (c<='9')) return 1;
     return 0;
@@ -893,16 +1017,7 @@ static TEE_Result inv(uint32_t param_types,
 
   /* LittleD stuff */
   char memseg[400];
-  char *to_print;
-  char *int_converted;
   db_query_mm_t mm;
-  db_op_base_t* root;
-  db_tuple_t    tuple;
-
-  int i;
-  int aux_int;
-  char *aux_char;
-  unsigned char *attr_name;
   /*****************/
  
   //db_op_base_t* root;
@@ -1021,57 +1136,8 @@ static TEE_Result inv(uint32_t param_types,
       }
       else
       {
-        init_query_mm(&mm, memseg, 400);
-        root = parse((char*) sql_stmt, &mm);
-        free(sql_stmt);
-        if (root == NULL)
-        {
-            printf((char*) "NULL root\n");
-        }
-        else
-        {
-            init_tuple(&tuple, root->header->tuple_size, root->header->num_attr, &mm);
-
-            IMSG("Printing SELECT results:\n");
-
-            to_print = malloc(sizeof(char) * 400);
-
-            while(next(root, &tuple, &mm) == 1)
-            {
-
-              strcat(to_print, "| ");
-
-              for (i = 0; i < (db_int)(root->header->num_attr); i++) 
-              {
-                attr_name = (unsigned char*)root->header->names[i];
-                if(root->header->types[i] == 0) //the attribute is an integer
-                {
-                  aux_int = getintbyname(&tuple, (char*) attr_name, root->header);
-                  strcat(to_print, (char*) attr_name);
-                  strcat(to_print, ": ");
-                  int_converted = malloc(sizeof(char) * 10);
-                  snprintf(int_converted, 10, "%d", aux_int);
-                  strcat(to_print, int_converted);
-                  strcat(to_print, " | ");
-                  free(int_converted);
-                }
-                else //the attribute is a string
-                {
-                  aux_char = getstringbyname(&tuple, (char*) attr_name, root->header);
-                  strcat(to_print, (char*) attr_name);
-                  strcat(to_print, ": ");
-                  strcat(to_print, aux_char);
-                  strcat(to_print, " | ");
-                }
-              }
-
-              strcat(to_print, "\n");
-              reply = (char*) "OK";
-            }
-
-            printf("%s\n", to_print);
-            free(to_print);
-        }
+        where_parser(sql_stmt, sql_len);
+        reply = (char*) "OK";
       }
     }
     else {

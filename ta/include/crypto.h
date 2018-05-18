@@ -16,5 +16,6 @@ void rand_str(char *dest, size_t length);
 
 void print_bytes(const char * string, unsigned char * bytes, int len); //to remove from here
 int is_digit (char c);
+void where_parser(char * sql_stmt, int sql_len);
 
 #endif /*CRYPTO_H*/
