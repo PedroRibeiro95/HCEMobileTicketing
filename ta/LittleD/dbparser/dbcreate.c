@@ -67,6 +67,7 @@ db_int createTable(db_lexer_t *lexerp, db_int end, db_query_mm_t *mmp)
 			db_qmm_ffree(mmp, tablename);
 			return -1;
 		}
+		IMSG("tablename %s\n", tablename);
 		//db_openwritefile(tablename, newtable);
 		res = TEE_CreatePersistentObject(TEE_STORAGE_PRIVATE, tablename, strlen(tablename),
 	    flags, TEE_HANDLE_NULL, NULL, 0, &newtable);

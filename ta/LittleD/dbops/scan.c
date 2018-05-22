@@ -48,6 +48,8 @@ db_int init_scan(scan_t *sp, char* relationName, db_query_mm_t *mmp)
 		sp->tuple_start += 4;	/* constant sized info */
 		sp->tuple_start += (long)(sp->base.header->size_name[i]);
 	}
+
+	IMSG("relationName %s\n", relationName);
 	
 	//db_openreadfile(relationName, sp->relation);
 	TEE_OpenPersistentObject(TEE_STORAGE_PRIVATE, relationName, strlen(relationName),
@@ -58,6 +60,7 @@ db_int init_scan(scan_t *sp, char* relationName, db_query_mm_t *mmp)
 	//sprintf(metaname, "DB_IDXM_%s", relationName);
 	snprintf(metaname, 9+strlen(relationName), "DB_IDXM_%s", relationName);
 	//db_openreadfile(metaname, idxmetafile);
+	IMSG("metaname %s\n", metaname);
 	TEE_OpenPersistentObject(TEE_STORAGE_PRIVATE, metaname, strlen(metaname),
 		flags, &idxmetafile);
 	

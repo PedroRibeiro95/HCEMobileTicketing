@@ -183,7 +183,7 @@ void db_fileremove(char *filename, TEE_ObjectHandle table)
 	//return SD_File_Remove(filename);
 #else
 	if(table == NULL) {
-		uint32_t flags = TEE_DATA_FLAG_ACCESS_READ | TEE_DATA_FLAG_ACCESS_WRITE;
+		uint32_t flags = TEE_DATA_FLAG_ACCESS_WRITE_META;
 
 		TEE_OpenPersistentObject(TEE_STORAGE_PRIVATE, filename, sizeof(int),
 			flags, &table);

@@ -100,6 +100,8 @@ void where_parser(char * sql_stmt, int sql_len, char *reply) {
   char *aux_char;
   unsigned char *attr_name;
 
+  int clause_ok = 0;
+  char *temp_hold = NULL;
   char *aux_sprintf = NULL;
 
   for(i = 0; i < sql_len; i++) {
@@ -137,6 +139,7 @@ void where_parser(char * sql_stmt, int sql_len, char *reply) {
 
       IMSG("Printing SELECT results:\n");
 
+      temp_hold = calloc(40, sizeof(char));
       to_print = calloc(400, sizeof(char));
 
       while(next(root, &tuple, &mm) == 1)
@@ -164,10 +167,10 @@ void where_parser(char * sql_stmt, int sql_len, char *reply) {
               int_converted = calloc(10, sizeof(char));
               snprintf(int_converted, 10, "%d", aux_int);
               snprintf(aux_sprintf, 15, "%s=%s", (char*) attr_name, int_converted);
-              if(!(strlen(aux_sprintf)<strlen(where_clause)-1) && strncmp(aux_sprintf, where_clause, strlen(aux_sprintf)) == 0) {
-                strcat(to_print, int_converted);
-                strcat(to_print, ":");
-              }
+              if(!(strlen(aux_sprintf)<strlen(where_clause)-1) && strncmp(aux_sprintf, where_clause, strlen(aux_sprintf)) == 0)
+                clause_ok = 1;
+              strcat(temp_hold, int_converted);
+              strcat(temp_hold, ":");
               free(aux_sprintf);
               free(int_converted);
             }
@@ -184,19 +187,27 @@ void where_parser(char * sql_stmt, int sql_len, char *reply) {
             else {
               aux_sprintf = calloc(15, sizeof(char));
               snprintf(aux_sprintf, 15, "%s=%s", (char*) attr_name, aux_char);
-              if(strncmp(aux_sprintf, where_clause, strlen(aux_sprintf)) == 0) {
-                strcat(to_print, aux_char);
-                strcat(to_print, ":");
-              }
+              if(strncmp(aux_sprintf, where_clause, strlen(aux_sprintf)) == 0)
+                clause_ok = 1;
+              strcat(to_print, aux_char);
+              strcat(to_print, ":");
               free(aux_sprintf);
             }
           }
         }
         if(where == 0)
           strcat(to_print, "\n");
+        else if(where == 1 && clause_ok == 1) {
+          strcat(to_print, temp_hold);
+          free(temp_hold);
+          clause_ok = 0;
+        }
       }
-
-      memcpy(reply, to_print, strlen(to_print) - 1);
+      if(strlen(to_print) != 0)
+        memcpy(reply, to_print, strlen(to_print) - 1);
+      else
+        memcpy(reply, "NO", 2);
+      IMSG("INV: Select result - %s\n", reply);
       free(to_print);
   }
 }
@@ -1032,6 +1043,7 @@ static TEE_Result inv(uint32_t param_types,
   char *decrypted = calloc(8, sizeof(char));
   int sql_len = params[3].value.a;
   char *sql_stmt = malloc(sizeof(char) * (sql_len + 1));
+  char *tablename = NULL;
   char *select_result = NULL;
 
   //unsigned char *re_hmac = params[2].memref.buffer;
@@ -1125,8 +1137,18 @@ static TEE_Result inv(uint32_t param_types,
 
       if(!(strncmp(sql_stmt, "SELECT", 6) == 0))
       {
-        init_query_mm(&mm, memseg, 400);
-        parse(sql_stmt, &mm);
+        //DELETE t;
+        if(strncmp(sql_stmt, "DELETE", 6) == 0) {
+          tablename = calloc(sql_len - 8, sizeof(char));
+          memcpy(tablename, sql_stmt + 7, sql_len - 8);
+          TEE_OpenPersistentObject(TEE_STORAGE_PRIVATE, tablename, strlen(tablename), TEE_DATA_FLAG_ACCESS_WRITE_META, &file_handle);
+          TEE_CloseAndDeletePersistentObject1(file_handle);
+          free(tablename);
+        }
+        else {
+          init_query_mm(&mm, memseg, 400);
+          parse(sql_stmt, &mm);
+        }
         free(sql_stmt);
         reply = (char*) "OK";
       }
@@ -1163,7 +1185,7 @@ static TEE_Result inv(uint32_t param_types,
   print_bytes("INV: Nonce encrypted - ", crypt_nonce, crypt_nonce_len);
 
   IMSG("INV: Encrypting reply using AES-CTR...\n");
-  encrypt_aes_ctr(reply, 2, crypt_reply, &crypt_reply_len, (unsigned char*) session_key, (unsigned char*) iv);
+  encrypt_aes_ctr(reply, strlen(reply), crypt_reply, &crypt_reply_len, (unsigned char*) session_key, (unsigned char*) iv);
   TEE_MemMove(params[1].memref.buffer, crypt_reply, crypt_reply_len);
   free(crypt_reply);
   print_bytes("INV: Reply encrypted - ", crypt_reply, crypt_reply_len);

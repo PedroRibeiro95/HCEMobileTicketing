@@ -74,6 +74,8 @@ db_int getrelationheader(relation_header_t **hpp, char *relationname, db_query_m
 	//db_openreadfile(relationname, relation);
 	TEE_OpenPersistentObject(TEE_STORAGE_PRIVATE, relationname, strlen(relationname),
 		flags, &relation);
+
+	IMSG("relationname %s\n", relationname);
 	
 	db_filerewind(relation);
 

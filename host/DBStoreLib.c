@@ -454,8 +454,8 @@ void call_ta_inv(int call_type, const char *appid, const char *req, unsigned cha
 	unsigned char *re_req;
 	unsigned char *re_hmac;
 	int decrypt_reply_len = 2, decrypt_nonce_len = NONCE_LEN;
-	char *decrypt_reply = (char *) malloc(sizeof(char) * decrypt_reply_len);
-	char *decrypt_nonce = (char *) malloc(sizeof(char) * decrypt_nonce_len);
+	char *decrypt_reply = (char *) calloc(decrypt_reply_len, sizeof(char));
+	char *decrypt_nonce = (char *) calloc(decrypt_nonce_len, sizeof(char));
 
 	sprintf(nonce, "%d", ++(*counter));
 
@@ -569,8 +569,8 @@ void call_ta_inv(int call_type, const char *appid, const char *req, unsigned cha
 
 		//Decrypting the confirmation response from DBStore TA
 		printf("INV: Decrypting DBStore reply...\n");
-		aes_ctr(re_req, crypt_req_len, (unsigned char *) decrypt_reply, &decrypt_reply_len, session_key, iv, 2, 0);
-		realloc(decrypt_reply, op.params[3].value.a + 1);
+		aes_ctr(re_req, crypt_req_len, (unsigned char *) decrypt_reply, &decrypt_reply_len, session_key, iv, op.params[3].value.a, 0);
+		//realloc(decrypt_reply, op.params[3].value.a + 1);
 		printf("INV: Decrypted DBStore reply - %s\n", decrypt_reply);
 
 		//Verifying if received HMAC matches with the generated one

@@ -30,6 +30,8 @@ db_int init_index(db_index_t *indexp, char *name)
 	/* Prepare for ugly. */
 	char realname[8 + strlen(name)];
 	snprintf(realname, 8 + strlen(name), "DB_IDX_%s", name);
+
+	IMSG("index name %s\n", realname);
 	
 	//db_openreadfile(realname, indexp->indexref);
 	TEE_OpenPersistentObject(TEE_STORAGE_PRIVATE, realname, strlen(realname),
