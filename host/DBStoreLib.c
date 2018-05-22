@@ -570,11 +570,12 @@ void call_ta_inv(int call_type, const char *appid, const char *req, unsigned cha
 		//Decrypting the confirmation response from DBStore TA
 		printf("INV: Decrypting DBStore reply...\n");
 		aes_ctr(re_req, crypt_req_len, (unsigned char *) decrypt_reply, &decrypt_reply_len, session_key, iv, 2, 0);
-		printf("INV: Decrypted DBStore reply - %.2s\n", decrypt_reply);
+		realloc(decrypt_reply, op.params[3].value.a + 1);
+		printf("INV: Decrypted DBStore reply - %s\n", decrypt_reply);
 
 		//Verifying if received HMAC matches with the generated one
 		printf("INV: Verifying received HMAC...\n");
-		if(verify_hmac(decrypt_reply, 2, re_hmac, &re_hmac_len, session_key))
+		if(verify_hmac(decrypt_reply, op.params[3].value.a, re_hmac, &re_hmac_len, session_key))
 			printf("INV: HMAC verified\n");
 		else
 			printf("INV: ERROR - Could not verify HMAC\n");

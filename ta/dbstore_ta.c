@@ -1134,8 +1134,7 @@ static TEE_Result inv(uint32_t param_types,
       {
         select_result = calloc(30, sizeof(char));
         where_parser(sql_stmt, sql_len, select_result);
-        printf("INV SELECT: %s\n", select_result);
-        reply = (char*) "OK";
+        reply = select_result;
       }
     }
     else {
@@ -1144,6 +1143,8 @@ static TEE_Result inv(uint32_t param_types,
   }
   else
     IMSG("ERROR: Message not fresh\n");
+
+  params[3].value.a = strlen(reply);
 
   /*IMSG("INV: Generating new nonce for reply...\n");
   transform_challenge(nonce_re);
