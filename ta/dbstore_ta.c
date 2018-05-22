@@ -139,13 +139,12 @@ void where_parser(char * sql_stmt, int sql_len, char *reply) {
 
       IMSG("Printing SELECT results:\n");
 
-      temp_hold = calloc(40, sizeof(char));
       to_print = calloc(400, sizeof(char));
 
       while(next(root, &tuple, &mm) == 1)
       {
 
-        //strcat(to_print, "| ");
+        temp_hold = calloc(40, sizeof(char));
 
         for (i = 0; i < (db_int)(root->header->num_attr); i++) 
         {
@@ -189,8 +188,8 @@ void where_parser(char * sql_stmt, int sql_len, char *reply) {
               snprintf(aux_sprintf, 15, "%s=%s", (char*) attr_name, aux_char);
               if(strncmp(aux_sprintf, where_clause, strlen(aux_sprintf)) == 0)
                 clause_ok = 1;
-              strcat(to_print, aux_char);
-              strcat(to_print, ":");
+              strcat(temp_hold, aux_char);
+              strcat(temp_hold, ":");
               free(aux_sprintf);
             }
           }
@@ -199,9 +198,9 @@ void where_parser(char * sql_stmt, int sql_len, char *reply) {
           strcat(to_print, "\n");
         else if(where == 1 && clause_ok == 1) {
           strcat(to_print, temp_hold);
-          free(temp_hold);
           clause_ok = 0;
         }
+        free(temp_hold);
       }
       if(strlen(to_print) != 0)
         memcpy(reply, to_print, strlen(to_print) - 1);
