@@ -84,7 +84,7 @@ uint8_t private_key_dbstore[] =
 
 //SELECT * FROM t WHERE i=1;
 
-void where_parser(char * sql_stmt, int sql_len) {
+void where_parser(char * sql_stmt, int sql_len, char *reply) {
   /* LittleD stuff */
   char memseg[400];
   char *to_print;
@@ -100,9 +100,7 @@ void where_parser(char * sql_stmt, int sql_len) {
   char *aux_char;
   unsigned char *attr_name;
 
-  char temp_hold[40];
-  char aux_sprintf[15];
-  int clause_ok = 0;
+  char *aux_sprintf = NULL;
 
   for(i = 0; i < sql_len; i++) {
     if(i+4 < sql_len && sql_stmt[i] == 'W' && sql_stmt[i+1] == 'H' && sql_stmt[i+2] == 'E' &&
@@ -115,6 +113,7 @@ void where_parser(char * sql_stmt, int sql_len) {
       where = 1;
       where_clause = calloc(sql_len-(i+5), sizeof(char));
       memcpy(where_clause, sql_stmt+i+6, sql_len-(i+6));
+      printf("where_clause %s\n", where_clause);
     }
   }
 
@@ -138,13 +137,12 @@ void where_parser(char * sql_stmt, int sql_len) {
 
       IMSG("Printing SELECT results:\n");
 
-      to_print = malloc(sizeof(char) * 400);
-      memset(temp_hold, 0, 40);
+      to_print = calloc(400, sizeof(char));
 
       while(next(root, &tuple, &mm) == 1)
       {
 
-        strcat(to_print, "| ");
+        //strcat(to_print, "| ");
 
         for (i = 0; i < (db_int)(root->header->num_attr); i++) 
         {
@@ -162,14 +160,15 @@ void where_parser(char * sql_stmt, int sql_len) {
               free(int_converted);
             }
             else {
-              memset(aux_sprintf, 0, 15);
-              int_converted = malloc(sizeof(char) * 10);
+              aux_sprintf = calloc(15, sizeof(char));
+              int_converted = calloc(10, sizeof(char));
               snprintf(int_converted, 10, "%d", aux_int);
               snprintf(aux_sprintf, 15, "%s=%s", (char*) attr_name, int_converted);
-              if(strncmp(aux_sprintf, where_clause, strlen(aux_sprintf)) == 0)
-                clause_ok = 1;
-              strcat(temp_hold, int_converted);
-              strcat(temp_hold, ":");
+              if(!(strlen(aux_sprintf)<strlen(where_clause)-1) && strncmp(aux_sprintf, where_clause, strlen(aux_sprintf)) == 0) {
+                strcat(to_print, int_converted);
+                strcat(to_print, ":");
+              }
+              free(aux_sprintf);
               free(int_converted);
             }
           }
@@ -183,25 +182,21 @@ void where_parser(char * sql_stmt, int sql_len) {
               strcat(to_print, " | ");
             }
             else {
-              memset(aux_sprintf, 0, 15);
+              aux_sprintf = calloc(15, sizeof(char));
               snprintf(aux_sprintf, 15, "%s=%s", (char*) attr_name, aux_char);
-              if(strncmp(aux_sprintf, where_clause, strlen(aux_sprintf)) == 0)
-                clause_ok = 1;
-              strcat(temp_hold, aux_char);
-              strcat(temp_hold, ":");
+              if(strncmp(aux_sprintf, where_clause, strlen(aux_sprintf)) == 0) {
+                strcat(to_print, aux_char);
+                strcat(to_print, ":");
+              }
+              free(aux_sprintf);
             }
           }
         }
         if(where == 0)
           strcat(to_print, "\n");
-        else if(where == 1 && clause_ok == 1) {
-          strcat(to_print, temp_hold);
-          clause_ok = 0;
-        }
-        memset(temp_hold, 0, 40);
       }
 
-      printf("%s\n", to_print);
+      memcpy(reply, to_print, strlen(to_print) - 1);
       free(to_print);
   }
 }
@@ -1037,6 +1032,7 @@ static TEE_Result inv(uint32_t param_types,
   char *decrypted = calloc(8, sizeof(char));
   int sql_len = params[3].value.a;
   char *sql_stmt = malloc(sizeof(char) * (sql_len + 1));
+  char *select_result = NULL;
 
   //unsigned char *re_hmac = params[2].memref.buffer;
   int counter_len = params[2].memref.size - 20;
@@ -1136,7 +1132,9 @@ static TEE_Result inv(uint32_t param_types,
       }
       else
       {
-        where_parser(sql_stmt, sql_len);
+        select_result = calloc(30, sizeof(char));
+        where_parser(sql_stmt, sql_len, select_result);
+        printf("INV SELECT: %s\n", select_result);
         reply = (char*) "OK";
       }
     }
@@ -1185,6 +1183,8 @@ static TEE_Result inv(uint32_t param_types,
   
   //free(decrypt_nonce); CANT FREE THESE FOR SOME DIABOLIC REASON
   //free(decrypt_req);
+  free(counter_c);
+  free(select_result);
   free(session_key);
   free(iv);
 
